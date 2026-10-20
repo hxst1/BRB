@@ -42,16 +42,31 @@ export default function Home() {
             </div>
           </Link>
         </li>
-        <li className="flex flex-col gap-5 rounded-3xl border border-dashed border-line p-5">
-          <div aria-hidden className="grid grid-cols-3 gap-1.5 p-1.5 text-muted/50">
-            {TIC_TAC_TOE.map((mark, i) => (
-              <span key={i} className="display grid aspect-square place-items-center rounded-lg bg-line/40 text-5xl font-bold">
-                {mark}
-              </span>
-            ))}
-          </div>
-          <p className="display mt-auto text-3xl font-bold text-muted">3 en raya</p>
-          <p className="text-sm text-muted">Contra tus amigos. Muy pronto.</p>
+        <li>
+          <Link
+            href="/3-en-raya"
+            className="group flex h-full flex-col gap-5 rounded-3xl bg-surface p-5 shadow-soft transition-shadow hover:shadow-lift"
+          >
+            <div aria-hidden className="grid grid-cols-3 gap-1.5 rounded-2xl p-1.5" style={{ background: "var(--board)" }}>
+              {TIC_TAC_TOE.map((mark, i) => (
+                <span
+                  key={i}
+                  className="display grid aspect-square place-items-center rounded-lg text-5xl font-bold transition-transform duration-300 group-hover:scale-95"
+                  style={{
+                    background: "var(--cell)",
+                    color: mark === "×" ? "var(--mark-x)" : "var(--mark-o)",
+                    transitionDelay: `${(i % 3) * 25}ms`,
+                  }}
+                >
+                  {mark}
+                </span>
+              ))}
+            </div>
+            <div className="mt-auto">
+              <p className="display text-3xl font-bold">3 en raya</p>
+              <p className="text-sm text-muted">Contra tus amigos, a tu ritmo</p>
+            </div>
+          </Link>
         </li>
       </ul>
     </main>

@@ -1,5 +1,5 @@
 begin;
-select plan(40);
+select plan(42);
 
 -- Usuarios de prueba (el trigger crea perfil y código de amigo).
 insert into auth.users (id, email, raw_user_meta_data) values
@@ -150,6 +150,10 @@ select pg_temp.login('00000000-0000-0000-0000-10000000000a');
 select lives_ok($$ update public.profiles set avatar_parts = '{"top": "crown", "palette": "gold"}' where id = auth.uid() $$,
   'un supporter sí puede');
 select pg_temp.logout();
+select lives_ok($$ update public.profiles set supporter_tier = null where id = '00000000-0000-0000-0000-10000000000a' $$,
+  'se puede retirar el estado de supporter aunque lleve partes exclusivas');
+select is((select avatar_parts from public.profiles where id = '00000000-0000-0000-0000-10000000000a'),
+  '{}'::jsonb, 'al retirarlo se le quitan las partes exclusivas');
 
 -- Solicitud rechazada y vuelta a enviar.
 select pg_temp.login('00000000-0000-0000-0000-10000000000c');

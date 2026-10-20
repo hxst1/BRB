@@ -89,6 +89,38 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"matches": {
+                  Row: {
+                    "created_at": string,"created_by": string,"end_reason": string | null,"game": string,"id": string,"moves": (number)[],"player_o": string,"player_x": string,"status": string,"updated_at": string,"winner": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"created_by": string,"end_reason"?: string | null,"game": string,"id"?: string,"moves"?: (number)[],"player_o": string,"player_x": string,"status"?: string,"updated_at"?: string,"winner"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string,"end_reason"?: string | null,"game"?: string,"id"?: string,"moves"?: (number)[],"player_o"?: string,"player_x"?: string,"status"?: string,"updated_at"?: string,"winner"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "matches_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_player_o_fkey"
+      columns: ["player_o"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "matches_player_x_fkey"
+      columns: ["player_x"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "avatar_parts": NonNullable<Json>,"avatar_seed": number,"created_at": string,"id": string,"supporter_since": string | null,"supporter_tier": string | null,"username": string,"xp": number
@@ -109,7 +141,16 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "finish_run":
+            "apply_match_move":
+{ Args: { "end_reason"?: string,"match_id": string,"moves": (number)[],"previous_count": number,"winner"?: string }; Returns: undefined
+                           },
+"cancel_match":
+{ Args: { "match_id": string }; Returns: undefined
+                           },
+"create_match":
+{ Args: { "game": string,"opponent": string }; Returns: string
+                           },
+"finish_run":
 { Args: { "max_tile": number,"moves": string,"run_id": string,"score": number }; Returns: undefined
                            },
 "get_leaderboard":
@@ -123,8 +164,14 @@ isOneToOne: false
 "remove_friend":
 { Args: { "friend_id": string }; Returns: undefined
                            },
+"resign_match":
+{ Args: { "match_id": string }; Returns: undefined
+                           },
 "respond_friend_request":
 { Args: { "accept": boolean,"request_id": string }; Returns: undefined
+                           },
+"respond_match":
+{ Args: { "accept": boolean,"match_id": string }; Returns: undefined
                            },
 "send_friend_request":
 { Args: { "friend_code": string }; Returns: string

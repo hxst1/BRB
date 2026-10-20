@@ -244,3 +244,82 @@ body {
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * 3 en raya
+ * ------------------------------------------------------------------------- */
+
+:root {
+  --mark-x: #ff6b6b;
+  --mark-o: #22b8cf;
+}
+
+.ttt-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(6px, 2vw, 10px);
+  padding: clamp(6px, 2vw, 10px);
+  aspect-ratio: 1;
+  width: 100%;
+  border-radius: 22px;
+  background: var(--board);
+}
+
+.ttt-cell {
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--cell);
+  transition: background-color 150ms, box-shadow 150ms;
+}
+
+.ttt-cell-open {
+  cursor: pointer;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.ttt-cell-open:hover {
+  box-shadow: var(--shadow-lift);
+}
+
+.ttt-cell-win {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 3px var(--win-color, var(--ink));
+}
+
+.ttt-mark {
+  width: 78%;
+  height: 78%;
+  fill: none;
+  stroke-width: 13;
+  stroke-linecap: round;
+}
+
+.ttt-x {
+  stroke: var(--mark-x);
+}
+
+.ttt-o {
+  stroke: var(--mark-o);
+}
+
+/* 160 cubre la longitud de cualquier trazo (circunferencia ≈ 157, aspa ≈ 68). */
+.ttt-mark path,
+.ttt-mark circle {
+  stroke-dasharray: 160;
+  animation: ttt-draw 260ms ease-out backwards;
+}
+
+@keyframes ttt-draw {
+  from {
+    stroke-dashoffset: 160;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ttt-mark path,
+  .ttt-mark circle {
+    animation: none;
+  }
+}

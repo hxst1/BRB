@@ -1,15 +1,25 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { safeNext } from "@/lib/safe-next";
 import { AuthForm } from "./auth-form";
 
 export const metadata: Metadata = { title: "Entrar" };
 
-export default function SignInPage() {
+export default function SignInPage({ searchParams }: PageProps<"/entrar">) {
   return (
     <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-4 pb-24">
       <Suspense>
-        <AuthForm />
+        <AuthFormForRequest searchParams={searchParams} />
       </Suspense>
     </main>
   );
+}
+
+/**
+ * `next` se lee en el servidor para que ya venga en el HTML: si alguien envía
+ * el formulario antes de que cargue el JavaScript, vuelve igualmente a donde estaba.
+ */
+async function AuthFormForRequest({ searchParams }: { searchParams: PageProps<"/entrar">["searchParams"] }) {
+  const { next } = await searchParams;
+  return <AuthForm next={safeNext(next)} />;
 }

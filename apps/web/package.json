@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start -p 4321",
     "lint": "eslint",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@repo/avatars": "workspace:*",
@@ -29,7 +30,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4"
   },
   "packageManager": "pnpm@11.9.0"
 }

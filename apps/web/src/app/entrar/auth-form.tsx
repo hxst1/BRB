@@ -1,6 +1,5 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { useActionState, useState } from "react";
 import { authenticate, type AuthState } from "./actions";
 
@@ -22,8 +21,7 @@ const COPY = {
 const inputClass =
   "w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-base outline-none transition-colors focus:border-focus";
 
-export function AuthForm() {
-  const next = useSearchParams().get("next") ?? "/";
+export function AuthForm({ next }: { next: string }) {
   const [mode, setMode] = useState<AuthState["mode"]>("signin");
   const [state, action, pending] = useActionState(authenticate, { error: null, mode });
   const copy = COPY[mode];

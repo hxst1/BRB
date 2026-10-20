@@ -1,16 +1,13 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { safeNext } from "@/lib/safe-next";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthState = { error: string | null; mode: "signin" | "signup" };
 
 const USERNAME = /^[A-Za-z0-9_]{3,20}$/;
 
-/** Solo rutas internas, para que `next` no sirva de redirección abierta. */
-function safeNext(value: FormDataEntryValue | null): string {
-  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") ? value : "/";
-}
 
 export async function authenticate(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const mode = formData.get("mode") === "signup" ? "signup" : "signin";

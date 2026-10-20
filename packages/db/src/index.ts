@@ -10,6 +10,7 @@ export type Functions<T extends keyof PublicSchema["Functions"]> = PublicSchema[
 export type Profile = Tables<"profiles">;
 export type Friendship = Tables<"friendships">;
 export type GameRun = Tables<"game_runs">;
+export type Match = Tables<"matches">;
 export type LeaderboardEntry = Functions<"get_leaderboard">["Returns"][number];
 
 /** Resultado de `send_friend_request` (ver migración init). */

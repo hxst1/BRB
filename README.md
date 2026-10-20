@@ -71,6 +71,12 @@ El nombre aún no es definitivo. Para cambiarlo:
 Los paquetes internos usan el scope neutro `@repo/*`, así que no hay que tocarlos.
 Ningún otro fichero debe escribir el nombre a mano; si lo necesitas, importa `brand`.
 
+## Si algo no cuadra en desarrollo
+
+Si `pnpm dev` sirve estilos o componentes viejos (p. ej. un cambio en `globals.css` que no se
+aplica), la caché de Turbopack se ha quedado colgada: para el servidor, borra `apps/web/.next/dev`
+y vuelve a arrancarlo.
+
 ## Antes de producción
 
 - [ ] Activar confirmación de email (`auth.email.enable_confirmations`) y captcha (Cloudflare Turnstile)

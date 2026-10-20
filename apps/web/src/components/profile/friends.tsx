@@ -1,8 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { FriendRequestResult, Json } from "@repo/db";
 import { Avatar } from "@/components/avatar";
+import { challenge } from "@/components/tictactoe/data";
 import { createClient } from "@/lib/supabase/client";
 
 type Person = { id: string; username: string; avatar_seed: number; avatar_parts: Json };
@@ -142,6 +144,7 @@ export function Friends({ viewerId }: { viewerId: string }) {
             )}
             {friends.map((row) => (
               <PersonRow key={row.id} person={row.other}>
+                <ChallengeButton friendId={row.other.id} />
                 <ConfirmButton label="Eliminar" confirmLabel="Sí, eliminar" onConfirm={() => void remove(row.other.id)} />
               </PersonRow>
             ))}
@@ -180,6 +183,26 @@ function PersonRow({ person, children }: { person: Person; children: React.React
       <span className="min-w-0 flex-1 truncate font-medium">{person.username}</span>
       <span className="flex items-center gap-3">{children}</span>
     </li>
+  );
+}
+
+function ChallengeButton({ friendId }: { friendId: string }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  return (
+    <button
+      type="button"
+      disabled={busy}
+      onClick={async () => {
+        setBusy(true);
+        const id = await challenge(friendId);
+        if (id) router.push(`/3-en-raya/${id}`);
+        else setBusy(false);
+      }}
+      className="rounded-full bg-ink px-3 py-1 text-sm font-medium text-bg disabled:opacity-50"
+    >
+      Retar
+    </button>
   );
 }
 

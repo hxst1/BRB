@@ -23,8 +23,16 @@ set search_path = ''
 as $$
 begin
   if new.supporter_tier is null and private.is_supporter_avatar(new.avatar_parts) then
-    raise exception 'Esa parte del avatar es exclusiva de supporters'
-      using errcode = 'P0001', hint = 'supporter_only';
+    if tg_op = 'UPDATE' and old.supporter_tier is not null then
+      -- Al dejar de ser supporter se le quitan las partes exclusivas en vez de
+      -- bloquear el cambio (las listas siguen viviendo solo en is_supporter_avatar).
+      new.avatar_parts := new.avatar_parts
+        - (case when private.is_supporter_avatar(jsonb_build_object('palette', new.avatar_parts -> 'palette')) then 'palette' else '' end)
+        - (case when private.is_supporter_avatar(jsonb_build_object('top', new.avatar_parts -> 'top')) then 'top' else '' end);
+    else
+      raise exception 'Esa parte del avatar es exclusiva de supporters'
+        using errcode = 'P0001', hint = 'supporter_only';
+    end if;
   end if;
   return new;
 end;

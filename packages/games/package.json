@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./2048": "./src/game2048/index.ts",
-    "./2048/verify": "./src/game2048/verify.ts"
+    "./2048/verify": "./src/game2048/verify.ts",
+    "./tictactoe": "./src/tictactoe/index.ts"
   },
   "scripts": {
     "test": "vitest run",
