@@ -10,7 +10,9 @@
     "./tictactoe": "./src/tictactoe/index.ts",
     "./rps": "./src/rps/index.ts",
     "./level": "./src/level.ts",
-    "./pong": "./src/pong/index.ts"
+    "./pong": "./src/pong/index.ts",
+    "./snake": "./src/snake/index.ts",
+    "./snake/verify": "./src/snake/verify.ts"
   },
   "scripts": {
     "test": "vitest run",

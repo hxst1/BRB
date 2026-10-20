@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { replay } from "@repo/games/tictactoe";
-import type { Json, Match } from "@repo/db";
+import type { Functions, Json, Match } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { DailyCard } from "@/components/daily/daily-summary";
 import { LevelBar } from "@/components/level-bar";
@@ -24,7 +24,8 @@ function myTurnIn(match: Match, viewerId: string, chosen: ReadonlySet<string>): 
 
 export async function Dashboard({ viewer }: { viewer: Viewer }) {
   const supabase = await createClient();
-  const [{ data: matches }, { data: requests }, { data: standing }, { data: challenges }, { data: daily }] = await Promise.all([
+  const [{ data: matches }, { data: requests }, { data: standing }, { data: snake }, { data: challenges }, { data: daily }] =
+    await Promise.all([
     supabase
       .from("matches")
       .select(MATCH_WITH_PLAYERS)
@@ -36,6 +37,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
       .eq("status", "pending")
       .eq("addressee_id", viewer.id),
     supabase.rpc("get_my_standing", { game: "2048" }).maybeSingle(),
+    supabase.rpc("get_my_standing", { game: "snake" }).maybeSingle(),
     supabase.rpc("get_my_challenges", { max_rows: 20 }),
     supabase.rpc("get_my_daily").maybeSingle(),
   ]);
@@ -132,27 +134,30 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
 
       <div className="mt-14">
         <GameCards
-          stats2048={
-            standing?.best_score != null ? (
-              <span className="flex flex-col gap-0.5">
-                <span>
-                  Tu récord: <strong className="tabular">{formatNumber(standing.best_score)}</strong>
-                </span>
-                <span className="text-muted">
-                  {standing.global_rank}º de {standing.global_players} en el mundo
-                  {standing.friends_players > 1 && `, ${standing.friends_rank}º entre tus amigos`}
-                </span>
-              </span>
-            ) : (
-              <span className="text-muted">Aún no tienes puntuación. Juega una partida.</span>
-            )
-          }
+          stats2048={<SoloStats standing={standing} />}
+          statsSnake={<SoloStats standing={snake} />}
           statsTicTacToe={<MatchStats counts={tally.tictactoe} />}
           statsRps={<MatchStats counts={tally.rps} />}
-        statsPong={<MatchStats counts={tally.pong} />}
+          statsPong={<MatchStats counts={tally.pong} />}
         />
       </div>
     </>
+  );
+}
+
+/** Récord y puesto en un juego en solitario. */
+function SoloStats({ standing }: { standing: Functions<"get_my_standing">["Returns"][number] | null }) {
+  if (standing?.best_score == null) return <span className="text-muted">Aún no tienes puntuación. Juega una partida.</span>;
+  return (
+    <span className="flex flex-col gap-0.5">
+      <span>
+        Tu récord: <strong className="tabular">{formatNumber(standing.best_score)}</strong>
+      </span>
+      <span className="text-muted">
+        {standing.global_rank}º de {standing.global_players} en el mundo
+        {standing.friends_players > 1 && `, ${standing.friends_rank}º entre tus amigos`}
+      </span>
+    </span>
   );
 }
 

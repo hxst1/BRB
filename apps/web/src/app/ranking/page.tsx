@@ -5,7 +5,7 @@ import { getViewer } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "Ranking",
-  description: "Quién tiene más nivel, quién va mejor en el 2048 y quién gana más partidas.",
+  description: "Quién tiene más nivel, quién va mejor en el 2048 y el Snake, y quién gana más partidas.",
 };
 
 export default function RankingPage() {

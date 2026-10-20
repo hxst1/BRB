@@ -8,7 +8,7 @@ import { formatNumber } from "@/lib/format";
 import { levelFromXp } from "@repo/games/level";
 import { createClient } from "@/lib/supabase/client";
 
-type Category = "level" | "2048" | "tictactoe" | "rps" | "pong";
+type Category = "level" | "2048" | "snake" | "tictactoe" | "rps" | "pong";
 type Scope = "global" | "friends";
 type Period = "all" | "week";
 
@@ -40,6 +40,17 @@ const RANKED_GAMES: { id: GameId; label: string; icon: ReactNode; games?: string
       <span className="grid size-4 grid-cols-2 gap-px">
         {[8, 64, 512, 2048].map((value) => (
           <span key={value} className="rounded-[2px]" style={{ background: `var(--t${value})` }} />
+        ))}
+      </span>
+    ),
+  },
+  {
+    id: "snake",
+    label: "Snake",
+    icon: (
+      <span className="flex gap-px">
+        {["var(--t512)", "var(--t512)", "var(--t1024)"].map((color, i) => (
+          <span key={i} className="size-[5px] rounded-[1.5px]" style={{ background: color }} />
         ))}
       </span>
     ),
@@ -78,8 +89,9 @@ async function loadRows(category: Category, scope: Scope, period: Period): Promi
     }));
   }
 
-  if (category === "2048") {
-    const { data } = await supabase.rpc("get_leaderboard", { game: "2048", scope, period, max_rows: MAX_ROWS });
+  const ranked = RANKED_GAMES.find((g) => g.id === category);
+  if (ranked && !ranked.games) {
+    const { data } = await supabase.rpc("get_leaderboard", { game: category, scope, period, max_rows: MAX_ROWS });
     return (data ?? []).map((r) => ({
       rank: r.rank,
       userId: r.user_id,
@@ -92,7 +104,7 @@ async function loadRows(category: Category, scope: Scope, period: Period): Promi
     }));
   }
 
-  const games = RANKED_GAMES.find((g) => g.id === category)?.games ?? [category];
+  const games = ranked?.games ?? [category];
   const { data } = await supabase.rpc("get_match_leaderboard", { games, scope, period, max_rows: MAX_ROWS });
   return (data ?? []).map((r) => ({
     rank: r.rank,

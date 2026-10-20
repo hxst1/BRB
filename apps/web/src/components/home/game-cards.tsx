@@ -5,6 +5,8 @@ import type { CSSProperties, ReactNode } from "react";
 /** Tablero en miniatura para la tarjeta del 2048 (decorativo). */
 const PREVIEW_2048 = [2, 0, 8, 0, 0, 16, 64, 4, 0, 4, 128, 32, 2, 8, 512, 2048];
 const PREVIEW_TTT = ["×", "", "○", "", "×", "", "○", "", ""];
+/** Snake en miniatura (5 × 5): cuerpo de la cola a la cabeza y la manzana. */
+const PREVIEW_SNAKE = { body: [20, 15, 16, 17, 12, 7, 8], food: 4 };
 
 const ITEM = "w-44 shrink-0 snap-start sm:w-auto";
 
@@ -18,11 +20,13 @@ const ITEM = "w-44 shrink-0 snap-start sm:w-auto";
  */
 export function GameCards({
   stats2048,
+  statsSnake,
   statsTicTacToe,
   statsRps,
   statsPong,
 }: {
   stats2048?: ReactNode;
+  statsSnake?: ReactNode;
   statsTicTacToe?: ReactNode;
   statsRps?: ReactNode;
   statsPong?: ReactNode;
@@ -45,6 +49,29 @@ export function GameCards({
                   }
                 />
               ))}
+            </div>
+          </GameCard>
+        </li>
+        <li className={ITEM}>
+          <GameCard href="/snake" title="Snake" subtitle="Come sin chocar, cada vez más rápido" stats={statsSnake}>
+            <div aria-hidden className="grid grid-cols-5 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+              {Array.from({ length: 25 }, (_, i) => {
+                const segment = PREVIEW_SNAKE.body.indexOf(i);
+                const isHead = segment === PREVIEW_SNAKE.body.length - 1;
+                return (
+                  <span
+                    key={i}
+                    className={`aspect-square transition-transform duration-300 group-hover:scale-95 ${
+                      i === PREVIEW_SNAKE.food ? "scale-75 rounded-full" : "rounded-md sm:rounded-lg"
+                    }`}
+                    style={{
+                      background:
+                        i === PREVIEW_SNAKE.food ? "var(--t64)" : isHead ? "var(--t1024)" : segment >= 0 ? "var(--t512)" : "var(--cell)",
+                      transitionDelay: `${Math.max(segment, 0) * 30}ms`,
+                    }}
+                  />
+                );
+              })}
             </div>
           </GameCard>
         </li>
