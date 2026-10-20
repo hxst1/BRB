@@ -1,0 +1,21 @@
+{
+  "name": "@repo/games",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./2048": "./src/game2048/index.ts",
+    "./2048/verify": "./src/game2048/verify.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "typescript": "^5",
+    "vitest": "^4"
+  }
+}

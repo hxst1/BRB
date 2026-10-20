@@ -1,0 +1,21 @@
+{
+  "name": "@repo/avatars",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@repo/games": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "typescript": "^5",
+    "vitest": "^4"
+  }
+}

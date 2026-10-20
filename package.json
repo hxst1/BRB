@@ -1,0 +1,27 @@
+{
+  "name": "monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:status": "supabase status",
+    "db:reset": "supabase db reset",
+    "db:migration": "supabase migration new",
+    "db:types": "supabase gen types typescript --local > packages/db/src/database.types.ts",
+    "test:db": "supabase test db"
+  },
+  "devDependencies": {
+    "supabase": "^2.121.0",
+    "turbo": "^2",
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=24"
+  }
+}
