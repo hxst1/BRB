@@ -45,8 +45,11 @@ async function DailyForViewer() {
   const supabase = await createClient();
   const { data: summary } = await supabase.rpc("get_my_daily").maybeSingle();
 
-  // Un intento empezado no se retoma al volver a la página: cuenta como jugado.
-  if (!summary || summary.status === "available") {
+  // Con el intento en curso se sigue mostrando el juego: la página se refresca
+  // sola (LiveRefresh) cuando llega un mensaje o un reto, y cambiar de vista
+  // desmontaría la partida a medias. Al volver más tarde, start_daily_run ya no
+  // la devuelve y el juego avisa de que el intento está usado.
+  if (!summary || summary.status === "available" || summary.status === "playing") {
     return <Game2048Screen viewerId={viewerId} challenge={null} daily />;
   }
 

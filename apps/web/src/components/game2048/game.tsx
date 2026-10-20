@@ -57,7 +57,7 @@ async function prepareGame(signedIn: boolean, challengeId: string | null, daily:
     notice:
       error?.hint === "already_played"
         ? daily
-          ? "Ya has jugado el reto de hoy. Esta es una partida normal; vuelve mañana."
+          ? "Ya has usado el intento de hoy. Esta partida es de práctica y no cuenta; vuelve mañana."
           : "Ya jugaste este reto. Esta es una partida normal."
         : error?.hint === "rate_limited"
           ? "Has empezado muchas partidas seguidas. Esta no contará para el ranking."

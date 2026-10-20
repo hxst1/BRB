@@ -66,6 +66,19 @@ describe("lights out", () => {
     expect(state.size).toBe(7);
   });
 
+  it("resolver con la última pulsación supera el nivel", () => {
+    let state = newGame(4242);
+    const solution = solve(state);
+    // Gasta las de sobra en pares sobre una casilla (se anulan) para llegar justo.
+    const spare = budgetForLevel(1) - solution.length;
+    const filler = [0, 1, 2, 3, 4, 5, 6, 7, 8].find((c) => !solution.includes(c))!;
+    for (let i = 0; i < spare - (spare % 2); i++) state = press(state, filler);
+    for (const cell of solution) state = press(state, cell);
+    expect(state.completed).toBe(1);
+    expect(state.over).toBe(false);
+    expect(replay(4242, state.presses)).toMatchObject({ valid: true });
+  });
+
   it("al quedarse sin pulsaciones se acaba la partida", () => {
     let state = newGame(1);
     // Pulsar dos veces la misma casilla no avanza.
