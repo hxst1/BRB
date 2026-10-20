@@ -8,8 +8,9 @@ export function Landing() {
       <p className="mt-5 max-w-md text-lg text-muted">
         Partidas cortas para cuando necesitas desconectar cinco minutos. Compite en el ranking y reta a tus amigos.
       </p>
-      <h2 className="mt-16 mb-5 text-xl font-semibold">Juegos</h2>
-      <GameCards />
+      <div className="mt-16">
+        <GameCards />
+      </div>
     </>
   );
 }

@@ -120,26 +120,27 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
         )}
       </section>
 
-      <h2 className="mt-14 mb-5 text-xl font-semibold">Juegos</h2>
-      <GameCards
-        stats2048={
-          standing?.best_score != null ? (
-            <span className="flex flex-col gap-0.5">
-              <span>
-                Tu récord: <strong className="tabular">{formatNumber(standing.best_score)}</strong>
+      <div className="mt-14">
+        <GameCards
+          stats2048={
+            standing?.best_score != null ? (
+              <span className="flex flex-col gap-0.5">
+                <span>
+                  Tu récord: <strong className="tabular">{formatNumber(standing.best_score)}</strong>
+                </span>
+                <span className="text-muted">
+                  {standing.global_rank}º de {standing.global_players} en el mundo
+                  {standing.friends_players > 1 && `, ${standing.friends_rank}º entre tus amigos`}
+                </span>
               </span>
-              <span className="text-muted">
-                {standing.global_rank}º de {standing.global_players} en el mundo
-                {standing.friends_players > 1 && `, ${standing.friends_rank}º entre tus amigos`}
-              </span>
-            </span>
-          ) : (
-            <span className="text-muted">Aún no tienes puntuación. Juega una partida.</span>
-          )
-        }
-        statsTicTacToe={<MatchStats counts={tally.tictactoe} />}
-        statsRps={<MatchStats counts={tally.rps} />}
-      />
+            ) : (
+              <span className="text-muted">Aún no tienes puntuación. Juega una partida.</span>
+            )
+          }
+          statsTicTacToe={<MatchStats counts={tally.tictactoe} />}
+          statsRps={<MatchStats counts={tally.rps} />}
+        />
+      </div>
     </>
   );
 }

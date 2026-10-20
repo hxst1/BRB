@@ -46,6 +46,9 @@ Copia `apps/web/.env.example` a `apps/web/.env.local` y rellena las claves de `p
 Puertos (553xx para no chocar con otros proyectos Supabase locales):
 API `55321` · Postgres `55322` · Studio http://127.0.0.1:55323 · Mailpit (emails de auth) http://127.0.0.1:55324
 
+Los emails de Auth (p. ej. "¿Has olvidado tu contraseña?") llegan a Mailpit. En local Supabase solo
+envía 2 emails por hora (`auth.rate_limit.email_sent` en `supabase/config.toml`).
+
 Usuarios de prueba del seed (contraseña `password123`): `ana@test.local` (código `AAAAA`),
 `bob@test.local` (`BBBBB`) y `carla@test.local` (`CCCCC`). Ana y Bob son amigos y Carla le ha
 enviado una solicitud a Ana.

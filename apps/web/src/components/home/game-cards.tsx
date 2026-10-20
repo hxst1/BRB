@@ -11,8 +11,9 @@ const ITEM = "w-44 shrink-0 snap-start sm:w-auto";
  * Tarjetas de los juegos. `stats` añade debajo una línea con tus datos
  * (récord, puesto, partidas en juego) cuando hay sesión.
  *
- * En el móvil van en fila con scroll horizontal (asoma la siguiente para que
- * se vea que hay más); desde `sm`, en cuadrícula.
+ * Dos grupos: en solitario y contra amigos. En el móvil cada grupo va en fila
+ * con scroll horizontal (asoma la siguiente para que se vea que hay más);
+ * desde `sm`, en cuadrícula.
  */
 export function GameCards({
   stats2048,
@@ -24,60 +25,76 @@ export function GameCards({
   statsRps?: ReactNode;
 }) {
   return (
-    <ul className="no-scrollbar -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pt-1 pb-3 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:p-0 lg:grid-cols-3">
-      <li className={ITEM}>
-        <GameCard href="/2048" title="2048" subtitle="Tú solo contra el ranking" stats={stats2048}>
-          <div aria-hidden className="grid grid-cols-4 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
-            {PREVIEW_2048.map((value, i) => (
-              <span
-                key={i}
-                className="aspect-square rounded-md transition-transform sm:rounded-lg duration-300 group-hover:scale-95"
-                style={
-                  {
-                    background: value ? `var(--t${value})` : "var(--cell)",
-                    transitionDelay: `${(i % 4) * 25}ms`,
-                  } as CSSProperties
-                }
-              />
-            ))}
-          </div>
-        </GameCard>
-      </li>
-      <li className={ITEM}>
-        <GameCard href="/3-en-raya" title="3 en raya" subtitle="Contra tus amigos, a tu ritmo" stats={statsTicTacToe}>
-          <div aria-hidden className="grid grid-cols-3 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
-            {PREVIEW_TTT.map((mark, i) => (
-              <span
-                key={i}
-                className="display grid aspect-square place-items-center rounded-lg text-2xl font-bold sm:text-5xl transition-transform duration-300 group-hover:scale-95"
-                style={{
-                  background: "var(--cell)",
-                  color: mark === "×" ? "var(--mark-x)" : "var(--mark-o)",
-                  transitionDelay: `${(i % 3) * 25}ms`,
-                }}
-              >
-                {mark}
-              </span>
-            ))}
-          </div>
-        </GameCard>
-      </li>
-      <li className={ITEM}>
-        <GameCard href="/piedra-papel-tijera" title="Piedra, papel o tijera" subtitle="Al mejor de 3, con lagarto y Spock" stats={statsRps}>
-          <div aria-hidden className="grid aspect-[4/3] grid-cols-3 place-items-center gap-1 rounded-xl p-1 sm:aspect-square sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
-            {["🪨", "📄", "✂️", "🦎", "🖖", "🪨"].map((emoji, i) => (
-              <span
-                key={i}
-                className="grid size-full place-items-center rounded-md text-2xl transition-transform duration-300 group-hover:scale-95 sm:rounded-lg sm:text-4xl"
-                style={{ background: "var(--cell)", transitionDelay: `${(i % 3) * 25}ms` }}
-              >
-                {emoji}
-              </span>
-            ))}
-          </div>
-        </GameCard>
-      </li>
-    </ul>
+    <div className="flex flex-col gap-10">
+      <GameSection title="En solitario" description="Cuando quieras, contra el ranking.">
+        <li className={ITEM}>
+          <GameCard href="/2048" title="2048" subtitle="Tú solo contra el ranking" stats={stats2048}>
+            <div aria-hidden className="grid grid-cols-4 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+              {PREVIEW_2048.map((value, i) => (
+                <span
+                  key={i}
+                  className="aspect-square rounded-md transition-transform sm:rounded-lg duration-300 group-hover:scale-95"
+                  style={
+                    {
+                      background: value ? `var(--t${value})` : "var(--cell)",
+                      transitionDelay: `${(i % 4) * 25}ms`,
+                    } as CSSProperties
+                  }
+                />
+              ))}
+            </div>
+          </GameCard>
+        </li>
+      </GameSection>
+      <GameSection title="Contra tus amigos" description="Rétalos y jugad a vuestro ritmo.">
+        <li className={ITEM}>
+          <GameCard href="/3-en-raya" title="3 en raya" subtitle="Por turnos, cada uno cuando puede" stats={statsTicTacToe}>
+            <div aria-hidden className="grid grid-cols-3 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+              {PREVIEW_TTT.map((mark, i) => (
+                <span
+                  key={i}
+                  className="display grid aspect-square place-items-center rounded-lg text-2xl font-bold sm:text-5xl transition-transform duration-300 group-hover:scale-95"
+                  style={{
+                    background: "var(--cell)",
+                    color: mark === "×" ? "var(--mark-x)" : "var(--mark-o)",
+                    transitionDelay: `${(i % 3) * 25}ms`,
+                  }}
+                >
+                  {mark}
+                </span>
+              ))}
+            </div>
+          </GameCard>
+        </li>
+        <li className={ITEM}>
+          <GameCard href="/piedra-papel-tijera" title="Piedra, papel o tijera" subtitle="Al mejor de 3, con lagarto y Spock" stats={statsRps}>
+            <div aria-hidden className="grid aspect-[4/3] grid-cols-3 place-items-center gap-1 rounded-xl p-1 sm:aspect-square sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+              {["🪨", "📄", "✂️", "🦎", "🖖", "🪨"].map((emoji, i) => (
+                <span
+                  key={i}
+                  className="grid size-full place-items-center rounded-md text-2xl transition-transform duration-300 group-hover:scale-95 sm:rounded-lg sm:text-4xl"
+                  style={{ background: "var(--cell)", transitionDelay: `${(i % 3) * 25}ms` }}
+                >
+                  {emoji}
+                </span>
+              ))}
+            </div>
+          </GameCard>
+        </li>
+      </GameSection>
+    </div>
+  );
+}
+
+function GameSection({ title, description, children }: { title: string; description: string; children: ReactNode }) {
+  return (
+    <section>
+      <h2 className="text-xl font-semibold">{title}</h2>
+      <p className="mb-4 text-sm text-muted">{description}</p>
+      <ul className="no-scrollbar -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pt-1 pb-3 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:p-0 lg:grid-cols-3">
+        {children}
+      </ul>
+    </section>
   );
 }
 

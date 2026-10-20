@@ -8,7 +8,6 @@ export type AuthState = { error: string | null; mode: "signin" | "signup" };
 
 const USERNAME = /^[A-Za-z0-9_]{3,20}$/;
 
-
 export async function authenticate(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const mode = formData.get("mode") === "signup" ? "signup" : "signin";
   const email = String(formData.get("email") ?? "").trim();
@@ -27,6 +26,9 @@ export async function authenticate(_prev: AuthState, formData: FormData): Promis
     }
     if (password.length < 8) {
       return { mode, error: "La contraseña necesita al menos 8 caracteres." };
+    }
+    if (password !== String(formData.get("password_confirm") ?? "")) {
+      return { mode, error: "Las contraseñas no coinciden." };
     }
 
     const { data: taken } = await supabase.from("profiles").select("id").ilike("username", username).maybeSingle();

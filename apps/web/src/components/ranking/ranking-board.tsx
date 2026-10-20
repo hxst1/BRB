@@ -23,12 +23,37 @@ type Row = {
   detail?: string;
 };
 
-const CATEGORIES: { id: Category; label: string; hasPeriod: boolean }[] = [
-  { id: "level", label: "Nivel", hasPeriod: false },
-  { id: "2048", label: "2048", hasPeriod: true },
-  { id: "tictactoe", label: "3 en raya", hasPeriod: true },
-  { id: "rps", label: "Piedra, papel o tijera", hasPeriod: true },
+/** `label` va en la pestaña (hasta dos líneas); `title`, para lectores de pantalla y el tooltip. */
+const CATEGORIES: { id: Category; label: string; title: string; hasPeriod: boolean }[] = [
+  { id: "level", label: "Nivel", title: "Nivel", hasPeriod: false },
+  { id: "2048", label: "2048", title: "2048", hasPeriod: true },
+  { id: "tictactoe", label: "3 en raya", title: "3 en raya", hasPeriod: true },
+  { id: "rps", label: "Piedra, papel o tijera", title: "Piedra, papel o tijera", hasPeriod: true },
 ];
+
+function CategoryIcon({ id }: { id: Category }) {
+  switch (id) {
+    case "level":
+      return <span className="text-lg leading-none">⭐</span>;
+    case "2048":
+      return (
+        <span className="grid size-5 grid-cols-2 gap-0.5">
+          {[8, 64, 512, 2048].map((value) => (
+            <span key={value} className="rounded-[3px]" style={{ background: `var(--t${value})` }} />
+          ))}
+        </span>
+      );
+    case "tictactoe":
+      return (
+        <span className="text-base leading-none font-bold">
+          <span style={{ color: "var(--mark-x)" }}>×</span>
+          <span style={{ color: "var(--mark-o)" }}>○</span>
+        </span>
+      );
+    case "rps":
+      return <span className="text-lg leading-none">✂️</span>;
+  }
+}
 
 const MAX_ROWS = 50;
 
@@ -103,47 +128,61 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div role="tablist" aria-label="Categoría" className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-        {CATEGORIES.map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            role="tab"
-            aria-selected={category === c.id}
-            onClick={() => setCategory(c.id)}
-            className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
-              category === c.id ? "bg-ink text-bg" : "bg-surface text-muted shadow-soft hover:text-ink"
-            }`}
-          >
-            {c.label}
-          </button>
-        ))}
+      <div role="tablist" aria-label="Categoría" className="grid grid-cols-4 gap-2">
+        {CATEGORIES.map((c) => {
+          const active = category === c.id;
+          return (
+            <button
+              key={c.id}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              aria-label={c.title}
+              title={c.title}
+              onClick={() => setCategory(c.id)}
+              className={`flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-2xl px-1 py-2.5 transition-colors ${
+                active ? "bg-ink text-bg" : "bg-surface text-muted shadow-soft hover:text-ink"
+              }`}
+            >
+              <span aria-hidden className="grid h-5 place-items-center">
+                <CategoryIcon id={c.id} />
+              </span>
+              <span aria-hidden className="line-clamp-2 w-full text-center text-xs leading-tight font-medium text-balance">
+                {c.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {viewerId && (
-          <Toggle
-            label="Jugadores"
-            value={scope}
-            onChange={setScope}
-            options={[
-              { value: "global", label: "Todo el mundo" },
-              { value: "friends", label: "Amigos" },
-            ]}
-          />
-        )}
-        {hasPeriod && (
-          <Toggle
-            label="Periodo"
-            value={period}
-            onChange={setPeriod}
-            options={[
-              { value: "all", label: "Siempre" },
-              { value: "week", label: "Esta semana" },
-            ]}
-          />
-        )}
-      </div>
+      {(viewerId || hasPeriod) && (
+        <div className="flex items-center justify-between gap-2">
+          {viewerId ? (
+            <Toggle
+              label="Jugadores"
+              value={scope}
+              onChange={setScope}
+              options={[
+                { value: "global", label: "Global" },
+                { value: "friends", label: "Amigos" },
+              ]}
+            />
+          ) : (
+            <span />
+          )}
+          {hasPeriod && (
+            <Toggle
+              label="Periodo"
+              value={period}
+              onChange={setPeriod}
+              options={[
+                { value: "all", label: "Siempre" },
+                { value: "week", label: "Semana" },
+              ]}
+            />
+          )}
+        </div>
+      )}
 
       {rows === null ? (
         <div className="h-64 animate-pulse rounded-3xl bg-line/40" />
