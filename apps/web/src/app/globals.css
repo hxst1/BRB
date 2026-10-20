@@ -118,3 +118,19 @@ body {
     animation: none;
   }
 }
+
+/*
+ * Fila deslizable: se difumina un poco el lado por el que queda más contenido.
+ * Sin llegar a transparente, para que lo que hay debajo se siga leyendo.
+ */
+.fade-l {
+  mask-image: linear-gradient(to right, rgb(0 0 0 / 0.35), #000 20px);
+}
+
+.fade-r {
+  mask-image: linear-gradient(to left, rgb(0 0 0 / 0.35), #000 20px);
+}
+
+.fade-lr {
+  mask-image: linear-gradient(to right, rgb(0 0 0 / 0.35), #000 20px, #000 calc(100% - 20px), rgb(0 0 0 / 0.35));
+}

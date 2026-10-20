@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DragScrollList } from "@/components/drag-scroll";
 import type { CSSProperties, ReactNode } from "react";
 
 /** Tablero en miniatura para la tarjeta del 2048 (decorativo). */
@@ -103,9 +104,9 @@ function GameSection({ title, description, children }: { title: string; descript
     <section>
       <h2 className="text-xl font-semibold">{title}</h2>
       <p className="mb-4 text-sm text-muted">{description}</p>
-      <ul className="no-scrollbar -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pt-1 pb-3 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:p-0 lg:grid-cols-3">
+      <DragScrollList className="no-scrollbar cursor-grab active:cursor-grabbing sm:cursor-auto -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pt-1 pb-3 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:p-0 lg:grid-cols-3">
         {children}
-      </ul>
+      </DragScrollList>
     </section>
   );
 }

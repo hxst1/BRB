@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { isSupporterPart, PART_OPTIONS, resolveMonster, sanitizeParts, type MonsterParts } from "@repo/avatars";
@@ -148,7 +149,10 @@ export function AvatarEditor({
 
       {!isSupporter && (
         <p className="text-sm text-muted">
-          Las partes en gris son para quien apoya el proyecto. Muy pronto podrás conseguirlas.
+          Las partes en gris son para quien apoya el proyecto.{" "}
+          <Link href="/apoyar" className="font-medium text-ink underline underline-offset-4">
+            Cómo conseguirlas
+          </Link>
         </p>
       )}
     </section>

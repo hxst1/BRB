@@ -27,7 +27,14 @@ async function Profile() {
   return (
     <div className="flex max-w-xl flex-col gap-10">
       <div>
-        <h1 className="display mb-3 text-5xl font-bold sm:text-6xl">{viewer.username}</h1>
+        <h1 className="display mb-3 text-5xl font-bold sm:text-6xl">
+          {viewer.username}
+          {viewer.supporter_tier && (
+            <span title="Apoya el proyecto" className="ml-2 align-top text-2xl" style={{ color: "var(--t256)" }}>
+              ✦
+            </span>
+          )}
+        </h1>
         <LevelBar xp={viewer.xp} className="max-w-sm" />
       </div>
 
@@ -43,6 +50,9 @@ async function Profile() {
       <section aria-label="Cuenta" className="flex flex-col gap-3 border-t border-line pt-6">
         <Link href="/amigos" className="text-sm font-medium underline-offset-4 hover:underline">
           Amigos y código de invitación
+        </Link>
+        <Link href="/apoyar" className="text-sm font-medium underline-offset-4 hover:underline">
+          {viewer.supporter_tier ? "Gracias por apoyar ✦" : "Apoyar el proyecto"}
         </Link>
         <form action={signOut}>
           <button

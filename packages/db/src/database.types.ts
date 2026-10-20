@@ -271,6 +271,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"supporter_events": {
+                  Row: {
+                    "active": boolean,"created_at": string,"event": string,"id": string,"payload": NonNullable<Json>,"provider": string,"provider_ref": string,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "active": boolean,"created_at"?: string,"event": string,"id"?: string,"payload": NonNullable<Json>,"provider"?: string,"provider_ref": string,"user_id"?: string | null
+                  }
+                  Update: {
+                    "active"?: boolean,"created_at"?: string,"event"?: string,"id"?: string,"payload"?: NonNullable<Json>,"provider"?: string,"provider_ref"?: string,"user_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "supporter_events_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -279,6 +299,9 @@ isOneToOne: false
           Functions: {
             "apply_match_move":
 { Args: { "end_reason"?: string,"match_id": string,"moves": (number)[],"previous_count": number,"winner"?: string }; Returns: undefined
+                           },
+"apply_supporter_event":
+{ Args: { "active": boolean,"event": string,"payload": Json,"provider_ref": string,"user_id": string }; Returns: boolean
                            },
 "cancel_match":
 { Args: { "match_id": string }; Returns: undefined

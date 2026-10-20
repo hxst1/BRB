@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import type { Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
+import { useDragScroll } from "@/components/drag-scroll";
 import { formatNumber } from "@/lib/format";
 import { levelFromXp } from "@repo/games/level";
 import { createClient } from "@/lib/supabase/client";
 
-type Category = "level" | "2048" | "tictactoe" | "rps";
+type Category = "level" | "2048" | "tictactoe" | "rps" | "pong";
 type Scope = "global" | "friends";
 type Period = "all" | "week";
 
@@ -17,43 +18,46 @@ type Row = {
   username: string;
   avatarSeed: number;
   avatarParts: Json;
+  supporter: boolean;
   /** Dato principal (nivel, puntos, victorias). */
   value: string;
   /** Detalle secundario (XP, partidas, porcentaje). */
   detail?: string;
 };
 
-/** `label` va en la pestaña (hasta dos líneas); `title`, para lectores de pantalla y el tooltip. */
-const CATEGORIES: { id: Category; label: string; title: string; hasPeriod: boolean }[] = [
-  { id: "level", label: "Nivel", title: "Nivel", hasPeriod: false },
-  { id: "2048", label: "2048", title: "2048", hasPeriod: true },
-  { id: "tictactoe", label: "3 en raya", title: "3 en raya", hasPeriod: true },
-  { id: "rps", label: "Piedra, papel o tijera", title: "Piedra, papel o tijera", hasPeriod: true },
-];
+/**
+ * Juegos con ranking. Para añadir uno nuevo basta una entrada aquí: `games`
+ * son los valores de `matches.game` que suma (piedra, papel o tijera junta
+ * sus dos variantes); sin `games`, es un juego en solitario con puntuación.
+ */
+type GameId = Exclude<Category, "level">;
 
-function CategoryIcon({ id }: { id: Category }) {
-  switch (id) {
-    case "level":
-      return <span className="text-lg leading-none">⭐</span>;
-    case "2048":
-      return (
-        <span className="grid size-5 grid-cols-2 gap-0.5">
-          {[8, 64, 512, 2048].map((value) => (
-            <span key={value} className="rounded-[3px]" style={{ background: `var(--t${value})` }} />
-          ))}
-        </span>
-      );
-    case "tictactoe":
-      return (
-        <span className="text-base leading-none font-bold">
-          <span style={{ color: "var(--mark-x)" }}>×</span>
-          <span style={{ color: "var(--mark-o)" }}>○</span>
-        </span>
-      );
-    case "rps":
-      return <span className="text-lg leading-none">✂️</span>;
-  }
-}
+const RANKED_GAMES: { id: GameId; label: string; icon: ReactNode; games?: string[] }[] = [
+  {
+    id: "2048",
+    label: "2048",
+    icon: (
+      <span className="grid size-4 grid-cols-2 gap-px">
+        {[8, 64, 512, 2048].map((value) => (
+          <span key={value} className="rounded-[2px]" style={{ background: `var(--t${value})` }} />
+        ))}
+      </span>
+    ),
+  },
+  {
+    id: "tictactoe",
+    label: "3 en raya",
+    games: ["tictactoe"],
+    icon: (
+      <span className="font-bold">
+        <span style={{ color: "var(--mark-x)" }}>×</span>
+        <span style={{ color: "var(--mark-o)" }}>○</span>
+      </span>
+    ),
+  },
+  { id: "rps", label: "Piedra, papel o tijera", games: ["rps", "rpsls"], icon: "✂️" },
+  { id: "pong", label: "Pong", games: ["pong"], icon: "🏓" },
+];
 
 const MAX_ROWS = 50;
 
@@ -68,6 +72,7 @@ async function loadRows(category: Category, scope: Scope, period: Period): Promi
       username: r.username,
       avatarSeed: r.avatar_seed,
       avatarParts: r.avatar_parts,
+      supporter: r.supporter_tier !== null,
       value: `Nivel ${levelFromXp(r.xp).level}`,
       detail: `${formatNumber(r.xp)} XP`,
     }));
@@ -81,12 +86,13 @@ async function loadRows(category: Category, scope: Scope, period: Period): Promi
       username: r.username,
       avatarSeed: r.avatar_seed,
       avatarParts: r.avatar_parts,
+      supporter: r.supporter_tier !== null,
       value: formatNumber(r.score),
       detail: "puntos",
     }));
   }
 
-  const games = category === "tictactoe" ? ["tictactoe"] : ["rps", "rpsls"];
+  const games = RANKED_GAMES.find((g) => g.id === category)?.games ?? [category];
   const { data } = await supabase.rpc("get_match_leaderboard", { games, scope, period, max_rows: MAX_ROWS });
   return (data ?? []).map((r) => ({
     rank: r.rank,
@@ -94,6 +100,7 @@ async function loadRows(category: Category, scope: Scope, period: Period): Promi
     username: r.username,
     avatarSeed: r.avatar_seed,
     avatarParts: r.avatar_parts,
+    supporter: r.supporter_tier !== null,
     value: r.wins === 1 ? "1 victoria" : `${formatNumber(r.wins)} victorias`,
     detail: `${r.played} ${r.played === 1 ? "partida" : "partidas"} · ${Math.round((r.wins / r.played) * 100)} %`,
   }));
@@ -101,11 +108,13 @@ async function loadRows(category: Category, scope: Scope, period: Period): Promi
 
 export function RankingBoard({ viewerId }: { viewerId: string | null }) {
   const [category, setCategory] = useState<Category>("level");
+  // Al volver a "Juegos" se recupera el último juego elegido.
+  const [lastGame, setLastGame] = useState<GameId>("2048");
   const [scope, setScope] = useState<Scope>("global");
   const [period, setPeriod] = useState<Period>("all");
   const [result, setResult] = useState<{ key: string; rows: Row[] } | null>(null);
 
-  const hasPeriod = CATEGORIES.find((c) => c.id === category)!.hasPeriod;
+  const hasPeriod = category !== "level";
   const effectivePeriod = hasPeriod ? period : "all";
   const key = `${category}:${scope}:${effectivePeriod}`;
 
@@ -128,32 +137,26 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div role="tablist" aria-label="Categoría" className="grid grid-cols-4 gap-2">
-        {CATEGORIES.map((c) => {
-          const active = category === c.id;
-          return (
-            <button
-              key={c.id}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              aria-label={c.title}
-              title={c.title}
-              onClick={() => setCategory(c.id)}
-              className={`flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-2xl px-1 py-2.5 transition-colors ${
-                active ? "bg-ink text-bg" : "bg-surface text-muted shadow-soft hover:text-ink"
-              }`}
-            >
-              <span aria-hidden className="grid h-5 place-items-center">
-                <CategoryIcon id={c.id} />
-              </span>
-              <span aria-hidden className="line-clamp-2 w-full text-center text-xs leading-tight font-medium text-balance">
-                {c.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      <Toggle
+        label="Ranking de"
+        value={category === "level" ? "level" : "games"}
+        onChange={(value) => setCategory(value === "level" ? "level" : lastGame)}
+        options={[
+          { value: "level", label: "⭐ Nivel" },
+          { value: "games", label: "Juegos" },
+        ]}
+        wide
+      />
+
+      {category !== "level" && (
+        <GamePicker
+          value={category}
+          onChange={(id) => {
+            setCategory(id);
+            setLastGame(id);
+          }}
+        />
+      )}
 
       {(viewerId || hasPeriod) && (
         <div className="flex items-center justify-between gap-2">
@@ -220,6 +223,109 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
   );
 }
 
+/**
+ * Fila de juegos. Se puede deslizar (dedo, rueda o arrastrando con el ratón),
+ * cambiar con las flechas ‹ › o con el teclado (← → Inicio Fin, como unas
+ * pestañas). El juego elegido siempre queda a la vista.
+ */
+function GamePicker({ value, onChange }: { value: GameId; onChange: (id: GameId) => void }) {
+  const list = useRef<HTMLDivElement>(null);
+  // Qué lados tienen más juegos por ver (solo esos se difuminan).
+  const [edges, setEdges] = useState({ left: false, right: false });
+  const index = RANKED_GAMES.findIndex((game) => game.id === value);
+  const last = RANKED_GAMES.length - 1;
+
+  useEffect(() => {
+    list.current
+      ?.querySelector(`[data-game="${value}"]`)
+      // Centrado: así nunca queda bajo el difuminado de los bordes.
+      ?.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+  }, [value]);
+
+  function updateEdges() {
+    const element = list.current;
+    if (!element) return;
+    const left = element.scrollLeft > 4;
+    const right = element.scrollLeft + element.clientWidth < element.scrollWidth - 4;
+    setEdges((current) => (current.left === left && current.right === right ? current : { left, right }));
+  }
+
+  useEffect(() => {
+    updateEdges();
+    window.addEventListener("resize", updateEdges);
+    return () => window.removeEventListener("resize", updateEdges);
+  }, []);
+
+  function select(position: number, focus: boolean) {
+    const game = RANKED_GAMES[position];
+    if (!game) return;
+    onChange(game.id);
+    if (focus) list.current?.querySelector<HTMLElement>(`[data-game="${game.id}"]`)?.focus();
+  }
+
+  function onKeyDown(event: KeyboardEvent) {
+    const next = { ArrowRight: index === last ? 0 : index + 1, ArrowLeft: index === 0 ? last : index - 1, Home: 0, End: last }[event.key];
+    if (next === undefined) return;
+    event.preventDefault();
+    select(next, true);
+  }
+
+  const dragHandlers = useDragScroll(list);
+
+  const arrow = "grid size-9 shrink-0 place-items-center rounded-full bg-surface text-lg shadow-soft transition-opacity disabled:opacity-30";
+
+  return (
+    <div className="flex items-center gap-2">
+      <button type="button" aria-label="Juego anterior" disabled={index === 0} onClick={() => select(index - 1, false)} className={arrow}>
+        <Chevron direction="left" />
+      </button>
+      <div
+        ref={list}
+        role="tablist"
+        aria-label="Juego"
+        onKeyDown={onKeyDown}
+        {...dragHandlers}
+        onScroll={updateEdges}
+        className={`no-scrollbar ${edges.left && edges.right ? "fade-lr" : edges.left ? "fade-l" : edges.right ? "fade-r" : ""} flex min-w-0 flex-1 snap-x gap-2 overflow-x-auto py-1 select-none cursor-grab active:cursor-grabbing`}
+      >
+        {RANKED_GAMES.map((game) => {
+          const active = game.id === value;
+          return (
+            <button
+              key={game.id}
+              data-game={game.id}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              tabIndex={active ? 0 : -1}
+              onClick={() => onChange(game.id)}
+              className={`flex shrink-0 snap-center items-center gap-2 rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
+                active ? "bg-ink text-bg" : "bg-surface text-muted shadow-soft hover:text-ink"
+              }`}
+            >
+              <span aria-hidden className="grid place-items-center leading-none">
+                {game.icon}
+              </span>
+              {game.label}
+            </button>
+          );
+        })}
+      </div>
+      <button type="button" aria-label="Juego siguiente" disabled={index === last} onClick={() => select(index + 1, false)} className={arrow}>
+        <Chevron direction="right" />
+      </button>
+    </div>
+  );
+}
+
+function Chevron({ direction }: { direction: "left" | "right" }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d={direction === "left" ? "M10 3 5 8l5 5" : "M6 3l5 5-5 5"} />
+    </svg>
+  );
+}
+
 /** Los tres primeros, con sus monstruos (el primero en el centro y más alto). */
 function Podium({ rows, viewerId }: { rows: Row[]; viewerId: string | null }) {
   const order = [rows[1], rows[0], rows[2]].filter((row): row is Row => row !== undefined);
@@ -235,6 +341,7 @@ function Podium({ rows, viewerId }: { rows: Row[]; viewerId: string | null }) {
             <div className="flex w-full min-w-0 flex-col items-center text-center">
               <span className={`w-full truncate font-semibold ${row.userId === viewerId ? "underline underline-offset-4" : ""}`}>
                 {row.username}
+                {row.supporter && <SupporterMark />}
               </span>
               <span className="tabular text-sm">{row.value}</span>
               {row.detail && <span className="text-xs text-muted">{row.detail}</span>}
@@ -260,6 +367,7 @@ function RankRow({ row, isViewer }: { row: Row; isViewer: boolean }) {
       <Avatar seed={row.avatarSeed} parts={row.avatarParts} size={34} />
       <span className="min-w-0 flex-1 truncate font-medium">
         {row.username}
+        {row.supporter && <SupporterMark />}
         {isViewer && <span className="ml-2 text-xs font-normal text-muted">tú</span>}
       </span>
       <span className="flex flex-col items-end">
@@ -275,14 +383,17 @@ function Toggle<T extends string>({
   value,
   onChange,
   options,
+  wide = false,
 }: {
   label: string;
   value: T;
   onChange: (value: T) => void;
   options: { value: T; label: string }[];
+  /** Ocupa todo el ancho, con las opciones repartidas. */
+  wide?: boolean;
 }) {
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex rounded-full bg-line/60 p-1">
+    <div role="radiogroup" aria-label={label} className={`${wide ? "grid grid-flow-col auto-cols-fr" : "inline-flex"} rounded-full bg-line/60 p-1`}>
       {options.map((option) => (
         <button
           key={option.value}
@@ -290,7 +401,7 @@ function Toggle<T extends string>({
           role="radio"
           aria-checked={value === option.value}
           onClick={() => onChange(option.value)}
-          className={`rounded-full px-3 py-1 text-sm transition-colors ${
+          className={`rounded-full px-3 ${wide ? "py-2" : "py-1"} text-sm transition-colors ${
             value === option.value ? "bg-surface font-medium shadow-soft" : "text-muted hover:text-ink"
           }`}
         >
@@ -298,5 +409,13 @@ function Toggle<T extends string>({
         </button>
       ))}
     </div>
+  );
+}
+
+function SupporterMark() {
+  return (
+    <span title="Apoya el proyecto" aria-label="(apoya el proyecto)" className="ml-1 text-[0.8em]" style={{ color: "var(--t256)" }}>
+      ✦
+    </span>
   );
 }

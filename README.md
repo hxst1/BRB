@@ -117,4 +117,7 @@ y vuelve a arrancarlo.
 - [ ] Claves VAPID propias (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) y
       secretos de Vault `push_webhook_url` (URL pública de `/api/push/dispatch`) y `push_webhook_secret`
       (igual que `PUSH_WEBHOOK_SECRET`).
+- [ ] Apoyos: crear el producto en Lemon Squeezy, poner su enlace de pago en
+      `NEXT_PUBLIC_SUPPORTER_CHECKOUT_URL` y un webhook a `/api/webhooks/lemonsqueezy` (eventos de pedido y
+      suscripción) con su secreto en `LEMONSQUEEZY_WEBHOOK_SECRET`.
 - [ ] Tarea periódica para limpiar `private.friend_request_attempts` y partidas abandonadas antiguas.
