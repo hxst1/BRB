@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { replay, type Mark } from "@repo/games/tictactoe";
 import type { Mood } from "@repo/avatars";
 import type { Match } from "@repo/db";
-import { Avatar } from "@/components/avatar";
+import { Avatar } from "@repo/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
 import { TicTacToeBoard } from "./board";
 import { challenge, fetchMatch, markOf, type MatchWithPlayers, type Player } from "./data";

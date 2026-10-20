@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { Avatar } from "@/components/avatar";
+import { Avatar } from "@repo/ui/avatar";
 import { fetchFriends, type Friend } from "@/lib/friends";
 import { MATCH_GAMES, matchHref, type MatchGame } from "@/lib/games";
 import { createClient } from "@/lib/supabase/client";

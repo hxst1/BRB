@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { FriendRequestResult, Json } from "@repo/db";
-import { Avatar } from "@/components/avatar";
+import { Avatar } from "@repo/ui/avatar";
 import { ChallengeMenu } from "@/components/challenge-menu";
 import { createClient } from "@/lib/supabase/client";
 

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { isSupporterPart, PART_OPTIONS, resolveMonster, sanitizeParts, type MonsterParts } from "@repo/avatars";
 import { randomSeed } from "@repo/games";
 import type { Json } from "@repo/db";
-import { Avatar } from "@/components/avatar";
+import { Avatar } from "@repo/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
 
 type Slot = "body" | "palette" | "eyes" | "mouth" | "top";

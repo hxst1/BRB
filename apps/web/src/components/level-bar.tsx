@@ -1,4 +1,4 @@
-import { levelFromXp } from "@/lib/level";
+import { levelFromXp } from "@repo/games/level";
 
 export function LevelBar({ xp, className = "", compact = false }: { xp: number; className?: string; compact?: boolean }) {
   const { level, xpIntoLevel, xpForNext, progress } = levelFromXp(xp);

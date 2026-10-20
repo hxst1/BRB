@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { Functions } from "@repo/db";
-import { Avatar } from "@/components/avatar";
+import { Avatar } from "@repo/ui/avatar";
 
 export type ConversationSummary = Functions<"get_conversations">["Returns"][number];
 

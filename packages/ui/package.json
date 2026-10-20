@@ -1,0 +1,26 @@
+{
+  "name": "@repo/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./avatar": "./src/avatar.tsx",
+    "./board-2048": "./src/board-2048.tsx",
+    "./theme.css": "./src/theme.css"
+  },
+  "scripts": {
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@repo/avatars": "workspace:*",
+    "@repo/games": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19"
+  },
+  "devDependencies": {
+    "@repo/db": "workspace:*",
+    "@types/react": "^19",
+    "typescript": "^5"
+  }
+}

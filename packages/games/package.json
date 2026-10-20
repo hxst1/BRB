@@ -8,7 +8,8 @@
     "./2048": "./src/game2048/index.ts",
     "./2048/verify": "./src/game2048/verify.ts",
     "./tictactoe": "./src/tictactoe/index.ts",
-    "./rps": "./src/rps/index.ts"
+    "./rps": "./src/rps/index.ts",
+    "./level": "./src/level.ts"
   },
   "scripts": {
     "test": "vitest run",

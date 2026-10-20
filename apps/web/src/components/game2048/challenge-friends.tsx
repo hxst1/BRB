@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Avatar } from "@/components/avatar";
+import { Avatar } from "@repo/ui/avatar";
 import { formatNumber } from "@/lib/format";
 import { fetchFriends, type Friend } from "@/lib/friends";
 import { createClient } from "@/lib/supabase/client";

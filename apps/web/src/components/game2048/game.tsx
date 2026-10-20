@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { randomSeed } from "@repo/games";
 import { maxTile, move, newGame, type Direction, type Game2048State } from "@repo/games/2048";
-import { Avatar } from "@/components/avatar";
+import { Avatar } from "@repo/ui/avatar";
 import { formatNumber } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
-import { Board } from "./board";
+import { Board } from "@repo/ui/board-2048";
 import { ChallengeFriends } from "./challenge-friends";
 import type { ActiveChallenge } from "./screen";
 

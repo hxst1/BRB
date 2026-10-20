@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { replay } from "@repo/games/tictactoe";
 import type { Json, Match } from "@repo/db";
-import { Avatar } from "@/components/avatar";
+import { Avatar } from "@repo/ui/avatar";
 import { LevelBar } from "@/components/level-bar";
 import { formatNumber } from "@/lib/format";
 import { matchGame, matchHref } from "@/lib/games";

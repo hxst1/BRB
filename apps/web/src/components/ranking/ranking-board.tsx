@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import type { Json } from "@repo/db";
-import { Avatar } from "@/components/avatar";
+import { Avatar } from "@repo/ui/avatar";
 import { formatNumber } from "@/lib/format";
-import { levelFromXp } from "@/lib/level";
+import { levelFromXp } from "@repo/games/level";
 import { createClient } from "@/lib/supabase/client";
 
 type Category = "level" | "2048" | "tictactoe" | "rps";

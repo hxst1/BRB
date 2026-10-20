@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { Json } from "@repo/db";
 import { signOut } from "@/app/entrar/actions";
-import { Avatar } from "@/components/avatar";
+import { Avatar } from "@repo/ui/avatar";
 import { LevelBar } from "@/components/level-bar";
 
 /**

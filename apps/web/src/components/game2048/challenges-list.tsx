@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Avatar } from "@/components/avatar";
+import { Avatar } from "@repo/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
 import { describeChallenge as describe, type Challenge } from "./challenge-text";
 

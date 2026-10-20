@@ -13,6 +13,7 @@
   "dependencies": {
     "@repo/avatars": "workspace:*",
     "@repo/brand": "workspace:*",
+    "@repo/ui": "workspace:*",
     "@repo/games": "workspace:*",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.118.0",

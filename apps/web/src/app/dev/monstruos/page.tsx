@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PART_OPTIONS, type MonsterParts } from "@repo/avatars";
-import { Avatar } from "@/components/avatar";
+import { Avatar } from "@repo/ui/avatar";
 
 export const metadata: Metadata = { title: "Monstruos" };
 

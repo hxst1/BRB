@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import type { Match, Tables } from "@repo/db";
-import { Avatar } from "@/components/avatar";
+import { Avatar } from "@repo/ui/avatar";
 import type { Challenge } from "@/components/game2048/challenge-text";
 import { ChallengeMenu } from "@/components/challenge-menu";
 import type { Friend } from "@/lib/friends";

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { LeaderboardEntry } from "@repo/db";
-import { Avatar } from "@/components/avatar";
+import { Avatar } from "@repo/ui/avatar";
 import { formatNumber } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
 

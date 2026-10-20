@@ -6,10 +6,12 @@ Minijuegos rápidos para procrastinar: rankings globales, amigos por código, re
 
 ```
 apps/web        Next.js (App Router) + PWA
+apps/extension  Extensión de Chrome (WXT + React)
 packages/brand  Nombre, textos y colores de la marca (única fuente de verdad)
 packages/games  Lógica pura de los juegos en TS, compartida por cliente y servidor
 packages/db     Tipos generados del esquema de Supabase
 packages/avatars Monstruos procedurales (SVG puro, sin React)
+packages/ui     Tema CSS y componentes compartidos por la web y la extensión
 supabase/       Config, migraciones, seed y tests de BD
 ```
 
@@ -73,6 +75,21 @@ El nombre aún no es definitivo. Para cambiarlo:
 
 Los paquetes internos usan el scope neutro `@repo/*`, así que no hay que tocarlos.
 Ningún otro fichero debe escribir el nombre a mano; si lo necesitas, importa `brand`.
+
+## Extensión de Chrome
+
+Popup con tus pendientes, accesos a los juegos y un 2048 que cuenta para el ranking; el icono muestra
+cuántas cosas tienes pendientes (se consulta cada 3 minutos).
+
+```sh
+cp apps/extension/.env.example apps/extension/.env   # mismos valores que la web
+pnpm --filter extension dev    # abre Chrome con la extensión cargada y recarga al guardar
+pnpm --filter extension build  # genera apps/extension/.output/chrome-mv3
+pnpm --filter extension zip    # zip listo para la Chrome Web Store
+```
+
+Para cargarla a mano: `chrome://extensions` → modo desarrollador → *Cargar descomprimida* →
+`apps/extension/.output/chrome-mv3`. El nombre sale de `@repo/brand` como en la web.
 
 ## PWA y notificaciones
 

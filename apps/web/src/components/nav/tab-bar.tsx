@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import type { Json } from "@repo/db";
-import { Avatar } from "@/components/avatar";
+import { Avatar } from "@repo/ui/avatar";
 import { Badge } from "./badge";
 import { ChatIcon, FriendsIcon, HomeIcon, TrophyIcon } from "./icons";
 import { isActive, NAV_ITEMS, type NavCounts } from "./nav-items";
