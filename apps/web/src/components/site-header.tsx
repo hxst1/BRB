@@ -1,34 +1,43 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { brand } from "@repo/brand";
-import { signOut } from "@/app/entrar/actions";
-import { Avatar } from "@/components/avatar";
+import { LiveRefresh } from "@/components/live-refresh";
+import { AccountMenu } from "@/components/nav/account-menu";
+import { MainNav } from "@/components/nav/main-nav";
+import type { NavCounts } from "@/components/nav/nav-items";
+import { TabBar } from "@/components/nav/tab-bar";
 import { getViewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
-/** Partidas en las que te toca, retos (3 en raya y 2048) y solicitudes de amistad sin responder. */
-async function getPendingCount(): Promise<number> {
+/** Avisos de cada sección: lo pendiente en Inicio, los mensajes en Chat y las solicitudes en Amigos. */
+async function getNavCounts(): Promise<NavCounts> {
   const supabase = await createClient();
-  const { data } = await supabase.rpc("get_pending_counts").maybeSingle();
-  return data ? data.my_turn + data.match_invites + data.friend_requests + data.challenges : 0;
+  const [{ data: pending }, { data: unread }] = await Promise.all([
+    supabase.rpc("get_pending_counts").maybeSingle(),
+    supabase.rpc("get_unread_messages"),
+  ]);
+  return {
+    home: pending ? pending.my_turn + pending.match_invites + pending.challenges : 0,
+    chat: unread ?? 0,
+    friends: pending?.friend_requests ?? 0,
+  };
 }
 
 export function SiteHeader() {
   return (
-    <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
+    <header className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
       <Link href="/" className="display text-2xl font-bold">
         {brand.name}
       </Link>
-      <Suspense fallback={<span className="h-8 w-24" />}>
-        <ViewerMenu />
+      <Suspense fallback={<span className="h-9 w-24" />}>
+        <Navigation />
       </Suspense>
     </header>
   );
 }
 
-async function ViewerMenu() {
+async function Navigation() {
   const viewer = await getViewer();
-  const pending = viewer ? await getPendingCount() : 0;
 
   if (!viewer) {
     return (
@@ -38,35 +47,20 @@ async function ViewerMenu() {
     );
   }
 
+  const counts = await getNavCounts();
   return (
-    <div className="flex items-center gap-5">
-      <span className="relative">
-        <Link
-          href="/perfil"
-          className="flex items-center gap-2 rounded-full bg-surface py-1 pr-4 pl-1 text-sm font-medium shadow-soft transition-shadow hover:shadow-lift"
-        >
-          <Avatar seed={viewer.avatar_seed} parts={viewer.avatar_parts} size={32} />
-          {viewer.username}
-        </Link>
-        {pending > 0 && (
-          <Link
-            href="/"
-            aria-label={pending === 1 ? "1 cosa pendiente" : `${pending} cosas pendientes`}
-            className="tabular absolute -top-1.5 -right-1.5 grid h-5 min-w-5 place-items-center rounded-full px-1 text-[11px] font-bold text-white ring-2 ring-bg"
-            style={{ background: "var(--mark-x)" }}
-          >
-            {pending}
-          </Link>
-        )}
-      </span>
-      <form action={signOut}>
-        <button
-          type="submit"
-          className="rounded-full border border-line px-3.5 py-1.5 text-sm text-muted transition-colors hover:border-muted hover:text-ink"
-        >
-          Salir
-        </button>
-      </form>
-    </div>
+    <>
+      <LiveRefresh viewerId={viewer.id} />
+      <div className="flex items-center gap-3">
+        <MainNav counts={counts} />
+        <AccountMenu
+          username={viewer.username}
+          avatarSeed={viewer.avatar_seed}
+          avatarParts={viewer.avatar_parts}
+          xp={viewer.xp}
+        />
+      </div>
+      <TabBar counts={counts} avatarSeed={viewer.avatar_seed} avatarParts={viewer.avatar_parts} />
+    </>
   );
 }

@@ -56,7 +56,7 @@ export function ChallengeFriends({
       {friends?.length === 0 && (
         <p className="text-sm text-muted">
           Aún no tienes amigos.{" "}
-          <Link href="/perfil" className="font-medium text-ink underline underline-offset-4">
+          <Link href="/amigos" className="font-medium text-ink underline underline-offset-4">
             Añade a alguien con su código
           </Link>
           .

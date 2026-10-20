@@ -1,10 +1,12 @@
+import { isValidChoice, replay as replayRps, type Variant } from "@repo/games/rps";
 import { play, replay, type MoveError } from "@repo/games/tictactoe";
+import type { Match } from "@repo/db";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClientForRequest } from "@/lib/supabase/server";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Código que lanza apply_match_move cuando otra jugada se adelantó. */
+/** Código que lanzan apply_match_move / submit_match_choice cuando la partida cambió o no está en juego. */
 const MATCH_CHANGED = "P0002";
 
 const MOVE_ERRORS: Record<MoveError, string> = {
@@ -14,23 +16,26 @@ const MOVE_ERRORS: Record<MoveError, string> = {
   occupied: "Esa casilla ya está ocupada",
 };
 
-/** Valida una jugada con la lógica compartida y la guarda. */
+type MatchRow = Pick<Match, "id" | "game" | "status" | "moves" | "player_x" | "player_o">;
+
+const json = (body: unknown, status = 200) => Response.json(body, { status });
+const serverError = (context: string, error: unknown) => {
+  console.error(`move: ${context}`, error);
+  return json({ error: "Error interno" }, 500);
+};
+
+/**
+ * Valida una jugada con la lógica compartida y la guarda.
+ * 3 en raya: `{ cell }`. Piedra, papel o tijera: `{ choice }` (índice de la opción).
+ */
 export async function POST(request: Request, { params }: RouteContext<"/api/matches/[id]/move">) {
   const { id } = await params;
-  if (!UUID.test(id)) {
-    return Response.json({ error: "Partida no encontrada" }, { status: 404 });
-  }
+  if (!UUID.test(id)) return json({ error: "Partida no encontrada" }, 404);
 
-  const body: unknown = await request.json().catch(() => null);
-  const cell = (body as { cell?: unknown } | null)?.cell;
-  if (typeof cell !== "number") {
-    return Response.json({ error: "Casilla no válida" }, { status: 400 });
-  }
+  const body = (await request.json().catch(() => null)) as { cell?: unknown; choice?: unknown } | null;
 
   const { supabase, userId } = await createClientForRequest(request);
-  if (!userId) {
-    return Response.json({ error: "Hay que iniciar sesión" }, { status: 401 });
-  }
+  if (!userId) return json({ error: "Hay que iniciar sesión" }, 401);
 
   // Con el cliente del usuario: RLS garantiza que juega en esta partida.
   const { data: match, error: matchError } = await supabase
@@ -39,27 +44,24 @@ export async function POST(request: Request, { params }: RouteContext<"/api/matc
     .eq("id", id)
     .maybeSingle();
 
-  if (matchError) {
-    console.error("move: error leyendo la partida", matchError);
-    return Response.json({ error: "Error interno" }, { status: 500 });
-  }
-  if (!match || match.game !== "tictactoe") {
-    return Response.json({ error: "Partida no encontrada" }, { status: 404 });
-  }
-  if (match.status !== "active") {
-    return Response.json({ error: MOVE_ERRORS.game_over }, { status: 409 });
-  }
+  if (matchError) return serverError("error leyendo la partida", matchError);
+  if (!match) return json({ error: "Partida no encontrada" }, 404);
+  if (match.status !== "active") return json({ error: MOVE_ERRORS.game_over }, 409);
+
+  if (match.game === "tictactoe") return playTicTacToe(match, userId, body?.cell);
+  if (match.game === "rps" || match.game === "rpsls") return playRps(match, match.game, userId, body?.choice);
+  return json({ error: "Partida no encontrada" }, 404);
+}
+
+async function playTicTacToe(match: MatchRow, userId: string, cell: unknown) {
+  if (typeof cell !== "number") return json({ error: "Casilla no válida" }, 400);
 
   const state = replay(match.moves);
-  if (!state) {
-    console.error("move: la partida guardada no es válida", match.id);
-    return Response.json({ error: "Error interno" }, { status: 500 });
-  }
+  if (!state) return serverError("la partida guardada no es válida", match.id);
 
-  const mark = match.player_x === userId ? "x" : "o";
-  const result = play(state, mark, cell);
+  const result = play(state, match.player_x === userId ? "x" : "o", cell);
   if (!result.ok) {
-    return Response.json({ error: MOVE_ERRORS[result.error] }, { status: result.error === "not_your_turn" ? 409 : 400 });
+    return json({ error: MOVE_ERRORS[result.error] }, result.error === "not_your_turn" ? 409 : 400);
   }
 
   const next = result.state;
@@ -70,14 +72,49 @@ export async function POST(request: Request, { params }: RouteContext<"/api/matc
     end_reason: next.winner ? "line" : next.draw ? "draw" : undefined,
     winner: next.winner ?? undefined,
   });
+  if (error?.code === MATCH_CHANGED) return json({ error: "La partida ha cambiado, recarga" }, 409);
+  if (error) return serverError("error guardando la jugada", error);
 
-  if (error?.code === MATCH_CHANGED) {
-    return Response.json({ error: "La partida ha cambiado, recarga" }, { status: 409 });
-  }
-  if (error) {
-    console.error("move: error guardando la jugada", error);
-    return Response.json({ error: "Error interno" }, { status: 500 });
-  }
+  return json({ moves: next.moves });
+}
 
-  return Response.json({ moves: next.moves });
+/**
+ * Guarda la elección (oculta para el rival). Si el rival ya había elegido,
+ * resuelve la ronda y la publica en la partida.
+ */
+async function playRps(match: MatchRow, variant: Variant, userId: string, choice: unknown) {
+  if (typeof choice !== "number" || !isValidChoice(variant, choice)) {
+    return json({ error: "Elección no válida" }, 400);
+  }
+  if (!replayRps(variant, match.moves)) return serverError("la partida guardada no es válida", match.id);
+
+  const admin = createAdminClient();
+  const { data: rivalChoice, error } = await admin.rpc("submit_match_choice", {
+    match_id: match.id,
+    player_id: userId,
+    choice,
+  });
+  if (error?.hint === "already_chosen") return json({ error: "Ya has elegido en esta ronda" }, 409);
+  if (error?.code === MATCH_CHANGED) return json({ error: "La partida ha cambiado, recarga" }, 409);
+  if (error) return serverError("error guardando la elección", error);
+
+  if (rivalChoice === null) return json({ status: "waiting" });
+
+  // submit_match_choice bloquea la partida, así que solo la segunda elección
+  // de la ronda llega aquí con la del rival: no hay dos resoluciones a la vez.
+  const iAmX = match.player_x === userId;
+  const moves = [...match.moves, iAmX ? choice : rivalChoice, iAmX ? rivalChoice : choice];
+  const next = replayRps(variant, moves);
+  if (!next) return serverError("ronda no válida", { match: match.id, moves });
+
+  const { error: applyError } = await admin.rpc("apply_match_move", {
+    match_id: match.id,
+    previous_count: match.moves.length,
+    moves,
+    end_reason: next.finished ? (next.winner ? "rounds" : "draw") : undefined,
+    winner: next.winner ?? undefined,
+  });
+  if (applyError) return serverError("error publicando la ronda", applyError);
+
+  return json({ status: "resolved", moves });
 }

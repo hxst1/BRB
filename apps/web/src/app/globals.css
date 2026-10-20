@@ -69,6 +69,12 @@
 
 body {
   background: var(--bg);
+  /* En el móvil, sitio para la barra de pestañas flotante. */
+  &:has(.tab-bar) {
+    @media (width < 40rem) {
+      padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+    }
+  }
   color: var(--ink);
   font-family: var(--font-sans);
   font-variation-settings: "opsz" 14;
@@ -256,7 +262,9 @@ body {
 
 .ttt-board {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* Filas y columnas fijas: si no, la fila con una marca crece por el tamaño del SVG. */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
   gap: clamp(6px, 2vw, 10px);
   padding: clamp(6px, 2vw, 10px);
   aspect-ratio: 1;
@@ -268,6 +276,9 @@ body {
 .ttt-cell {
   display: grid;
   place-items: center;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   border-radius: 16px;
   background: var(--cell);
   transition: background-color 150ms, box-shadow 150ms;
@@ -320,6 +331,34 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .ttt-mark path,
   .ttt-mark circle {
+    animation: none;
+  }
+}
+
+/* Scroll horizontal sin barra visible (se sigue pudiendo deslizar y usar el teclado). */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Piedra, papel o tijera: las elecciones aparecen con un pequeño salto. */
+.rps-reveal {
+  display: inline-block;
+  animation: rps-reveal 420ms cubic-bezier(0.3, 1.6, 0.5, 1) backwards;
+}
+
+@keyframes rps-reveal {
+  from {
+    transform: scale(0.2) rotate(-20deg);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rps-reveal {
     animation: none;
   }
 }

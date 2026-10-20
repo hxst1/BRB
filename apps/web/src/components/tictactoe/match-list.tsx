@@ -5,30 +5,45 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { fetchFriends, type Friend } from "@/lib/friends";
+import { MATCH_GAMES, matchHref, type MatchGame } from "@/lib/games";
 import { createClient } from "@/lib/supabase/client";
-import { challenge, fetchMyMatches, markOf, opponentOf, turnOf, type MatchWithPlayers } from "./data";
+import { challenge, fetchChosen, fetchMyMatches, isMyTurn, markOf, opponentOf, type MatchWithPlayers } from "./data";
 
-export function MatchList({ viewerId }: { viewerId: string }) {
+type Loaded = { matches: MatchWithPlayers[]; chosen: Set<string> };
+
+async function load(games: readonly MatchGame[]): Promise<Loaded> {
+  const matches = await fetchMyMatches(games);
+  return { matches, chosen: await fetchChosen(matches) };
+}
+
+/**
+ * Partidas contra amigos de uno o varios juegos. Si hay varios (las dos
+ * variantes de piedra, papel o tijera), al retar se elige cuál.
+ */
+export function MatchList({ viewerId, games }: { viewerId: string; games: readonly MatchGame[] }) {
   const router = useRouter();
-  const [matches, setMatches] = useState<MatchWithPlayers[] | null>(null);
+  const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [friends, setFriends] = useState<Friend[] | null>(null);
   const [picking, setPicking] = useState(false);
+  const [game, setGame] = useState<MatchGame>(games[0]!);
+  const gamesKey = games.join(",");
 
-  const reload = useCallback(async () => setMatches(await fetchMyMatches()), []);
+  const reload = useCallback(async () => setLoaded(await load(games)), [games]);
 
   useEffect(() => {
     let cancelled = false;
     const supabase = createClient();
-    fetchMyMatches().then((data) => {
-      if (!cancelled) setMatches(data);
+    const list = gamesKey.split(",") as MatchGame[];
+    load(list).then((data) => {
+      if (!cancelled) setLoaded(data);
     });
 
     // Sin filtro: RLS ya hace que solo lleguen las partidas en las que juego.
     const channel = supabase
-      .channel("my-matches")
+      .channel(`my-matches:${gamesKey}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, () => {
-        fetchMyMatches().then((data) => {
-          if (!cancelled) setMatches(data);
+        load(list).then((data) => {
+          if (!cancelled) setLoaded(data);
         });
       })
       .subscribe();
@@ -37,7 +52,9 @@ export function MatchList({ viewerId }: { viewerId: string }) {
       cancelled = true;
       void supabase.removeChannel(channel);
     };
-  }, []);
+  }, [gamesKey]);
+
+  const matches = loaded?.matches ?? null;
 
   async function openPicker() {
     setPicking(true);
@@ -46,12 +63,12 @@ export function MatchList({ viewerId }: { viewerId: string }) {
   }
 
   async function challengeFriend(friendId: string) {
-    const id = await challenge(friendId);
-    if (id) router.push(`/3-en-raya/${id}`);
+    const id = await challenge(friendId, game);
+    if (id) router.push(matchHref({ id, game }));
     else void reload();
   }
 
-  const groups = groupMatches(matches ?? [], viewerId);
+  const groups = groupMatches(matches ?? [], viewerId, loaded?.chosen ?? new Set());
 
   return (
     <div className="flex w-full max-w-xl flex-col gap-10">
@@ -66,11 +83,27 @@ export function MatchList({ viewerId }: { viewerId: string }) {
         </button>
         {picking && (
           <div className="rounded-3xl bg-surface p-3 shadow-soft">
+            {games.length > 1 && (
+              <div role="radiogroup" aria-label="Modo" className="mb-2 flex gap-1 rounded-full bg-line/60 p-1">
+                {games.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    role="radio"
+                    aria-checked={game === option}
+                    onClick={() => setGame(option)}
+                    className={`flex-1 rounded-full px-3 py-1.5 text-sm ${game === option ? "bg-surface font-medium shadow-soft" : "text-muted"}`}
+                  >
+                    {GAME_MODE_LABELS[option] ?? MATCH_GAMES[option].name}
+                  </button>
+                ))}
+              </div>
+            )}
             {friends === null && <p className="p-2 text-sm text-muted">Cargando amigos…</p>}
             {friends?.length === 0 && (
               <p className="p-2 text-sm text-muted">
                 Aún no tienes amigos.{" "}
-                <Link href="/perfil" className="font-medium text-ink underline underline-offset-4">
+                <Link href="/amigos" className="font-medium text-ink underline underline-offset-4">
                   Añade a alguien con su código
                 </Link>
                 .
@@ -111,7 +144,10 @@ export function MatchList({ viewerId }: { viewerId: string }) {
   );
 }
 
-function groupMatches(matches: MatchWithPlayers[], viewerId: string) {
+/** Nombre corto de cada modo en el selector. */
+const GAME_MODE_LABELS: Partial<Record<MatchGame, string>> = { rps: "Clásico", rpsls: "Lagarto Spock" };
+
+function groupMatches(matches: MatchWithPlayers[], viewerId: string, chosen: ReadonlySet<string>) {
   const groups = { invited: [], myTurn: [], waiting: [], finished: [] } as Record<
     "invited" | "myTurn" | "waiting" | "finished",
     MatchWithPlayers[]
@@ -119,7 +155,7 @@ function groupMatches(matches: MatchWithPlayers[], viewerId: string) {
   for (const match of matches) {
     if (match.status === "finished") groups.finished.push(match);
     else if (match.status === "pending") (match.created_by === viewerId ? groups.waiting : groups.invited).push(match);
-    else if (turnOf(match) === markOf(match, viewerId)) groups.myTurn.push(match);
+    else if (isMyTurn(match, viewerId, chosen)) groups.myTurn.push(match);
     else groups.waiting.push(match);
   }
   groups.finished = groups.finished.slice(0, 10);
@@ -153,9 +189,12 @@ function Group({
           const rival = opponentOf(match, viewerId);
           return (
             <li key={match.id}>
-              <Link href={`/3-en-raya/${match.id}`} className="flex items-center gap-3 border-b border-line py-2.5 hover:bg-surface/60">
+              <Link href={matchHref(match)} className="flex items-center gap-3 border-b border-line py-2.5 hover:bg-surface/60">
                 <Avatar seed={rival.avatar_seed} parts={rival.avatar_parts} size={36} />
-                <span className="min-w-0 flex-1 truncate font-medium">{rival.username}</span>
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="truncate font-medium">{rival.username}</span>
+                  {match.game !== "tictactoe" && <span className="text-xs text-muted">{GAME_MODE_LABELS[match.game as MatchGame]}</span>}
+                </span>
                 <span className={`text-sm ${highlight ? "rounded-full bg-ink px-3 py-1 font-medium text-bg" : "text-muted"}`}>
                   {note(match)}
                 </span>

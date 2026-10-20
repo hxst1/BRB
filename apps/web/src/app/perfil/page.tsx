@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { AvatarEditor } from "@/components/profile/avatar-editor";
-import { FriendCode } from "@/components/profile/friend-code";
-import { Friends } from "@/components/profile/friends";
+import { signOut } from "@/app/entrar/actions";
 import { LevelBar } from "@/components/level-bar";
+import { AvatarEditor } from "@/components/profile/avatar-editor";
 import { getViewer } from "@/lib/session";
-import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Tu perfil" };
 
@@ -24,26 +23,33 @@ async function Profile() {
   const viewer = await getViewer();
   if (!viewer) redirect("/entrar?next=/perfil");
 
-  const supabase = await createClient();
-  const { data: friendCode } = await supabase.from("friend_codes").select("code").eq("user_id", viewer.id).single();
-
   return (
-    <>
-      <h1 className="display mb-1 text-6xl font-bold sm:text-7xl">{viewer.username}</h1>
-      <LevelBar xp={viewer.xp} className="mb-10 max-w-sm" />
-
-      <div className="grid gap-12 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:gap-16">
-        <AvatarEditor
-          userId={viewer.id}
-          initialSeed={viewer.avatar_seed}
-          initialParts={viewer.avatar_parts}
-          isSupporter={viewer.supporter_tier !== null}
-        />
-        <div className="flex flex-col gap-12">
-          {friendCode && <FriendCode code={friendCode.code} />}
-          <Friends viewerId={viewer.id} />
-        </div>
+    <div className="flex max-w-xl flex-col gap-10">
+      <div>
+        <h1 className="display mb-3 text-5xl font-bold sm:text-6xl">{viewer.username}</h1>
+        <LevelBar xp={viewer.xp} className="max-w-sm" />
       </div>
-    </>
+
+      <AvatarEditor
+        userId={viewer.id}
+        initialSeed={viewer.avatar_seed}
+        initialParts={viewer.avatar_parts}
+        isSupporter={viewer.supporter_tier !== null}
+      />
+
+      <section aria-label="Cuenta" className="flex flex-col gap-3 border-t border-line pt-6">
+        <Link href="/amigos" className="text-sm font-medium underline-offset-4 hover:underline">
+          Amigos y código de invitación
+        </Link>
+        <form action={signOut}>
+          <button
+            type="submit"
+            className="rounded-full border border-line px-4 py-2 text-sm text-danger transition-colors hover:border-danger"
+          >
+            Cerrar sesión
+          </button>
+        </form>
+      </section>
+    </div>
   );
 }

@@ -127,6 +127,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"match_choices": {
+                  Row: {
+                    "choice": number,"created_at": string,"match_id": string,"player_id": string,"round": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "choice": number,"created_at"?: string,"match_id": string,"player_id": string,"round": number
+                  }
+                  Update: {
+                    "choice"?: number,"created_at"?: string,"match_id"?: string,"player_id"?: string,"round"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "match_choices_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "matches"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_choices_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"matches": {
                   Row: {
                     "created_at": string,"created_by": string,"end_reason": string | null,"game": string,"id": string,"moves": (number)[],"player_o": string,"player_x": string,"status": string,"updated_at": string,"winner": string | null
@@ -154,6 +180,32 @@ isOneToOne: false
     },{
       foreignKeyName: "matches_player_x_fkey"
       columns: ["player_x"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"messages": {
+                  Row: {
+                    "body": string,"created_at": string,"id": string,"kind": string,"read_at": string | null,"recipient_id": string,"ref_id": string | null,"sender_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body": string,"created_at"?: string,"id"?: string,"kind"?: string,"read_at"?: string | null,"recipient_id": string,"ref_id"?: string | null,"sender_id": string
+                  }
+                  Update: {
+                    "body"?: string,"created_at"?: string,"id"?: string,"kind"?: string,"read_at"?: string | null,"recipient_id"?: string,"ref_id"?: string | null,"sender_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "messages_recipient_id_fkey"
+      columns: ["recipient_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "messages_sender_id_fkey"
+      columns: ["sender_id"]
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
@@ -197,9 +249,24 @@ isOneToOne: false
 "finish_run":
 { Args: { "max_tile": number,"moves": string,"run_id": string,"score": number }; Returns: undefined
                            },
+"get_conversations":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "avatar_parts": Json,"avatar_seed": number,"friend_id": string,"last_at": string,"last_body": string,"last_from_me": boolean,"unread": number,"username": string
+            }[]
+                           },
 "get_leaderboard":
 { Args: { "game": string,"max_rows"?: number,"period"?: string,"scope"?: string }; Returns: {
               "achieved_at": string,"avatar_parts": Json,"avatar_seed": number,"rank": number,"score": number,"supporter_tier": string,"user_id": string,"username": string
+            }[]
+                           },
+"get_level_leaderboard":
+{ Args: { "max_rows"?: number,"scope"?: string }; Returns: {
+              "avatar_parts": Json,"avatar_seed": number,"rank": number,"supporter_tier": string,"user_id": string,"username": string,"xp": number
+            }[]
+                           },
+"get_match_leaderboard":
+{ Args: { "games": (string)[],"max_rows"?: number,"period"?: string,"scope"?: string }; Returns: {
+              "avatar_parts": Json,"avatar_seed": number,"played": number,"rank": number,"supporter_tier": string,"user_id": string,"username": string,"wins": number
             }[]
                            },
 "get_my_challenges":
@@ -216,6 +283,12 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "challenges": number,"friend_requests": number,"match_invites": number,"my_turn": number
             }[]
+                           },
+"get_unread_messages":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"mark_conversation_read":
+{ Args: { "friend": string }; Returns: undefined
                            },
 "reject_run":
 { Args: { "reason": string,"run_id": string }; Returns: undefined
@@ -235,6 +308,23 @@ isOneToOne: false
 "send_friend_request":
 { Args: { "friend_code": string }; Returns: string
                            },
+"send_message":
+{ Args: { "body": string,"recipient": string }; Returns: {
+              "body": string,
+"created_at": string,
+"id": string,
+"kind": string,
+"read_at": string | null,
+"recipient_id": string,
+"ref_id": string | null,
+"sender_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "messages"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "start_challenge_run":
 { Args: { "challenge_id": string }; Returns: {
               "id": string,"seed": number
@@ -244,6 +334,9 @@ isOneToOne: false
 { Args: { "game": string }; Returns: {
               "id": string,"seed": number
             }[]
+                           },
+"submit_match_choice":
+{ Args: { "choice": number,"match_id": string,"player_id": string }; Returns: number
                            }
           }
           Enums: {

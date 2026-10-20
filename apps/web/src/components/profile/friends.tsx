@@ -1,10 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { FriendRequestResult, Json } from "@repo/db";
 import { Avatar } from "@/components/avatar";
-import { challenge } from "@/components/tictactoe/data";
+import { ChallengeMenu } from "@/components/challenge-menu";
 import { createClient } from "@/lib/supabase/client";
 
 type Person = { id: string; username: string; avatar_seed: number; avatar_parts: Json };
@@ -22,11 +22,14 @@ const RESULT_MESSAGES: Record<FriendRequestResult, { text: string; ok: boolean }
 
 const PERSON = "id, username, avatar_seed, avatar_parts";
 
-export function Friends({ viewerId }: { viewerId: string }) {
+export function Friends({ viewerId, initialCode = "" }: { viewerId: string; initialCode?: string }) {
   const [rows, setRows] = useState<Row[] | null>(null);
-  const [code, setCode] = useState("");
+  // Llega relleno al abrir un enlace de invitación (/amigos?codigo=…).
+  const [code, setCode] = useState(initialCode);
   const [sending, setSending] = useState(false);
-  const [result, setResult] = useState<{ text: string; ok: boolean } | null>(null);
+  const [result, setResult] = useState<{ text: string; ok: boolean } | null>(
+    initialCode ? { text: "Te han invitado: pulsa Añadir para enviarle una solicitud.", ok: true } : null,
+  );
 
   const load = useCallback(async () => {
     const { data } = await createClient()
@@ -84,8 +87,8 @@ export function Friends({ viewerId }: { viewerId: string }) {
 
   return (
     <section aria-labelledby="friends-title" className="flex flex-col gap-6">
-      <h2 id="friends-title" className="text-xl font-semibold">
-        Amigos
+      <h2 id="friends-title" className="sr-only">
+        Tus amigos
       </h2>
 
       <form onSubmit={addFriend} className="flex flex-col gap-2">
@@ -144,7 +147,10 @@ export function Friends({ viewerId }: { viewerId: string }) {
             )}
             {friends.map((row) => (
               <PersonRow key={row.id} person={row.other}>
-                <ChallengeButton friendId={row.other.id} />
+                <Link href={`/chat/${row.other.id}`} className="text-sm font-medium text-muted hover:text-ink">
+                  Mensaje
+                </Link>
+                <ChallengeMenu friendId={row.other.id} />
                 <ConfirmButton label="Eliminar" confirmLabel="Sí, eliminar" onConfirm={() => void remove(row.other.id)} />
               </PersonRow>
             ))}
@@ -183,26 +189,6 @@ function PersonRow({ person, children }: { person: Person; children: React.React
       <span className="min-w-0 flex-1 truncate font-medium">{person.username}</span>
       <span className="flex items-center gap-3">{children}</span>
     </li>
-  );
-}
-
-function ChallengeButton({ friendId }: { friendId: string }) {
-  const router = useRouter();
-  const [busy, setBusy] = useState(false);
-  return (
-    <button
-      type="button"
-      disabled={busy}
-      onClick={async () => {
-        setBusy(true);
-        const id = await challenge(friendId);
-        if (id) router.push(`/3-en-raya/${id}`);
-        else setBusy(false);
-      }}
-      className="rounded-full bg-ink px-3 py-1 text-sm font-medium text-bg disabled:opacity-50"
-    >
-      Retar
-    </button>
   );
 }
 

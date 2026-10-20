@@ -24,5 +24,5 @@ export default function TicTacToePage() {
 async function ListForViewer() {
   const viewer = await getViewer();
   if (!viewer) redirect("/entrar?next=/3-en-raya");
-  return <MatchList viewerId={viewer.id} />;
+  return <MatchList viewerId={viewer.id} games={["tictactoe"]} />;
 }

@@ -11,7 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 import { TicTacToeBoard } from "./board";
 import { challenge, fetchMatch, markOf, type MatchWithPlayers, type Player } from "./data";
 
-const MARK_COLOR: Record<Mark, string> = { x: "var(--mark-x)", o: "var(--mark-o)" };
+export const MARK_COLOR: Record<Mark, string> = { x: "var(--mark-x)", o: "var(--mark-o)" };
 
 export function MatchView({ matchId, viewerId }: { matchId: string; viewerId: string }) {
   const router = useRouter();
@@ -200,13 +200,14 @@ function statusText(match: Match, me: Mark, turn: Mark | null, rivalName: string
   }
 }
 
-function PlayerBadge({
+export function PlayerBadge({
   player,
   mark,
   label,
   active,
   mood,
   alignEnd = false,
+  detail,
 }: {
   player: Player;
   mark: Mark;
@@ -214,6 +215,8 @@ function PlayerBadge({
   active: boolean;
   mood: Mood;
   alignEnd?: boolean;
+  /** Sustituye al símbolo × / ○ (p. ej. el marcador en piedra, papel o tijera). */
+  detail?: React.ReactNode;
 }) {
   return (
     <div className={`flex items-center gap-3 ${alignEnd ? "flex-row-reverse text-right" : ""}`}>
@@ -225,15 +228,17 @@ function PlayerBadge({
       </span>
       <span className="flex min-w-0 flex-col">
         <span className="truncate font-semibold">{label ?? player.username}</span>
-        <span className="text-lg leading-none font-bold" style={{ color: MARK_COLOR[mark] }} aria-label={`Juega con ${mark.toUpperCase()}`}>
-          {mark === "x" ? "×" : "○"}
-        </span>
+        {detail ?? (
+          <span className="text-lg leading-none font-bold" style={{ color: MARK_COLOR[mark] }} aria-label={`Juega con ${mark.toUpperCase()}`}>
+            {mark === "x" ? "×" : "○"}
+          </span>
+        )}
       </span>
     </div>
   );
 }
 
-function ResignButton({ disabled, onConfirm }: { disabled: boolean; onConfirm: () => void }) {
+export function ResignButton({ disabled, onConfirm }: { disabled: boolean; onConfirm: () => void }) {
   const [asking, setAsking] = useState(false);
   if (!asking) {
     return (

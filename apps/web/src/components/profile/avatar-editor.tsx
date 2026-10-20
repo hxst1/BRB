@@ -36,6 +36,7 @@ export function AvatarEditor({
   const [overrides, setOverrides] = useState<Partial<MonsterParts>>(() => sanitizeParts(initialParts));
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [cheer, setCheer] = useState(0);
+  const [activeSlot, setActiveSlot] = useState<Slot>("body");
   const monster = resolveMonster(seed, overrides);
 
   async function save(nextSeed: number, nextOverrides: Partial<MonsterParts>) {
@@ -91,33 +92,49 @@ export function AvatarEditor({
         </div>
       </div>
 
-      {SLOTS.map(({ slot, label }) => (
-        <fieldset key={slot} className="flex flex-col gap-2">
-          <legend className="mb-2 text-sm font-medium">{label}</legend>
-          <div className="flex flex-wrap gap-2">
-            {(PART_OPTIONS[slot] as string[]).map((id) => {
-              const locked = (slot === "palette" || slot === "top") && isSupporterPart(slot, id) && !isSupporter;
-              const selected = monster[slot] === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  aria-pressed={selected}
-                  disabled={locked}
-                  title={locked ? "Exclusivo para supporters" : undefined}
-                  onClick={() => void save(seed, { ...overrides, [slot]: id })}
-                  className={`relative grid size-14 place-items-center rounded-2xl bg-surface transition-shadow ${
-                    selected ? "ring-2 ring-ink" : "shadow-soft hover:shadow-lift"
-                  } disabled:opacity-40 disabled:hover:shadow-soft`}
-                >
-                  <Avatar seed={seed} parts={{ ...monster, [slot]: id }} size={42} />
-                  {locked && <span className="sr-only">Exclusivo para supporters</span>}
-                </button>
-              );
-            })}
-          </div>
-        </fieldset>
-      ))}
+      <div className="flex flex-col gap-3">
+        <div role="tablist" aria-label="Partes del monstruo" className="flex gap-1 overflow-x-auto rounded-full bg-line/60 p-1">
+          {SLOTS.map(({ slot, label }) => (
+            <button
+              key={slot}
+              type="button"
+              role="tab"
+              id={`tab-${slot}`}
+              aria-selected={activeSlot === slot}
+              aria-controls="slot-panel"
+              onClick={() => setActiveSlot(slot)}
+              className={`flex-1 rounded-full px-3 py-1.5 text-sm whitespace-nowrap transition-colors ${
+                activeSlot === slot ? "bg-surface font-medium shadow-soft" : "text-muted hover:text-ink"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div id="slot-panel" role="tabpanel" aria-labelledby={`tab-${activeSlot}`} className="flex flex-wrap gap-2">
+          {(PART_OPTIONS[activeSlot] as string[]).map((id) => {
+            const locked = (activeSlot === "palette" || activeSlot === "top") && isSupporterPart(activeSlot, id) && !isSupporter;
+            const selected = monster[activeSlot] === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={selected}
+                disabled={locked}
+                title={locked ? "Exclusivo para supporters" : undefined}
+                onClick={() => void save(seed, { ...overrides, [activeSlot]: id })}
+                className={`relative grid size-16 place-items-center rounded-2xl bg-surface transition-shadow ${
+                  selected ? "ring-2 ring-ink" : "shadow-soft hover:shadow-lift"
+                } disabled:opacity-40 disabled:hover:shadow-soft`}
+              >
+                <Avatar seed={seed} parts={{ ...monster, [activeSlot]: id }} size={48} />
+                {locked && <span className="sr-only">Exclusivo para supporters</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       <label className="flex items-center gap-3 text-sm font-medium">
         <input

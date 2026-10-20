@@ -1,7 +1,17 @@
 import { levelFromXp } from "@/lib/level";
 
-export function LevelBar({ xp, className = "" }: { xp: number; className?: string }) {
+export function LevelBar({ xp, className = "", compact = false }: { xp: number; className?: string; compact?: boolean }) {
   const { level, xpIntoLevel, xpForNext, progress } = levelFromXp(xp);
+  if (compact) {
+    return (
+      <div className={`flex items-center gap-2 ${className}`}>
+        <span className="shrink-0 text-xs text-muted">Nivel {level}</span>
+        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-line" aria-hidden>
+          <div className="h-full rounded-full bg-ink" style={{ width: `${progress * 100}%` }} />
+        </div>
+      </div>
+    );
+  }
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
       <div className="flex items-baseline justify-between gap-4 text-sm">

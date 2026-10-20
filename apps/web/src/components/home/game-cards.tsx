@@ -5,20 +5,33 @@ import type { CSSProperties, ReactNode } from "react";
 const PREVIEW_2048 = [2, 0, 8, 0, 0, 16, 64, 4, 0, 4, 128, 32, 2, 8, 512, 2048];
 const PREVIEW_TTT = ["×", "", "○", "", "×", "", "○", "", ""];
 
+const ITEM = "w-44 shrink-0 snap-start sm:w-auto";
+
 /**
  * Tarjetas de los juegos. `stats` añade debajo una línea con tus datos
  * (récord, puesto, partidas en juego) cuando hay sesión.
+ *
+ * En el móvil van en fila con scroll horizontal (asoma la siguiente para que
+ * se vea que hay más); desde `sm`, en cuadrícula.
  */
-export function GameCards({ stats2048, statsTicTacToe }: { stats2048?: ReactNode; statsTicTacToe?: ReactNode }) {
+export function GameCards({
+  stats2048,
+  statsTicTacToe,
+  statsRps,
+}: {
+  stats2048?: ReactNode;
+  statsTicTacToe?: ReactNode;
+  statsRps?: ReactNode;
+}) {
   return (
-    <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <li>
+    <ul className="no-scrollbar -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pt-1 pb-3 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:p-0 lg:grid-cols-3">
+      <li className={ITEM}>
         <GameCard href="/2048" title="2048" subtitle="Tú solo contra el ranking" stats={stats2048}>
-          <div aria-hidden className="grid grid-cols-4 gap-1.5 rounded-2xl p-1.5" style={{ background: "var(--board)" }}>
+          <div aria-hidden className="grid grid-cols-4 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
             {PREVIEW_2048.map((value, i) => (
               <span
                 key={i}
-                className="aspect-square rounded-lg transition-transform duration-300 group-hover:scale-95"
+                className="aspect-square rounded-md transition-transform sm:rounded-lg duration-300 group-hover:scale-95"
                 style={
                   {
                     background: value ? `var(--t${value})` : "var(--cell)",
@@ -30,13 +43,13 @@ export function GameCards({ stats2048, statsTicTacToe }: { stats2048?: ReactNode
           </div>
         </GameCard>
       </li>
-      <li>
+      <li className={ITEM}>
         <GameCard href="/3-en-raya" title="3 en raya" subtitle="Contra tus amigos, a tu ritmo" stats={statsTicTacToe}>
-          <div aria-hidden className="grid grid-cols-3 gap-1.5 rounded-2xl p-1.5" style={{ background: "var(--board)" }}>
+          <div aria-hidden className="grid grid-cols-3 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
             {PREVIEW_TTT.map((mark, i) => (
               <span
                 key={i}
-                className="display grid aspect-square place-items-center rounded-lg text-5xl font-bold transition-transform duration-300 group-hover:scale-95"
+                className="display grid aspect-square place-items-center rounded-lg text-2xl font-bold sm:text-5xl transition-transform duration-300 group-hover:scale-95"
                 style={{
                   background: "var(--cell)",
                   color: mark === "×" ? "var(--mark-x)" : "var(--mark-o)",
@@ -44,6 +57,21 @@ export function GameCards({ stats2048, statsTicTacToe }: { stats2048?: ReactNode
                 }}
               >
                 {mark}
+              </span>
+            ))}
+          </div>
+        </GameCard>
+      </li>
+      <li className={ITEM}>
+        <GameCard href="/piedra-papel-tijera" title="Piedra, papel o tijera" subtitle="Al mejor de 3, con lagarto y Spock" stats={statsRps}>
+          <div aria-hidden className="grid aspect-[4/3] grid-cols-3 place-items-center gap-1 rounded-xl p-1 sm:aspect-square sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+            {["🪨", "📄", "✂️", "🦎", "🖖", "🪨"].map((emoji, i) => (
+              <span
+                key={i}
+                className="grid size-full place-items-center rounded-md text-2xl transition-transform duration-300 group-hover:scale-95 sm:rounded-lg sm:text-4xl"
+                style={{ background: "var(--cell)", transitionDelay: `${(i % 3) * 25}ms` }}
+              >
+                {emoji}
               </span>
             ))}
           </div>
@@ -69,14 +97,14 @@ function GameCard({
   return (
     <Link
       href={href}
-      className="group flex h-full flex-col gap-5 rounded-3xl bg-surface p-5 shadow-soft transition-shadow hover:shadow-lift"
+      className="group flex h-full flex-col gap-3 rounded-3xl bg-surface p-3.5 shadow-soft transition-shadow hover:shadow-lift sm:gap-5 sm:p-5"
     >
       {children}
       <div>
-        <p className="display text-3xl font-bold">{title}</p>
-        <p className="text-sm text-muted">{subtitle}</p>
+        <p className="display text-2xl font-bold sm:text-3xl">{title}</p>
+        <p className="text-xs text-muted sm:text-sm">{subtitle}</p>
       </div>
-      {stats && <div className="mt-auto border-t border-line pt-3 text-sm">{stats}</div>}
+      {stats && <div className="mt-auto border-t border-line pt-2.5 text-xs sm:pt-3 sm:text-sm">{stats}</div>}
     </Link>
   );
 }

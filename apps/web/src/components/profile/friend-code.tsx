@@ -1,38 +1,67 @@
 "use client";
 
 import { useState } from "react";
+import { brand } from "@repo/brand";
 
+/**
+ * Tu código de amigo y un enlace de invitación (/amigos?codigo=…) que abre el
+ * formulario de añadir ya relleno. En el móvil, "Compartir" abre el menú del sistema.
+ */
 export function FriendCode({ code }: { code: string }) {
-  const [copied, setCopied] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
-  async function copy() {
+  function flash(text: string) {
+    setFeedback(text);
+    setTimeout(() => setFeedback(null), 2000);
+  }
+
+  async function copy(text: string, done: string) {
     try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(text);
+      flash(done);
     } catch {
-      // Sin permiso de portapapeles: el código sigue visible para copiarlo a mano.
+      flash("No se ha podido copiar. Cópialo a mano.");
+    }
+  }
+
+  async function share() {
+    const url = `${window.location.origin}/amigos?codigo=${code}`;
+    const text = `Añádeme en ${brand.name} y echamos una partida. Mi código es ${code}.`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: brand.name, text, url });
+      } catch {
+        // Cancelado por el usuario: no hay nada que hacer.
+      }
+    } else {
+      await copy(`${text} ${url}`, "Invitación copiada");
     }
   }
 
   return (
-    <section aria-labelledby="code-title" className="flex flex-col gap-3">
-      <h2 id="code-title" className="text-xl font-semibold">
-        Tu código de amigo
-      </h2>
-      <div className="flex flex-wrap items-center gap-4">
-        <p className="display tabular rounded-2xl bg-surface px-5 py-3 text-5xl font-bold tracking-[0.12em] shadow-soft select-all">
-          {code}
-        </p>
+    <section aria-labelledby="code-title" className="flex flex-col gap-4 rounded-3xl bg-surface p-5 shadow-soft">
+      <div>
+        <h2 id="code-title" className="font-semibold">
+          Tu código de amigo
+        </h2>
+        <p className="text-sm text-muted">Con él te pueden añadir. Compártelo con quien quieras retar.</p>
+      </div>
+      <p className="display tabular text-6xl font-bold tracking-[0.12em] select-all">{code}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="button" onClick={() => void share()} className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-bg">
+          Compartir invitación
+        </button>
         <button
           type="button"
-          onClick={copy}
-          className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium shadow-soft hover:border-muted"
+          onClick={() => void copy(code, "Código copiado")}
+          className="rounded-full border border-line px-4 py-2 text-sm font-medium hover:border-muted"
         >
-          {copied ? "Copiado" : "Copiar"}
+          Copiar código
         </button>
+        <span aria-live="polite" className="text-sm text-muted">
+          {feedback}
+        </span>
       </div>
-      <p className="text-sm text-muted">Pásaselo a quien quieras retar. Con él te pueden enviar una solicitud.</p>
     </section>
   );
 }

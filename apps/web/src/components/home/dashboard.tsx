@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { replay } from "@repo/games/tictactoe";
-import type { Json } from "@repo/db";
+import type { Json, Match } from "@repo/db";
 import { Avatar } from "@/components/avatar";
 import { LevelBar } from "@/components/level-bar";
 import { formatNumber } from "@/lib/format";
+import { matchGame, matchHref } from "@/lib/games";
 import { MATCH_WITH_PLAYERS, PLAYER_COLUMNS } from "@/lib/queries";
 import type { Viewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -11,6 +12,13 @@ import { GameCards } from "./game-cards";
 
 type Person = { id: string; username: string; avatar_seed: number; avatar_parts: Json };
 type Pending = { key: string; href: string; person: Person; text: string; urgent?: boolean };
+type GameTally = { myTurn: number; invites: number; waiting: number };
+
+/** ¿Le toca al usuario? 3 en raya por movimientos; piedra, papel o tijera si aún no ha elegido. */
+function myTurnIn(match: Match, viewerId: string, chosen: ReadonlySet<string>): boolean {
+  if (match.game === "tictactoe") return replay(match.moves)?.turn === (match.player_x === viewerId ? "x" : "o");
+  return !chosen.has(match.id);
+}
 
 export async function Dashboard({ viewer }: { viewer: Viewer }) {
   const supabase = await createClient();
@@ -29,20 +37,32 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     supabase.rpc("get_my_challenges", { max_rows: 20 }),
   ]);
 
+  // Elecciones ya hechas en la ronda en curso de piedra, papel o tijera.
+  const rpsActive = (matches ?? []).filter((m) => m.status === "active" && m.game !== "tictactoe");
+  const { data: choices } = rpsActive.length
+    ? await supabase.from("match_choices").select("match_id, round").in("match_id", rpsActive.map((m) => m.id))
+    : { data: [] };
+  const roundOf = new Map(rpsActive.map((m) => [m.id, m.moves.length / 2]));
+  const chosen = new Set((choices ?? []).filter((c) => roundOf.get(c.match_id) === c.round).map((c) => c.match_id));
+
   const pending: Pending[] = [];
-  let waiting = 0;
-  let invites = 0;
+  const tally: Record<"tictactoe" | "rps", GameTally> = {
+    tictactoe: { myTurn: 0, invites: 0, waiting: 0 },
+    rps: { myTurn: 0, invites: 0, waiting: 0 },
+  };
   for (const match of matches ?? []) {
-    const myMark = match.player_x === viewer.id ? "x" : "o";
-    const rival = myMark === "x" ? match.o : match.x;
+    const rival = match.player_x === viewer.id ? match.o : match.x;
+    const name = matchGame(match.game).name;
+    const counts = tally[match.game === "tictactoe" ? "tictactoe" : "rps"];
     if (match.status === "pending") {
       if (match.created_by !== viewer.id) {
-        invites++;
-        pending.push({ key: match.id, href: `/3-en-raya/${match.id}`, person: rival, text: `${rival.username} te reta al 3 en raya` });
-      } else waiting++;
-    } else if (replay(match.moves)?.turn === myMark) {
-      pending.push({ key: match.id, href: `/3-en-raya/${match.id}`, person: rival, text: `Te toca contra ${rival.username}`, urgent: true });
-    } else waiting++;
+        counts.invites++;
+        pending.push({ key: match.id, href: matchHref(match), person: rival, text: `${rival.username} te reta: ${name.toLowerCase()}` });
+      } else counts.waiting++;
+    } else if (myTurnIn(match, viewer.id, chosen)) {
+      counts.myTurn++;
+      pending.push({ key: match.id, href: matchHref(match), person: rival, text: `Te toca contra ${rival.username} (${name.toLowerCase()})`, urgent: true });
+    } else counts.waiting++;
   }
   for (const challenge of challenges ?? []) {
     if (!challenge.incoming || challenge.status !== "pending") continue;
@@ -61,12 +81,11 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
   for (const request of requests ?? []) {
     pending.push({
       key: request.id,
-      href: "/perfil",
+      href: "/amigos",
       person: request.requester,
       text: `${request.requester.username} te ha enviado una solicitud de amistad`,
     });
   }
-  const myTurn = pending.filter((item) => item.urgent).length;
 
   return (
     <>
@@ -118,18 +137,26 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
             <span className="text-muted">Aún no tienes puntuación. Juega una partida.</span>
           )
         }
-        statsTicTacToe={
-          myTurn > 0 ? (
-            <strong>{myTurn === 1 ? "Te toca en 1 partida" : `Te toca en ${myTurn} partidas`}</strong>
-          ) : invites > 0 ? (
-            <strong>{invites === 1 ? "Tienes 1 reto sin responder" : `Tienes ${invites} retos sin responder`}</strong>
-          ) : waiting > 0 ? (
-            <span className="text-muted">{waiting === 1 ? "1 partida esperando al rival" : `${waiting} partidas esperando al rival`}</span>
-          ) : (
-            <span className="text-muted">Ninguna partida en juego. Reta a alguien.</span>
-          )
-        }
+        statsTicTacToe={<MatchStats counts={tally.tictactoe} />}
+        statsRps={<MatchStats counts={tally.rps} />}
       />
     </>
   );
+}
+
+function MatchStats({ counts }: { counts: GameTally }) {
+  if (counts.myTurn > 0) {
+    return <strong>{counts.myTurn === 1 ? "Te toca en 1 partida" : `Te toca en ${counts.myTurn} partidas`}</strong>;
+  }
+  if (counts.invites > 0) {
+    return <strong>{counts.invites === 1 ? "Tienes 1 reto sin responder" : `Tienes ${counts.invites} retos sin responder`}</strong>;
+  }
+  if (counts.waiting > 0) {
+    return (
+      <span className="text-muted">
+        {counts.waiting === 1 ? "1 partida esperando al rival" : `${counts.waiting} partidas esperando al rival`}
+      </span>
+    );
+  }
+  return <span className="text-muted">Ninguna partida en juego. Reta a alguien.</span>;
 }

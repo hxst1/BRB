@@ -25,6 +25,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // Para que la barra de pestañas respete la zona del indicador de inicio en iOS.
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: brand.themeColor },
     { media: "(prefers-color-scheme: dark)", color: brand.themeColorDark },
