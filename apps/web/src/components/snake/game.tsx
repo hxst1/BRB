@@ -244,11 +244,12 @@ export function SnakeGame({ viewerId, onSaved }: { viewerId: string | null; onSa
               </p>
             </div>
           )}
-          {state.over && <GameOver state={state} save={save} signedIn={signedIn} onRestart={() => void restart()} />}
         </div>
       ) : (
         <div className="aspect-square w-full animate-pulse rounded-[22px]" style={{ background: "var(--board)" }} />
       )}
+
+      {state?.over && <GameOver state={state} save={save} signedIn={signedIn} onRestart={() => void restart()} />}
 
       <p aria-live="polite" className="sr-only">
         {state?.over ? `Partida terminada con ${state.score} puntos` : ""}
@@ -361,18 +362,19 @@ function GameOver({
             : null;
 
   return (
-    <div className="absolute inset-0 z-10 grid place-items-center rounded-[22px] bg-bg/80 backdrop-blur-sm">
-      <div className="flex flex-col items-center gap-2 px-6 text-center">
-        <p className="text-muted">{state.food === null ? "¡Has llenado el tablero!" : "Te has chocado"}</p>
-        <p className="tabular display text-6xl font-bold">{formatNumber(state.score)}</p>
+    // Debajo del tablero, sin taparlo: así se ve dónde se ha chocado.
+    <div className="flex items-center justify-between gap-4 rounded-2xl bg-surface p-4 shadow-soft">
+      <div className="flex min-w-0 flex-col gap-1">
+        <p className="display text-2xl font-bold">{state.food === null ? "¡Has llenado el tablero!" : "Te has chocado"}</p>
         <p className="text-sm text-muted">
-          {state.apples === 1 ? "1 manzana" : `${state.apples} manzanas`}, {state.body.length} casillas de largo
+          <span className="tabular">{formatNumber(state.score)}</span> puntos,{" "}
+          {state.apples === 1 ? "1 manzana" : `${state.apples} manzanas`}
         </p>
-        {message && <p className="mt-1 text-sm">{message}</p>}
-        <button type="button" onClick={onRestart} className="mt-3 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-          Otra partida
-        </button>
+        {message && <p className="text-sm">{message}</p>}
       </div>
+      <button type="button" onClick={onRestart} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
+        Otra partida
+      </button>
     </div>
   );
 }

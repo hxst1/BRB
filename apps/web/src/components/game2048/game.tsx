@@ -276,23 +276,19 @@ export function Game2048({
         )}
       </div>
 
-      {state ? (
-        <Board state={state} onPointerDown={onPointerDown}>
-          {state.over && (
-            <GameOver
-              state={state}
-              save={save}
-              signedIn={signedIn}
-              challenge={challengeLive ? challenge : null}
-              daily={dailyLive}
-              onRestart={restart}
-              // Retar con la partida del día daría a conocer el tablero antes de jugarlo.
-              onChallengeFriends={savedRunId && !dailyLive ? () => setPicking(true) : undefined}
-            />
-          )}
-        </Board>
-      ) : (
-        <div className="board animate-pulse" />
+      {state ? <Board state={state} onPointerDown={onPointerDown} /> : <div className="board animate-pulse" />}
+
+      {state?.over && (
+        <GameOver
+          state={state}
+          save={save}
+          signedIn={signedIn}
+          challenge={challengeLive ? challenge : null}
+          daily={dailyLive}
+          onRestart={restart}
+          // Retar con la partida del día daría a conocer el tablero antes de jugarlo.
+          onChallengeFriends={savedRunId && !dailyLive ? () => setPicking(true) : undefined}
+        />
       )}
 
       {picking && savedRunId && viewerId && (
@@ -362,8 +358,9 @@ function GameOver({
             : null;
 
   return (
-    <div className="absolute inset-0 z-10 grid place-items-center rounded-[22px] bg-bg/80 backdrop-blur-sm">
-      <div className="flex flex-col items-center gap-2 px-6 text-center">
+    // Debajo del tablero, sin taparlo: así se ve por qué se ha acabado.
+    <div className="flex flex-col gap-3 rounded-2xl bg-surface p-4 shadow-soft">
+      <div className="flex flex-col gap-1">
         {challenge ? (
           <p className="display text-2xl font-bold text-balance">
             {beatChallenge
@@ -375,12 +372,14 @@ function GameOver({
         ) : daily ? (
           <p className="display text-2xl font-bold">Reto de hoy terminado</p>
         ) : (
-          <p className="text-muted">Sin movimientos</p>
+          <p className="display text-2xl font-bold">Tablero lleno: no quedan jugadas</p>
         )}
-        <p className="tabular display text-6xl font-bold">{formatNumber(state.score)}</p>
-        <p className="text-sm text-muted">Ficha más alta: {maxTile(state)}</p>
-        {message && <p className="mt-1 text-sm">{message}</p>}
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
+        <p className="text-sm text-muted">
+          <span className="tabular">{formatNumber(state.score)}</span> puntos, ficha más alta {maxTile(state)}
+        </p>
+        {message && <p className="text-sm">{message}</p>}
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
           <button type="button" onClick={onRestart} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
             Otra partida
           </button>
@@ -393,7 +392,6 @@ function GameOver({
               Retar a un amigo
             </button>
           )}
-        </div>
       </div>
     </div>
   );
