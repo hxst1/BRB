@@ -24,7 +24,16 @@ function myTurnIn(match: Match, viewerId: string, chosen: ReadonlySet<string>): 
 
 export async function Dashboard({ viewer }: { viewer: Viewer }) {
   const supabase = await createClient();
-  const [{ data: matches }, { data: requests }, { data: standing }, { data: snake }, { data: lightsOut }, { data: challenges }, { data: daily }] =
+  const [
+    { data: matches },
+    { data: requests },
+    { data: standing },
+    { data: snake },
+    { data: lightsOut },
+    { data: challenges },
+    { data: daily },
+    { data: wordle },
+  ] =
     await Promise.all([
     supabase
       .from("matches")
@@ -41,7 +50,16 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     supabase.rpc("get_my_standing", { game: "lightsout" }).maybeSingle(),
     supabase.rpc("get_my_challenges", { max_rows: 20 }),
     supabase.rpc("get_my_daily").maybeSingle(),
+    supabase
+      .from("wordle_games")
+      .select("day, guesses, solved, finished_at")
+      .eq("user_id", viewer.id)
+      .order("day", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
+  // Solo cuenta la partida de hoy (el día lo da el resumen del reto diario).
+  const wordleToday = wordle && daily && wordle.day === daily.day ? wordle : null;
 
   // Elecciones ya hechas en la ronda en curso de piedra, papel o tijera.
   const rpsActive = (matches ?? []).filter((m) => m.status === "active" && (m.game === "rps" || m.game === "rpsls"));
@@ -138,6 +156,17 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
           stats2048={<SoloStats standing={standing} />}
           statsSnake={<SoloStats standing={snake} />}
           statsLightsOut={<SoloStats standing={lightsOut} unit={(n) => (n === 1 ? "nivel" : "niveles")} />}
+          statsWordle={
+            wordleToday?.finished_at ? (
+              <span>
+                Hoy: <strong className="tabular">{wordleToday.solved ? wordleToday.guesses.length : "X"}/6</strong>
+              </span>
+            ) : wordleToday ? (
+              <strong>La tienes a medias</strong>
+            ) : (
+              <span className="text-muted">Aún no has jugado la de hoy.</span>
+            )
+          }
           statsTicTacToe={<MatchStats counts={tally.tictactoe} />}
           statsRps={<MatchStats counts={tally.rps} />}
           statsPong={<MatchStats counts={tally.pong} />}

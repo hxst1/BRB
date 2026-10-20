@@ -291,6 +291,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"wordle_games": {
+                  Row: {
+                    "day": string,"finished_at": string | null,"guesses": (string)[],"patterns": (string)[],"solved": boolean,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "day": string,"finished_at"?: string | null,"guesses"?: (string)[],"patterns"?: (string)[],"solved"?: boolean,"user_id": string
+                  }
+                  Update: {
+                    "day"?: string,"finished_at"?: string | null,"guesses"?: (string)[],"patterns"?: (string)[],"solved"?: boolean,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "wordle_games_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -369,6 +389,11 @@ isOneToOne: false
 "get_unread_messages":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"get_wordle_friends":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "attempts": number,"avatar_parts": Json,"avatar_seed": number,"patterns": (string)[],"solved": boolean,"user_id": string,"username": string
+            }[]
+                           },
 "mark_conversation_read":
 { Args: { "friend": string }; Returns: undefined
                            },
@@ -430,6 +455,26 @@ isOneToOne: false
                            },
 "submit_match_choice":
 { Args: { "choice": number,"match_id": string,"player_id": string }; Returns: number
+                           },
+"wordle_add_guess":
+{ Args: { "game_day": string,"guess": string,"pattern": string,"player": string }; Returns: {
+              "day": string,
+"finished_at": string | null,
+"guesses": (string)[],
+"patterns": (string)[],
+"solved": boolean,
+"user_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "wordle_games"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"wordle_today":
+{ Args: { "candidates": (string)[] }; Returns: {
+              "day": string,"word": string
+            }[]
                            }
           }
           Enums: {

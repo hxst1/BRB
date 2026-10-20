@@ -9,6 +9,8 @@ const PREVIEW_TTT = ["×", "", "○", "", "×", "", "○", "", ""];
 const PREVIEW_SNAKE = { body: [20, 15, 16, 17, 12, 7, 8], food: 4 };
 /** Luces encendidas del Lights Out en miniatura (4 × 4). */
 const PREVIEW_LIGHTS = [1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1];
+/** Wordle en miniatura: tres intentos hasta acertar. */
+const PREVIEW_WORDLE = ["bybbb", "gbygb", "ggggg"];
 
 const ITEM = "w-44 shrink-0 snap-start sm:w-auto";
 
@@ -24,6 +26,7 @@ export function GameCards({
   stats2048,
   statsSnake,
   statsLightsOut,
+  statsWordle,
   statsTicTacToe,
   statsRps,
   statsPong,
@@ -31,6 +34,7 @@ export function GameCards({
   stats2048?: ReactNode;
   statsSnake?: ReactNode;
   statsLightsOut?: ReactNode;
+  statsWordle?: ReactNode;
   statsTicTacToe?: ReactNode;
   statsRps?: ReactNode;
   statsPong?: ReactNode;
@@ -89,6 +93,24 @@ export function GameCards({
                   style={{ background: on ? "var(--t128)" : "var(--cell)", transitionDelay: `${(i % 4) * 25}ms` }}
                 />
               ))}
+            </div>
+          </GameCard>
+        </li>
+        <li className={ITEM}>
+          <GameCard href="/wordle" title="Wordle" subtitle="La palabra del día en 6 intentos" stats={statsWordle}>
+            <div aria-hidden className="grid aspect-square grid-cols-5 content-center gap-1 rounded-xl p-1.5 sm:gap-1.5 sm:rounded-2xl sm:p-2.5" style={{ background: "var(--board)" }}>
+              {PREVIEW_WORDLE.flatMap((row, r) =>
+                [...row].map((mark, i) => (
+                  <span
+                    key={`${r}${i}`}
+                    className="aspect-square rounded-md transition-transform duration-300 group-hover:scale-95 sm:rounded-lg"
+                    style={{
+                      background: mark === "g" ? "var(--t512)" : mark === "y" ? "var(--t128)" : "var(--cell)",
+                      transitionDelay: `${i * 25}ms`,
+                    }}
+                  />
+                )),
+              )}
             </div>
           </GameCard>
         </li>

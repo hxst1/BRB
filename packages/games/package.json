@@ -14,7 +14,8 @@
     "./snake": "./src/snake/index.ts",
     "./snake/verify": "./src/snake/verify.ts",
     "./lightsout": "./src/lightsout/index.ts",
-    "./lightsout/verify": "./src/lightsout/verify.ts"
+    "./lightsout/verify": "./src/lightsout/verify.ts",
+    "./wordle": "./src/wordle/index.ts"
   },
   "scripts": {
     "test": "vitest run",

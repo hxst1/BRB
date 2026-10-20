@@ -134,3 +134,29 @@ body {
 .fade-lr {
   mask-image: linear-gradient(to right, rgb(0 0 0 / 0.35), #000 20px, #000 calc(100% - 20px), rgb(0 0 0 / 0.35));
 }
+
+/* Wordle: la fila tiembla cuando el intento no vale. */
+@keyframes wordle-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
+}
+
+.wordle-shake {
+  animation: wordle-shake 0.4s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wordle-shake {
+    animation: none;
+  }
+}
