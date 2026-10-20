@@ -33,28 +33,32 @@ type Save =
 
 /**
  * Con sesión, el servidor da la semilla y la partida cuenta para el ranking;
- * en un reto, la semilla es la de la partida del retador. Sin sesión (o si
- * falla), se juega en local con una semilla aleatoria.
+ * en un reto, la semilla es la de la partida del retador, y en el reto diario,
+ * la del día. Sin sesión (o si falla), se juega en local con una semilla aleatoria.
  */
-type PreparedGame = { game: Game2048State; runId: string | null; notice: string | null; inChallenge: boolean };
+type PreparedGame = { game: Game2048State; runId: string | null; notice: string | null; special: boolean };
 
-async function prepareGame(signedIn: boolean, challengeId: string | null): Promise<PreparedGame> {
-  if (!signedIn) return { game: newGame(randomSeed()), runId: null, notice: null, inChallenge: false };
+async function prepareGame(signedIn: boolean, challengeId: string | null, daily: boolean): Promise<PreparedGame> {
+  if (!signedIn) return { game: newGame(randomSeed()), runId: null, notice: null, special: false };
 
   const supabase = createClient();
   const { data, error } = challengeId
     ? await supabase.rpc("start_challenge_run", { challenge_id: challengeId })
-    : await supabase.rpc("start_run", { game: "2048" });
+    : daily
+      ? await supabase.rpc("start_daily_run")
+      : await supabase.rpc("start_run", { game: "2048" });
   const run = data?.[0];
-  if (run) return { game: newGame(run.seed), runId: run.id, notice: null, inChallenge: challengeId !== null };
+  if (run) return { game: newGame(run.seed), runId: run.id, notice: null, special: challengeId !== null || daily };
 
   return {
     game: newGame(randomSeed()),
     runId: null,
-    inChallenge: false,
+    special: false,
     notice:
       error?.hint === "already_played"
-        ? "Ya jugaste este reto. Esta es una partida normal."
+        ? daily
+          ? "Ya has jugado el reto de hoy. Esta es una partida normal; vuelve mañana."
+          : "Ya jugaste este reto. Esta es una partida normal."
         : error?.hint === "rate_limited"
           ? "Has empezado muchas partidas seguidas. Esta no contará para el ranking."
           : "No hemos podido conectar. Esta partida no contará para el ranking.",
@@ -80,14 +84,18 @@ function writeBest(score: number) {
 export function Game2048({
   viewerId,
   challenge,
+  daily = false,
   onSaved,
-  onExitChallenge,
+  onExit,
 }: {
   viewerId: string | null;
   /** Reto que se está jugando (llega por ?reto=), o null para una partida normal. */
   challenge: ActiveChallenge | null;
+  /** Intento del reto diario. */
+  daily?: boolean;
   onSaved: () => void;
-  onExitChallenge: () => void;
+  /** Salir de un reto (de un amigo o el diario) a una partida normal. */
+  onExit: () => void;
 }) {
   const signedIn = viewerId !== null;
   const challengeId = challenge?.id ?? null;
@@ -95,7 +103,8 @@ export function Game2048({
   const [storedBest, setStoredBest] = useState(0);
   const [save, setSave] = useState<Save | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [inChallenge, setInChallenge] = useState(false);
+  // Partida de un reto (de un amigo o el diario) con un solo intento.
+  const [special, setSpecial] = useState(false);
   const [savedRunId, setSavedRunId] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
   const [confirmingExit, setConfirmingExit] = useState(false);
@@ -105,14 +114,14 @@ export function Game2048({
     runId.current = next.runId;
     setStoredBest(readBest());
     setNotice(next.notice);
-    setInChallenge(next.inChallenge);
+    setSpecial(next.special);
     setSave(null);
     setSavedRunId(null);
     setPicking(false);
     setState(next.game);
   }, []);
 
-  const start = useCallback(async () => apply(await prepareGame(signedIn, null)), [apply, signedIn]);
+  const start = useCallback(async () => apply(await prepareGame(signedIn, null, false)), [apply, signedIn]);
 
   // En desarrollo React monta los efectos dos veces. Si cada montaje pidiera su
   // propia partida, el servidor podría atenderlas en otro orden y quedarnos con
@@ -120,9 +129,9 @@ export function Game2048({
   const initialGame = useRef<{ key: string; promise: Promise<PreparedGame> } | null>(null);
 
   useEffect(() => {
-    const key = `${signedIn}:${challengeId}`;
+    const key = `${signedIn}:${challengeId}:${daily}`;
     if (initialGame.current?.key !== key) {
-      initialGame.current = { key, promise: prepareGame(signedIn, challengeId) };
+      initialGame.current = { key, promise: prepareGame(signedIn, challengeId, daily) };
     }
     let cancelled = false;
     initialGame.current.promise.then((next) => {
@@ -131,13 +140,13 @@ export function Game2048({
     return () => {
       cancelled = true;
     };
-  }, [apply, signedIn, challengeId]);
+  }, [apply, signedIn, challengeId, daily]);
 
-  /** Salir de un reto lleva a una partida normal (la página se vuelve a montar sin ?reto=). */
+  /** Salir de un reto lleva a una partida normal (la página se vuelve a montar sin el reto). */
   const restart = useCallback(() => {
-    if (inChallenge) onExitChallenge();
+    if (special) onExit();
     else void start();
-  }, [inChallenge, onExitChallenge, start]);
+  }, [special, onExit, start]);
 
   const play = useCallback((direction: Direction) => {
     setState((current) => (current && !current.over ? move(current, direction) : current));
@@ -218,8 +227,9 @@ export function Game2048({
       .catch(() => setSave({ status: "error", message: "Sin conexión: la partida no se ha guardado." }));
   }, [over, state, onSaved]);
 
-  const challengeLive = inChallenge && challenge !== null;
-  const midChallenge = challengeLive && state !== null && !state.over && state.moves.length > 0;
+  const challengeLive = special && challenge !== null;
+  const dailyLive = special && daily;
+  const midAttempt = special && state !== null && !state.over && state.moves.length > 0;
 
   return (
     <section className="flex w-full max-w-[30rem] flex-col gap-4">
@@ -233,6 +243,12 @@ export function Game2048({
           </p>
         </div>
       )}
+      {dailyLive && (
+        <p className="rounded-2xl bg-surface p-3 text-sm shadow-soft">
+          <span className="font-semibold">La misma partida para todos.</span> Solo tienes un intento: si la dejas a medias,
+          cuenta como jugada.
+        </p>
+      )}
 
       <div className="flex items-end justify-between gap-4">
         <div className="flex gap-6">
@@ -242,7 +258,7 @@ export function Game2048({
         {confirmingExit ? (
           <span className="flex items-center gap-3 text-sm">
             ¿Abandonar el reto? Lo perderás.
-            <button type="button" onClick={onExitChallenge} className="font-medium text-danger">
+            <button type="button" onClick={onExit} className="font-medium text-danger">
               Sí
             </button>
             <button type="button" onClick={() => setConfirmingExit(false)} className="text-muted hover:text-ink">
@@ -252,7 +268,7 @@ export function Game2048({
         ) : (
           <button
             type="button"
-            onClick={() => (midChallenge ? setConfirmingExit(true) : restart())}
+            onClick={() => (midAttempt ? setConfirmingExit(true) : restart())}
             className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium shadow-soft transition-colors hover:border-muted"
           >
             Nueva partida
@@ -268,8 +284,10 @@ export function Game2048({
               save={save}
               signedIn={signedIn}
               challenge={challengeLive ? challenge : null}
+              daily={dailyLive}
               onRestart={restart}
-              onChallengeFriends={savedRunId ? () => setPicking(true) : undefined}
+              // Retar con la partida del día daría a conocer el tablero antes de jugarlo.
+              onChallengeFriends={savedRunId && !dailyLive ? () => setPicking(true) : undefined}
             />
           )}
         </Board>
@@ -316,6 +334,7 @@ function GameOver({
   save,
   signedIn,
   challenge,
+  daily,
   onRestart,
   onChallengeFriends,
 }: {
@@ -323,6 +342,7 @@ function GameOver({
   save: Save | null;
   signedIn: boolean;
   challenge: ActiveChallenge | null;
+  daily: boolean;
   onRestart: () => void;
   onChallengeFriends?: () => void;
 }) {
@@ -332,7 +352,9 @@ function GameOver({
     : save?.status === "saving"
       ? "Guardando…"
       : save?.status === "saved"
-        ? "Guardada en el ranking."
+        ? daily
+          ? "Guardada. Mañana hay otra."
+          : "Guardada en el ranking."
         : save?.status === "rejected"
           ? "No hemos podido validar esta partida, así que no cuenta."
           : save?.status === "error"
@@ -350,6 +372,8 @@ function GameOver({
                 ? "Empate: había que superarle"
                 : `Te han faltado ${formatNumber(challenge.targetScore - state.score + 1)} puntos`}
           </p>
+        ) : daily ? (
+          <p className="display text-2xl font-bold">Reto de hoy terminado</p>
         ) : (
           <p className="text-muted">Sin movimientos</p>
         )}

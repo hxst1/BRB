@@ -2,6 +2,7 @@ import Link from "next/link";
 import { replay } from "@repo/games/tictactoe";
 import type { Json, Match } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
+import { DailyCard } from "@/components/daily/daily-summary";
 import { LevelBar } from "@/components/level-bar";
 import { formatNumber } from "@/lib/format";
 import { matchGame, matchHref } from "@/lib/games";
@@ -23,7 +24,7 @@ function myTurnIn(match: Match, viewerId: string, chosen: ReadonlySet<string>): 
 
 export async function Dashboard({ viewer }: { viewer: Viewer }) {
   const supabase = await createClient();
-  const [{ data: matches }, { data: requests }, { data: standing }, { data: challenges }] = await Promise.all([
+  const [{ data: matches }, { data: requests }, { data: standing }, { data: challenges }, { data: daily }] = await Promise.all([
     supabase
       .from("matches")
       .select(MATCH_WITH_PLAYERS)
@@ -36,6 +37,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
       .eq("addressee_id", viewer.id),
     supabase.rpc("get_my_standing", { game: "2048" }).maybeSingle(),
     supabase.rpc("get_my_challenges", { max_rows: 20 }),
+    supabase.rpc("get_my_daily").maybeSingle(),
   ]);
 
   // Elecciones ya hechas en la ronda en curso de piedra, papel o tijera.
@@ -100,6 +102,12 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
           <LevelBar xp={viewer.xp} className="max-w-sm" />
         </div>
       </section>
+
+      {daily && (
+        <div className="mt-14">
+          <DailyCard summary={daily} />
+        </div>
+      )}
 
       <section aria-labelledby="pending-title" className="mt-14 max-w-xl">
         <h2 id="pending-title" className="mb-2 text-xl font-semibold">

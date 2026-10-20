@@ -11,29 +11,34 @@ type Period = "all" | "week";
 
 export function Leaderboard({
   game,
+  daily = false,
   viewerId,
   refreshKey,
 }: {
   game: string;
+  /** Ranking del reto diario de hoy (solo 2048). */
+  daily?: boolean;
   viewerId: string | null;
   refreshKey: number;
 }) {
   const [scope, setScope] = useState<Scope>("global");
   const [period, setPeriod] = useState<Period>("all");
   const [result, setResult] = useState<{ key: string; rows: LeaderboardEntry[] | null }>({ key: "", rows: null });
-  const key = `${scope}:${period}:${refreshKey}`;
+  const key = `${daily}:${scope}:${period}:${refreshKey}`;
 
   useEffect(() => {
     let cancelled = false;
-    createClient()
-      .rpc("get_leaderboard", { game, scope, period, max_rows: 20 })
-      .then(({ data }) => {
-        if (!cancelled) setResult({ key, rows: data ?? [] });
-      });
+    const supabase = createClient();
+    (daily
+      ? supabase.rpc("get_daily_leaderboard", { scope, max_rows: 20 })
+      : supabase.rpc("get_leaderboard", { game, scope, period, max_rows: 20 })
+    ).then(({ data }) => {
+      if (!cancelled) setResult({ key, rows: data ?? [] });
+    });
     return () => {
       cancelled = true;
     };
-  }, [game, scope, period, key]);
+  }, [daily, game, scope, period, key]);
 
   const rows = result.key === key ? result.rows : null;
 
@@ -41,17 +46,19 @@ export function Leaderboard({
     <section aria-labelledby="ranking-title" className="flex w-full max-w-[30rem] flex-col gap-4 lg:max-w-none">
       <div className="flex items-center justify-between gap-3">
         <h2 id="ranking-title" className="display text-3xl font-bold">
-          Ranking
+          {daily ? "Ranking de hoy" : "Ranking"}
         </h2>
-        <Toggle
-          label="Periodo"
-          value={period}
-          onChange={setPeriod}
-          options={[
-            { value: "all", label: "Siempre" },
-            { value: "week", label: "Semana" },
-          ]}
-        />
+        {!daily && (
+          <Toggle
+            label="Periodo"
+            value={period}
+            onChange={setPeriod}
+            options={[
+              { value: "all", label: "Siempre" },
+              { value: "week", label: "Semana" },
+            ]}
+          />
+        )}
       </div>
 
       {viewerId && (
@@ -74,7 +81,9 @@ export function Leaderboard({
           <li className="py-6 text-sm text-muted">
             {scope === "friends"
               ? "Ni tú ni tus amigos tenéis partidas aquí todavía. Juega una y estrénalo."
-              : "Nadie ha puntuado todavía. La primera posición está libre."}
+              : daily
+                ? "Nadie ha jugado el reto de hoy todavía. La primera posición está libre."
+                : "Nadie ha puntuado todavía. La primera posición está libre."}
           </li>
         )}
 

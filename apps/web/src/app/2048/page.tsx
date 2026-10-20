@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { Game2048Screen, type ActiveChallenge } from "@/components/game2048/screen";
 import { PLAYER_COLUMNS } from "@/lib/queries";
@@ -16,7 +17,13 @@ export default function Game2048Page({ searchParams }: PageProps<"/2048">) {
       {/* Hasta lg, una sola columna del ancho del tablero, centrada como en el 3 en raya. */}
       <div className="mx-auto max-w-[30rem] lg:mx-0 lg:max-w-none">
         <h1 className="display mb-1 text-6xl font-bold sm:text-7xl">2048</h1>
-        <p className="mb-8 text-muted">Junta fichas iguales hasta llegar a 2048.</p>
+        <p className="mb-8 text-muted">
+          Junta fichas iguales hasta llegar a 2048.{" "}
+          <Link href="/reto-diario" className="font-medium text-ink underline underline-offset-4">
+            Juega el reto diario
+          </Link>
+          .
+        </p>
       </div>
       <Suspense fallback={<div className="board mx-auto max-w-[30rem] animate-pulse lg:mx-0" />}>
         <GameForViewer searchParams={searchParams} />

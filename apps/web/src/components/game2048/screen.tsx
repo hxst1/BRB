@@ -13,25 +13,34 @@ export type ActiveChallenge = {
   challenger: { username: string; avatar_seed: number; avatar_parts: Json };
 };
 
-export function Game2048Screen({ viewerId, challenge }: { viewerId: string | null; challenge: ActiveChallenge | null }) {
+export function Game2048Screen({
+  viewerId,
+  challenge,
+  daily = false,
+}: {
+  viewerId: string | null;
+  challenge: ActiveChallenge | null;
+  daily?: boolean;
+}) {
   const router = useRouter();
   const [refreshKey, setRefreshKey] = useState(0);
   const refresh = useCallback(() => setRefreshKey((key) => key + 1), []);
-  const exitChallenge = useCallback(() => router.replace("/2048"), [router]);
+  const exit = useCallback(() => (daily ? router.push("/2048") : router.replace("/2048")), [daily, router]);
 
   return (
     <div className="mx-auto grid w-full max-w-[30rem] gap-12 lg:max-w-none lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-16">
       {/* La key reinicia el juego al entrar o salir de un reto. */}
       <Game2048
-        key={challenge?.id ?? "normal"}
+        key={challenge?.id ?? (daily ? "daily" : "normal")}
         viewerId={viewerId}
         challenge={challenge}
+        daily={daily}
         onSaved={refresh}
-        onExitChallenge={exitChallenge}
+        onExit={exit}
       />
       <div className="flex flex-col gap-12">
-        <Leaderboard game="2048" viewerId={viewerId} refreshKey={refreshKey} />
-        {viewerId && <ChallengesList refreshKey={refreshKey} />}
+        <Leaderboard game="2048" daily={daily} viewerId={viewerId} refreshKey={refreshKey} />
+        {viewerId && !daily && <ChallengesList refreshKey={refreshKey} />}
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ export type Friendship = Tables<"friendships">;
 export type GameRun = Tables<"game_runs">;
 export type Match = Tables<"matches">;
 export type LeaderboardEntry = Functions<"get_leaderboard">["Returns"][number];
+export type DailySummary = Functions<"get_my_daily">["Returns"][number];
 
 /** Resultado de `send_friend_request` (ver migración init). */
 export type FriendRequestResult =

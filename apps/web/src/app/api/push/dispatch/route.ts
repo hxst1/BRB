@@ -7,13 +7,15 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
  * Lo llama la base de datos (trigger con pg_net) cuando pasa algo que puede
- * merecer una notificación. Decide a quién avisar y con qué texto.
+ * merecer una notificación, y pg_cron a las 20:00 con las rachas a punto de
+ * perderse. Decide a quién avisar y con qué texto.
  */
 
 type Change =
   | { table: "messages"; type: "INSERT"; record: Tables<"messages"> }
   | { table: "friendships"; type: "INSERT"; record: Tables<"friendships"> }
-  | { table: "matches"; type: "UPDATE"; record: Tables<"matches">; old_record: Tables<"matches"> };
+  | { table: "matches"; type: "UPDATE"; record: Tables<"matches">; old_record: Tables<"matches"> }
+  | { table: "streaks"; type: "REMINDER"; records: { user_id: string; streak_days: number }[] };
 
 type Notification = { userId: string; message: PushMessage };
 
@@ -34,6 +36,18 @@ function truncate(text: string, max = 120): string {
 }
 
 async function notificationsFor(change: Change): Promise<Notification[]> {
+  if (change.table === "streaks") {
+    return change.records.map((r) => ({
+      userId: r.user_id,
+      message: {
+        title: `Llevas ${r.streak_days} días seguidos`,
+        body: "Juega hoy antes de medianoche para no perder la racha. El reto diario te espera.",
+        url: "/reto-diario",
+        tag: "streak",
+      },
+    }));
+  }
+
   if (change.table === "messages") {
     const m = change.record;
     const names = await usernames([m.sender_id]);
@@ -142,7 +156,7 @@ export async function POST(request: Request) {
   if (!authorized(request)) return Response.json({ error: "No autorizado" }, { status: 401 });
 
   const change = (await request.json().catch(() => null)) as Change | null;
-  if (!change || !["messages", "friendships", "matches"].includes(change.table)) {
+  if (!change || !["messages", "friendships", "matches", "streaks"].includes(change.table)) {
     return Response.json({ error: "Evento no válido" }, { status: 400 });
   }
 
