@@ -6,7 +6,7 @@ import { AccountMenu } from "@/components/nav/account-menu";
 import { MainNav } from "@/components/nav/main-nav";
 import type { NavCounts } from "@/components/nav/nav-items";
 import { TabBar } from "@/components/nav/tab-bar";
-import { getViewer } from "@/lib/session";
+import { getViewer, getViewerId } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
 /** Avisos de cada sección: lo pendiente en Inicio, los mensajes en Chat y las solicitudes en Amigos. */
@@ -37,9 +37,10 @@ export function SiteHeader() {
 }
 
 async function Navigation() {
-  const viewer = await getViewer();
+  // Sin sesión no hay nada que pedir; con ella, perfil y avisos a la vez.
+  const [viewer, counts] = (await getViewerId()) ? await Promise.all([getViewer(), getNavCounts()]) : [null, null];
 
-  if (!viewer) {
+  if (!viewer || !counts) {
     return (
       <Link href="/entrar" className="rounded-full bg-ink px-4 py-1.5 text-sm font-medium text-bg">
         Entrar
@@ -47,7 +48,6 @@ async function Navigation() {
     );
   }
 
-  const counts = await getNavCounts();
   return (
     <>
       <LiveRefresh viewerId={viewer.id} />

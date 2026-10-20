@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { FriendCode } from "@/components/profile/friend-code";
 import { Friends } from "@/components/profile/friends";
-import { getViewer } from "@/lib/session";
+import { getViewerId } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Amigos" };
@@ -24,18 +24,18 @@ async function FriendsForViewer({ searchParams }: { searchParams: PageProps<"/am
   // Solo caracteres válidos de un código: el resto se descarta.
   const invite = typeof codigo === "string" ? codigo.toUpperCase().replace(/[^0-9A-Z]/g, "").slice(0, 5) : "";
 
-  const viewer = await getViewer();
-  if (!viewer) {
+  const viewerId = await getViewerId();
+  if (!viewerId) {
     redirect(`/entrar?next=${encodeURIComponent(invite ? `/amigos?codigo=${invite}` : "/amigos")}`);
   }
 
   const supabase = await createClient();
-  const { data: friendCode } = await supabase.from("friend_codes").select("code").eq("user_id", viewer.id).single();
+  const { data: friendCode } = await supabase.from("friend_codes").select("code").eq("user_id", viewerId).single();
 
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:gap-16">
       <div>{friendCode && <FriendCode code={friendCode.code} />}</div>
-      <Friends viewerId={viewer.id} initialCode={invite === friendCode?.code ? "" : invite} />
+      <Friends viewerId={viewerId} initialCode={invite === friendCode?.code ? "" : invite} />
     </div>
   );
 }
