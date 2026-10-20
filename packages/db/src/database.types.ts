@@ -225,6 +225,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"push_subscriptions": {
+                  Row: {
+                    "auth": string,"created_at": string,"endpoint": string,"id": string,"p256dh": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "auth": string,"created_at"?: string,"endpoint": string,"id"?: string,"p256dh": string,"user_id": string
+                  }
+                  Update: {
+                    "auth"?: string,"created_at"?: string,"endpoint"?: string,"id"?: string,"p256dh"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "push_subscriptions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -245,6 +265,9 @@ isOneToOne: false
                            },
 "decline_challenge":
 { Args: { "challenge_id": string }; Returns: undefined
+                           },
+"delete_push_subscription":
+{ Args: { "endpoint": string }; Returns: undefined
                            },
 "finish_run":
 { Args: { "max_tile": number,"moves": string,"run_id": string,"score": number }; Returns: undefined
@@ -304,6 +327,9 @@ isOneToOne: false
                            },
 "respond_match":
 { Args: { "accept": boolean,"match_id": string }; Returns: undefined
+                           },
+"save_push_subscription":
+{ Args: { "auth": string,"endpoint": string,"p256dh": string }; Returns: undefined
                            },
 "send_friend_request":
 { Args: { "friend_code": string }; Returns: string

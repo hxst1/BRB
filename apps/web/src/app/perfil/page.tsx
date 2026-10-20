@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { signOut } from "@/app/entrar/actions";
 import { LevelBar } from "@/components/level-bar";
+import { AppSettings } from "@/components/pwa/app-settings";
 import { AvatarEditor } from "@/components/profile/avatar-editor";
 import { getViewer } from "@/lib/session";
 
@@ -36,6 +37,8 @@ async function Profile() {
         initialParts={viewer.avatar_parts}
         isSupporter={viewer.supporter_tier !== null}
       />
+
+      <AppSettings />
 
       <section aria-label="Cuenta" className="flex flex-col gap-3 border-t border-line pt-6">
         <Link href="/amigos" className="text-sm font-medium underline-offset-4 hover:underline">

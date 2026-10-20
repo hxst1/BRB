@@ -74,6 +74,17 @@ El nombre aún no es definitivo. Para cambiarlo:
 Los paquetes internos usan el scope neutro `@repo/*`, así que no hay que tocarlos.
 Ningún otro fichero debe escribir el nombre a mano; si lo necesitas, importa `brand`.
 
+## PWA y notificaciones
+
+- `app/manifest.ts` + iconos generados con la mascota (`/icons/*`, `app/icon.tsx`, `app/apple-icon.tsx`).
+- `public/sw.js`: página sin conexión (`/offline`, HTML autónomo) y notificaciones push.
+- Notificaciones: los triggers de la BD (mensajes, partidas, solicitudes) llaman con `pg_net` a
+  `POST /api/push/dispatch`, que decide a quién avisar y envía con `web-push`. La URL y el secreto
+  compartido están en Vault (`push_webhook_url`, `push_webhook_secret`); en local los crea el seed y el
+  secreto coincide con `PUSH_WEBHOOK_SECRET` de `.env.local`.
+- Cada usuario activa las notificaciones en **Tú → La app**. En iPhone solo funcionan con la app
+  añadida a la pantalla de inicio.
+
 ## Si algo no cuadra en desarrollo
 
 Si `pnpm dev` sirve estilos o componentes viejos (p. ej. un cambio en `globals.css` que no se
@@ -86,4 +97,7 @@ y vuelve a arrancarlo.
       en el registro: cada cuenta nueva tiene su propio cupo de intentos de código de amigo.
 - [ ] Configurar SMTP propio (el de Supabase solo permite unos pocos emails por hora).
 - [ ] Revisar los límites de Auth por IP en el dashboard.
+- [ ] Claves VAPID propias (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) y
+      secretos de Vault `push_webhook_url` (URL pública de `/api/push/dispatch`) y `push_webhook_secret`
+      (igual que `PUSH_WEBHOOK_SECRET`).
 - [ ] Tarea periódica para limpiar `private.friend_request_attempts` y partidas abandonadas antiguas.

@@ -39,3 +39,8 @@ insert into public.game_runs (user_id, game, seed, status, score, max_tile, star
   ('00000000-0000-0000-0000-00000000000b', '2048', 3, 'finished', 20716, 2048, now() - interval '10 days', now() - interval '10 days'),
   ('00000000-0000-0000-0000-00000000000b', '2048', 4, 'finished', 7004, 512, now() - interval '3 hours', now() - interval '3 hours'),
   ('00000000-0000-0000-0000-00000000000c', '2048', 5, 'finished', 3110, 256, now() - interval '20 minutes', now() - interval '20 minutes');
+
+-- Notificaciones push en local: la base de datos avisa al servidor de Next que
+-- corre en tu máquina. El secreto debe coincidir con PUSH_WEBHOOK_SECRET.
+select vault.create_secret('http://host.docker.internal:4321/api/push/dispatch', 'push_webhook_url');
+select vault.create_secret('local-dev-push-secret', 'push_webhook_secret');
