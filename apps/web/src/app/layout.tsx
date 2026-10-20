@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque } from "next/font/google";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { brand, siteUrl } from "@repo/brand";
 import { ServiceWorker } from "@/components/pwa/service-worker";
 import { SiteHeader } from "@/components/site-header";
@@ -45,7 +44,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ServiceWorker />
         <SiteHeader />
         {children}
-        <SpeedInsights />
       </body>
     </html>
   );
