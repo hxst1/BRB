@@ -6,11 +6,11 @@ import { Avatar } from "@/components/avatar";
 import { getViewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
-/** Partidas en las que te toca, retos y solicitudes de amistad sin responder. */
+/** Partidas en las que te toca, retos (3 en raya y 2048) y solicitudes de amistad sin responder. */
 async function getPendingCount(): Promise<number> {
   const supabase = await createClient();
   const { data } = await supabase.rpc("get_pending_counts").maybeSingle();
-  return data ? data.my_turn + data.match_invites + data.friend_requests : 0;
+  return data ? data.my_turn + data.match_invites + data.friend_requests + data.challenges : 0;
 }
 
 export function SiteHeader() {

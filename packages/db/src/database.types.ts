@@ -23,7 +23,45 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "friend_codes": {
+            "challenges": {
+                  Row: {
+                    "attempt_run_id": string | null,"challenged_id": string,"challenger_id": string,"created_at": string,"declined_at": string | null,"game": string,"id": string,"source_run_id": string,"target_score": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "attempt_run_id"?: string | null,"challenged_id": string,"challenger_id": string,"created_at"?: string,"declined_at"?: string | null,"game": string,"id"?: string,"source_run_id": string,"target_score": number
+                  }
+                  Update: {
+                    "attempt_run_id"?: string | null,"challenged_id"?: string,"challenger_id"?: string,"created_at"?: string,"declined_at"?: string | null,"game"?: string,"id"?: string,"source_run_id"?: string,"target_score"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "challenges_attempt_run_id_fkey"
+      columns: ["attempt_run_id"]
+isOneToOne: true
+      referencedRelation: "game_runs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "challenges_challenged_id_fkey"
+      columns: ["challenged_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "challenges_challenger_id_fkey"
+      columns: ["challenger_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "challenges_source_run_id_fkey"
+      columns: ["source_run_id"]
+isOneToOne: false
+      referencedRelation: "game_runs"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"friend_codes": {
                   Row: {
                     "code": string,"user_id": string
                   }
@@ -147,8 +185,14 @@ isOneToOne: false
 "cancel_match":
 { Args: { "match_id": string }; Returns: undefined
                            },
+"create_challenge":
+{ Args: { "friend": string,"run_id": string }; Returns: string
+                           },
 "create_match":
 { Args: { "game": string,"opponent": string }; Returns: string
+                           },
+"decline_challenge":
+{ Args: { "challenge_id": string }; Returns: undefined
                            },
 "finish_run":
 { Args: { "max_tile": number,"moves": string,"run_id": string,"score": number }; Returns: undefined
@@ -158,6 +202,11 @@ isOneToOne: false
               "achieved_at": string,"avatar_parts": Json,"avatar_seed": number,"rank": number,"score": number,"supporter_tier": string,"user_id": string,"username": string
             }[]
                            },
+"get_my_challenges":
+{ Args: { "max_rows"?: number }; Returns: {
+              "attempt_score": number,"created_at": string,"game": string,"id": string,"incoming": boolean,"other_avatar_parts": Json,"other_avatar_seed": number,"other_id": string,"other_username": string,"status": string,"target_score": number
+            }[]
+                           },
 "get_my_standing":
 { Args: { "game": string }; Returns: {
               "best_score": number,"friends_players": number,"friends_rank": number,"global_players": number,"global_rank": number
@@ -165,7 +214,7 @@ isOneToOne: false
                            },
 "get_pending_counts":
 { Args: Record<PropertyKey, never>; Returns: {
-              "friend_requests": number,"match_invites": number,"my_turn": number
+              "challenges": number,"friend_requests": number,"match_invites": number,"my_turn": number
             }[]
                            },
 "reject_run":
@@ -185,6 +234,11 @@ isOneToOne: false
                            },
 "send_friend_request":
 { Args: { "friend_code": string }; Returns: string
+                           },
+"start_challenge_run":
+{ Args: { "challenge_id": string }; Returns: {
+              "id": string,"seed": number
+            }[]
                            },
 "start_run":
 { Args: { "game": string }; Returns: {

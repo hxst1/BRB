@@ -14,7 +14,7 @@ type Pending = { key: string; href: string; person: Person; text: string; urgent
 
 export async function Dashboard({ viewer }: { viewer: Viewer }) {
   const supabase = await createClient();
-  const [{ data: matches }, { data: requests }, { data: standing }] = await Promise.all([
+  const [{ data: matches }, { data: requests }, { data: standing }, { data: challenges }] = await Promise.all([
     supabase
       .from("matches")
       .select(MATCH_WITH_PLAYERS)
@@ -26,6 +26,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
       .eq("status", "pending")
       .eq("addressee_id", viewer.id),
     supabase.rpc("get_my_standing", { game: "2048" }).maybeSingle(),
+    supabase.rpc("get_my_challenges", { max_rows: 20 }),
   ]);
 
   const pending: Pending[] = [];
@@ -42,6 +43,20 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     } else if (replay(match.moves)?.turn === myMark) {
       pending.push({ key: match.id, href: `/3-en-raya/${match.id}`, person: rival, text: `Te toca contra ${rival.username}`, urgent: true });
     } else waiting++;
+  }
+  for (const challenge of challenges ?? []) {
+    if (!challenge.incoming || challenge.status !== "pending") continue;
+    pending.push({
+      key: challenge.id,
+      href: `/2048?reto=${challenge.id}`,
+      person: {
+        id: challenge.other_id,
+        username: challenge.other_username,
+        avatar_seed: challenge.other_avatar_seed,
+        avatar_parts: challenge.other_avatar_parts,
+      },
+      text: `${challenge.other_username} te reta al 2048: supera ${formatNumber(challenge.target_score)}`,
+    });
   }
   for (const request of requests ?? []) {
     pending.push({

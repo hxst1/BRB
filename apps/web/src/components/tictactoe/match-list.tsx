@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
+import { fetchFriends, type Friend } from "@/lib/friends";
 import { createClient } from "@/lib/supabase/client";
-import { challenge, fetchMyMatches, markOf, opponentOf, turnOf, type MatchWithPlayers, type Player } from "./data";
+import { challenge, fetchMyMatches, markOf, opponentOf, turnOf, type MatchWithPlayers } from "./data";
 
 export function MatchList({ viewerId }: { viewerId: string }) {
   const router = useRouter();
   const [matches, setMatches] = useState<MatchWithPlayers[] | null>(null);
-  const [friends, setFriends] = useState<Player[] | null>(null);
+  const [friends, setFriends] = useState<Friend[] | null>(null);
   const [picking, setPicking] = useState(false);
 
   const reload = useCallback(async () => setMatches(await fetchMyMatches()), []);
@@ -41,14 +42,7 @@ export function MatchList({ viewerId }: { viewerId: string }) {
   async function openPicker() {
     setPicking(true);
     if (friends) return;
-    const { data } = await createClient()
-      .from("friendships")
-      .select(
-        `requester_id, requester:profiles!friendships_requester_id_fkey(id, username, avatar_seed, avatar_parts),
-         addressee:profiles!friendships_addressee_id_fkey(id, username, avatar_seed, avatar_parts)`,
-      )
-      .eq("status", "accepted");
-    setFriends((data ?? []).map((row) => (row.requester_id === viewerId ? row.addressee : row.requester)));
+    setFriends(await fetchFriends(viewerId));
   }
 
   async function challengeFriend(friendId: string) {
