@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { LeaderboardEntry } from "@repo/db";
 import { Avatar } from "@/components/avatar";
+import { formatNumber } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
 
 type Scope = "global" | "friends";
@@ -90,7 +91,7 @@ export function Leaderboard({
                 {row.username}
                 {isViewer && <span className="ml-2 text-xs font-normal text-muted">tú</span>}
               </span>
-              <span className="tabular font-semibold">{row.score.toLocaleString("es", { useGrouping: "always" })}</span>
+              <span className="tabular font-semibold">{formatNumber(row.score)}</span>
             </li>
           );
         })}

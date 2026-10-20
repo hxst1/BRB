@@ -158,6 +158,16 @@ isOneToOne: false
               "achieved_at": string,"avatar_parts": Json,"avatar_seed": number,"rank": number,"score": number,"supporter_tier": string,"user_id": string,"username": string
             }[]
                            },
+"get_my_standing":
+{ Args: { "game": string }; Returns: {
+              "best_score": number,"friends_players": number,"friends_rank": number,"global_players": number,"global_rank": number
+            }[]
+                           },
+"get_pending_counts":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "friend_requests": number,"match_invites": number,"my_turn": number
+            }[]
+                           },
 "reject_run":
 { Args: { "reason": string,"run_id": string }; Returns: undefined
                            },

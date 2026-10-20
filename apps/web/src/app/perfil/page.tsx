@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { AvatarEditor } from "@/components/profile/avatar-editor";
 import { FriendCode } from "@/components/profile/friend-code";
 import { Friends } from "@/components/profile/friends";
+import { LevelBar } from "@/components/level-bar";
 import { getViewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
@@ -29,7 +30,7 @@ async function Profile() {
   return (
     <>
       <h1 className="display mb-1 text-6xl font-bold sm:text-7xl">{viewer.username}</h1>
-      <p className="mb-10 text-muted">Nivel {1 + Math.floor(Math.sqrt(viewer.xp / 10))} · {viewer.xp} XP</p>
+      <LevelBar xp={viewer.xp} className="mb-10 max-w-sm" />
 
       <div className="grid gap-12 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:gap-16">
         <AvatarEditor

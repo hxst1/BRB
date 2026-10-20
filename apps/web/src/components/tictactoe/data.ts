@@ -1,12 +1,10 @@
 import { replay, type Mark } from "@repo/games/tictactoe";
 import type { Json, Match } from "@repo/db";
+import { MATCH_WITH_PLAYERS as MATCH_SELECT } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/client";
 
 export type Player = { id: string; username: string; avatar_seed: number; avatar_parts: Json };
 export type MatchWithPlayers = Match & { x: Player; o: Player };
-
-const PLAYER = "id, username, avatar_seed, avatar_parts";
-export const MATCH_SELECT = `*, x:profiles!matches_player_x_fkey(${PLAYER}), o:profiles!matches_player_o_fkey(${PLAYER})`;
 
 export function markOf(match: Match, userId: string): Mark {
   return match.player_x === userId ? "x" : "o";
