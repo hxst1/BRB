@@ -19,10 +19,12 @@ export function GameCards({
   stats2048,
   statsTicTacToe,
   statsRps,
+  statsPong,
 }: {
   stats2048?: ReactNode;
   statsTicTacToe?: ReactNode;
   statsRps?: ReactNode;
+  statsPong?: ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-10">
@@ -78,6 +80,16 @@ export function GameCards({
                   {emoji}
                 </span>
               ))}
+            </div>
+          </GameCard>
+        </li>
+        <li className={ITEM}>
+          <GameCard href="/pong" title="Pong" subtitle="En directo, los dos a la vez" stats={statsPong}>
+            <div aria-hidden className="relative aspect-square overflow-hidden rounded-xl sm:rounded-2xl" style={{ background: "var(--board)" }}>
+              <span className="absolute top-[12%] left-[38%] h-[5%] w-[30%] rounded-full" style={{ background: "var(--mark-o)" }} />
+              <span className="absolute top-1/2 right-0 left-0 border-t-2 border-dashed" style={{ borderColor: "var(--cell)" }} />
+              <span className="absolute top-[30%] left-[58%] size-[9%] rounded-full bg-ink transition-transform duration-500 group-hover:translate-x-[-120%] group-hover:translate-y-[220%]" />
+              <span className="absolute bottom-[12%] left-[22%] h-[5%] w-[30%] rounded-full" style={{ background: "var(--mark-x)" }} />
             </div>
           </GameCard>
         </li>

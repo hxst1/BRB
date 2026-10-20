@@ -79,8 +79,8 @@ export function ChallengeEmbed({
           break;
         case "active": {
           if (match.game !== "tictactoe") {
-            // Quién ha elegido ya es secreto: solo se ve que está en juego.
-            status = "En juego";
+            // Piedra, papel o tijera: quién ha elegido es secreto. Pong: se juega en directo.
+            status = match.game === "pong" ? "Aceptado: entrad los dos para jugar" : "En juego";
             actions = <EmbedLink href={href} primary>Jugar</EmbedLink>;
             break;
           }
@@ -145,7 +145,7 @@ function EmbedIcon({ kind, game }: { kind: "match" | "challenge"; game?: string 
   if (kind === "match" && game && game !== "tictactoe") {
     return (
       <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-xl text-2xl" style={{ background: "var(--board)" }}>
-        {game === "rpsls" ? "🖖" : "✂️"}
+        {game === "pong" ? "🏓" : game === "rpsls" ? "🖖" : "✂️"}
       </span>
     );
   }

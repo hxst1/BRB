@@ -17,6 +17,7 @@ type GameTally = { myTurn: number; invites: number; waiting: number };
 /** ¿Le toca al usuario? 3 en raya por movimientos; piedra, papel o tijera si aún no ha elegido. */
 function myTurnIn(match: Match, viewerId: string, chosen: ReadonlySet<string>): boolean {
   if (match.game === "tictactoe") return replay(match.moves)?.turn === (match.player_x === viewerId ? "x" : "o");
+  if (match.game === "pong") return true;
   return !chosen.has(match.id);
 }
 
@@ -38,7 +39,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
   ]);
 
   // Elecciones ya hechas en la ronda en curso de piedra, papel o tijera.
-  const rpsActive = (matches ?? []).filter((m) => m.status === "active" && m.game !== "tictactoe");
+  const rpsActive = (matches ?? []).filter((m) => m.status === "active" && (m.game === "rps" || m.game === "rpsls"));
   const { data: choices } = rpsActive.length
     ? await supabase.from("match_choices").select("match_id, round").in("match_id", rpsActive.map((m) => m.id))
     : { data: [] };
@@ -46,14 +47,15 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
   const chosen = new Set((choices ?? []).filter((c) => roundOf.get(c.match_id) === c.round).map((c) => c.match_id));
 
   const pending: Pending[] = [];
-  const tally: Record<"tictactoe" | "rps", GameTally> = {
+  const tally: Record<"tictactoe" | "rps" | "pong", GameTally> = {
     tictactoe: { myTurn: 0, invites: 0, waiting: 0 },
     rps: { myTurn: 0, invites: 0, waiting: 0 },
+    pong: { myTurn: 0, invites: 0, waiting: 0 },
   };
   for (const match of matches ?? []) {
     const rival = match.player_x === viewer.id ? match.o : match.x;
     const name = matchGame(match.game).name;
-    const counts = tally[match.game === "tictactoe" ? "tictactoe" : "rps"];
+    const counts = tally[match.game === "tictactoe" || match.game === "pong" ? match.game : "rps"];
     if (match.status === "pending") {
       if (match.created_by !== viewer.id) {
         counts.invites++;
@@ -139,6 +141,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
           }
           statsTicTacToe={<MatchStats counts={tally.tictactoe} />}
           statsRps={<MatchStats counts={tally.rps} />}
+        statsPong={<MatchStats counts={tally.pong} />}
         />
       </div>
     </>

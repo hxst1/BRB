@@ -27,12 +27,14 @@ export function turnOf(match: Match): Mark | null {
 export function isMyTurn(match: Match, userId: string, chosen: ReadonlySet<string>): boolean {
   if (match.status !== "active") return false;
   if (match.game === "tictactoe") return turnOf(match) === markOf(match, userId);
+  // Pong: aceptada, se juega en directo cuando estéis los dos.
+  if (match.game === "pong") return true;
   return !chosen.has(match.id);
 }
 
 /** Partidas de piedra, papel o tijera en las que el usuario ya ha elegido esta ronda. */
 export async function fetchChosen(matches: Match[]): Promise<Set<string>> {
-  const active = matches.filter((m) => m.status === "active" && m.game !== "tictactoe");
+  const active = matches.filter((m) => m.status === "active" && (m.game === "rps" || m.game === "rpsls"));
   if (active.length === 0) return new Set();
   const { data } = await createClient()
     .from("match_choices")

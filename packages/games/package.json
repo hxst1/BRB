@@ -9,7 +9,8 @@
     "./2048/verify": "./src/game2048/verify.ts",
     "./tictactoe": "./src/tictactoe/index.ts",
     "./rps": "./src/rps/index.ts",
-    "./level": "./src/level.ts"
+    "./level": "./src/level.ts",
+    "./pong": "./src/pong/index.ts"
   },
   "scripts": {
     "test": "vitest run",

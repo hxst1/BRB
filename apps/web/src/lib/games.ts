@@ -3,6 +3,7 @@ export const MATCH_GAMES = {
   tictactoe: { name: "3 en raya", path: "/3-en-raya" },
   rps: { name: "Piedra, papel o tijera", path: "/piedra-papel-tijera" },
   rpsls: { name: "Piedra, papel, tijera, lagarto o Spock", path: "/piedra-papel-tijera" },
+  pong: { name: "Pong", path: "/pong" },
 } as const;
 
 export type MatchGame = keyof typeof MATCH_GAMES;

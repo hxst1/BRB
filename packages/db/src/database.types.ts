@@ -211,6 +211,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"pong_reports": {
+                  Row: {
+                    "created_at": string,"match_id": string,"o_score": number,"player_id": string,"x_score": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"match_id": string,"o_score": number,"player_id": string,"x_score": number
+                  }
+                  Update: {
+                    "created_at"?: string,"match_id"?: string,"o_score"?: number,"player_id"?: string,"x_score"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pong_reports_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "matches"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pong_reports_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "avatar_parts": NonNullable<Json>,"avatar_seed": number,"created_at": string,"id": string,"supporter_since": string | null,"supporter_tier": string | null,"username": string,"xp": number
@@ -318,6 +344,9 @@ isOneToOne: false
                            },
 "remove_friend":
 { Args: { "friend_id": string }; Returns: undefined
+                           },
+"report_pong_result":
+{ Args: { "match_id": string,"o_score": number,"x_score": number }; Returns: string
                            },
 "resign_match":
 { Args: { "match_id": string }; Returns: undefined

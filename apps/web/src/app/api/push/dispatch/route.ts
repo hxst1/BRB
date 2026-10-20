@@ -102,6 +102,16 @@ async function notificationsFor(change: Change): Promise<Notification[]> {
     return [notify(target, "Te toca", `${name(other(target))} ha movido. Tu turno en el ${game.toLowerCase()}.`)];
   }
 
+  if (m.game === "pong") {
+    if (m.status !== "finished") return [];
+    if (m.end_reason === "disputed") {
+      return [m.player_x, m.player_o].map((id) => notify(id, "Pong sin ganador", "Los marcadores no coincidían."));
+    }
+    const winner = m.winner === "x" ? m.player_x : m.player_o;
+    if (m.end_reason === "resign") return [notify(winner, "Partida terminada", `${name(other(winner))} se ha rendido. ¡Ganas tú!`)];
+    return [];
+  }
+
   // Piedra, papel o tijera: las rondas se resuelven para los dos a la vez.
   const state = replayRps(m.game as Variant, m.moves);
   const last = state?.rounds.at(-1);
