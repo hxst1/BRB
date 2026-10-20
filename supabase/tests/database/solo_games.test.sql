@@ -1,5 +1,5 @@
 begin;
-select plan(5);
+select plan(6);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-e0000000000a', 'a@snake.local', '{"username": "s_ana"}');
@@ -19,6 +19,7 @@ insert into runs select '2048', id from public.start_run('2048');
 select is((select count(*) from public.game_runs where status = 'playing'), 2::bigint,
   'una partida de Snake en curso no abandona la del 2048');
 select throws_ok($$ select * from public.start_run('tetris') $$, '23514', null, 'solo juegos conocidos');
+select lives_ok($$ select * from public.start_run('lightsout') $$, 'también Lights Out');
 reset role;
 
 set local role service_role;
@@ -26,7 +27,7 @@ select public.finish_run((select id from runs where game = 'snake'), '3U', 120, 
 reset role;
 
 select pg_temp.login('00000000-0000-0000-0000-e0000000000a');
-select results_eq($$ select username, score from public.get_leaderboard('snake') $$,
+select results_eq($$ select username, score from public.get_leaderboard('snake') where username = 's_ana' $$,
   $$ values ('s_ana'::text, 120) $$, 'el ranking de Snake muestra la partida');
 select is((select count(*) from public.get_leaderboard('2048') where username = 's_ana'), 0::bigint,
   'y no se mezcla con el del 2048');

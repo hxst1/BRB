@@ -12,7 +12,9 @@
     "./level": "./src/level.ts",
     "./pong": "./src/pong/index.ts",
     "./snake": "./src/snake/index.ts",
-    "./snake/verify": "./src/snake/verify.ts"
+    "./snake/verify": "./src/snake/verify.ts",
+    "./lightsout": "./src/lightsout/index.ts",
+    "./lightsout/verify": "./src/lightsout/verify.ts"
   },
   "scripts": {
     "test": "vitest run",

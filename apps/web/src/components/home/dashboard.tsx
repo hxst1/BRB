@@ -24,7 +24,7 @@ function myTurnIn(match: Match, viewerId: string, chosen: ReadonlySet<string>): 
 
 export async function Dashboard({ viewer }: { viewer: Viewer }) {
   const supabase = await createClient();
-  const [{ data: matches }, { data: requests }, { data: standing }, { data: snake }, { data: challenges }, { data: daily }] =
+  const [{ data: matches }, { data: requests }, { data: standing }, { data: snake }, { data: lightsOut }, { data: challenges }, { data: daily }] =
     await Promise.all([
     supabase
       .from("matches")
@@ -38,6 +38,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
       .eq("addressee_id", viewer.id),
     supabase.rpc("get_my_standing", { game: "2048" }).maybeSingle(),
     supabase.rpc("get_my_standing", { game: "snake" }).maybeSingle(),
+    supabase.rpc("get_my_standing", { game: "lightsout" }).maybeSingle(),
     supabase.rpc("get_my_challenges", { max_rows: 20 }),
     supabase.rpc("get_my_daily").maybeSingle(),
   ]);
@@ -136,6 +137,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
         <GameCards
           stats2048={<SoloStats standing={standing} />}
           statsSnake={<SoloStats standing={snake} />}
+          statsLightsOut={<SoloStats standing={lightsOut} unit={(n) => (n === 1 ? "nivel" : "niveles")} />}
           statsTicTacToe={<MatchStats counts={tally.tictactoe} />}
           statsRps={<MatchStats counts={tally.rps} />}
           statsPong={<MatchStats counts={tally.pong} />}
@@ -146,12 +148,20 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
 }
 
 /** Récord y puesto en un juego en solitario. */
-function SoloStats({ standing }: { standing: Functions<"get_my_standing">["Returns"][number] | null }) {
+function SoloStats({
+  standing,
+  unit,
+}: {
+  standing: Functions<"get_my_standing">["Returns"][number] | null;
+  /** Unidad tras el récord (p. ej. niveles); sin ella, solo el número. */
+  unit?: (score: number) => string;
+}) {
   if (standing?.best_score == null) return <span className="text-muted">Aún no tienes puntuación. Juega una partida.</span>;
   return (
     <span className="flex flex-col gap-0.5">
       <span>
         Tu récord: <strong className="tabular">{formatNumber(standing.best_score)}</strong>
+        {unit && ` ${unit(standing.best_score)}`}
       </span>
       <span className="text-muted">
         {standing.global_rank}º de {standing.global_players} en el mundo

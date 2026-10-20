@@ -1,4 +1,5 @@
 import { verifyRun as verify2048 } from "@repo/games/2048/verify";
+import { verifyRun as verifyLightsOut } from "@repo/games/lightsout/verify";
 import { verifyRun as verifySnake } from "@repo/games/snake/verify";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClientForRequest } from "@/lib/supabase/server";
@@ -13,7 +14,10 @@ const serverError = () => Response.json({ error: "Error interno" }, { status: 50
 
 type Verified = { valid: true; score: number; detail: number } | { valid: false; reason: string };
 
-/** Repite la partida con el motor de su juego. En Snake, `moves` son los giros (puede no haber ninguno). */
+/**
+ * Repite la partida con el motor de su juego. En Snake, `moves` son los giros
+ * (puede no haber ninguno); en Lights Out, las pulsaciones (se puede plantar sin pulsar).
+ */
 function verify(game: string, seed: number, moves: string, elapsedMs: number): Verified | null {
   if (game === "2048") {
     if (moves.length === 0) return { valid: false, reason: "Sin movimientos" };
@@ -23,6 +27,10 @@ function verify(game: string, seed: number, moves: string, elapsedMs: number): V
   if (game === "snake") {
     const result = verifySnake(seed, moves, elapsedMs);
     return result.valid ? { valid: true, score: result.score, detail: result.length } : result;
+  }
+  if (game === "lightsout") {
+    const result = verifyLightsOut(seed, moves, elapsedMs);
+    return result.valid ? { valid: true, score: result.score, detail: result.presses } : result;
   }
   return null;
 }

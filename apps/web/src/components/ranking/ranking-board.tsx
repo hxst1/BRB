@@ -8,7 +8,7 @@ import { formatNumber } from "@/lib/format";
 import { levelFromXp } from "@repo/games/level";
 import { createClient } from "@/lib/supabase/client";
 
-type Category = "level" | "2048" | "snake" | "tictactoe" | "rps" | "pong";
+type Category = "level" | "2048" | "snake" | "lightsout" | "tictactoe" | "rps" | "pong";
 type Scope = "global" | "friends";
 type Period = "all" | "week";
 
@@ -32,7 +32,7 @@ type Row = {
  */
 type GameId = Exclude<Category, "level">;
 
-const RANKED_GAMES: { id: GameId; label: string; icon: ReactNode; games?: string[] }[] = [
+const RANKED_GAMES: { id: GameId; label: string; icon: ReactNode; games?: string[]; unit?: string }[] = [
   {
     id: "2048",
     label: "2048",
@@ -51,6 +51,18 @@ const RANKED_GAMES: { id: GameId; label: string; icon: ReactNode; games?: string
       <span className="flex gap-px">
         {["var(--t512)", "var(--t512)", "var(--t1024)"].map((color, i) => (
           <span key={i} className="size-[5px] rounded-[1.5px]" style={{ background: color }} />
+        ))}
+      </span>
+    ),
+  },
+  {
+    id: "lightsout",
+    label: "Lights Out",
+    unit: "niveles",
+    icon: (
+      <span className="grid size-4 grid-cols-2 gap-px">
+        {[true, false, false, true].map((on, i) => (
+          <span key={i} className="rounded-[2px]" style={{ background: on ? "var(--t128)" : "var(--t4)" }} />
         ))}
       </span>
     ),
@@ -100,7 +112,7 @@ async function loadRows(category: Category, scope: Scope, period: Period): Promi
       avatarParts: r.avatar_parts,
       supporter: r.supporter_tier !== null,
       value: formatNumber(r.score),
-      detail: "puntos",
+      detail: ranked.unit ?? "puntos",
     }));
   }
 
