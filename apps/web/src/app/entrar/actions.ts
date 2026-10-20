@@ -1,10 +1,16 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { siteUrl } from "@repo/brand";
 import { safeNext } from "@/lib/safe-next";
 import { createClient } from "@/lib/supabase/server";
 
-export type AuthState = { error: string | null; mode: "signin" | "signup" };
+export type AuthState = {
+  error: string | null;
+  mode: "signin" | "signup";
+  /** Email al que se ha enviado la confirmación (cuando el proyecto la exige). */
+  confirmEmail?: string;
+};
 
 const USERNAME = /^[A-Za-z0-9_]{3,20}$/;
 
@@ -36,10 +42,29 @@ export async function authenticate(_prev: AuthState, formData: FormData): Promis
       return { mode, error: `«${username}» ya está cogido. Prueba con otro nombre.` };
     }
 
-    const { error } = await supabase.auth.signUp({ email, password, options: { data: { username } } });
+    const next = safeNext(formData.get("next"));
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { username },
+        // El enlace del email de confirmación vuelve aquí con la sesión iniciada.
+        emailRedirectTo: `${siteUrl()}/auth/callback?next=${encodeURIComponent(next)}`,
+      },
+    });
     if (error) {
-      return { mode, error: error.code === "user_already_exists" ? "Ya hay una cuenta con ese email. Entra con ella." : error.message };
+      return {
+        mode,
+        error:
+          error.code === "user_already_exists"
+            ? "Ya hay una cuenta con ese email. Entra con ella."
+            : error.code === "over_email_send_rate_limit"
+              ? "Hemos enviado demasiados emails seguidos. Espera un poco y vuelve a intentarlo."
+              : error.message,
+      };
     }
+    // Si el proyecto exige confirmar el email, todavía no hay sesión.
+    if (!data.session) return { mode, error: null, confirmEmail: email };
   } else {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {

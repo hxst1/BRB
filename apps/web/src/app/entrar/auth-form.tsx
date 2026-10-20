@@ -28,10 +28,23 @@ export function AuthForm({ next }: { next: string }) {
   const [state, action, pending] = useActionState(authenticate, { error: null, mode });
   const copy = COPY[mode];
   const error = state.mode === mode ? state.error : null;
+
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   // Solo se avisa cuando ya ha escrito algo en la confirmación.
   const mismatch = mode === "signup" && confirm.length > 0 && confirm !== password;
+
+  if (state.confirmEmail) {
+    return (
+      <div className="flex flex-col gap-4">
+        <h1 className="display text-4xl font-bold text-balance">Confirma tu email</h1>
+        <p className="text-muted">
+          Te hemos enviado un enlace a <strong className="text-ink">{state.confirmEmail}</strong>. Ábrelo para activar la
+          cuenta y entrarás directamente. Puede tardar un par de minutos; mira también en spam.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <form action={action} className="flex flex-col gap-4">
