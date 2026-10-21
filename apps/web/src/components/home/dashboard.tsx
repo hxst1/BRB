@@ -25,7 +25,7 @@ function myTurnIn(match: Match, viewerId: string, waiting: ReadonlySet<string>):
   const mark = match.player_x === viewerId ? "x" : "o";
   if (match.game === "tictactoe") return replay(match.moves)?.turn === mark;
   if (match.game === "connect4") return replayConnect4(match.moves)?.turn === mark;
-  if (match.game === "pong") return true;
+  if (match.game === "pong" || match.game === "tron") return true;
   return !waiting.has(match.id);
 }
 
@@ -84,10 +84,11 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
   }
 
   const pending: Pending[] = [];
-  const tally: Record<"tictactoe" | "connect4" | "battleship" | "rps" | "pong", GameTally> = {
+  const tally: Record<"tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron", GameTally> = {
     tictactoe: { myTurn: 0, invites: 0, waiting: 0 },
     connect4: { myTurn: 0, invites: 0, waiting: 0 },
     battleship: { myTurn: 0, invites: 0, waiting: 0 },
+    tron: { myTurn: 0, invites: 0, waiting: 0 },
     rps: { myTurn: 0, invites: 0, waiting: 0 },
     pong: { myTurn: 0, invites: 0, waiting: 0 },
   };
@@ -186,6 +187,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
           statsTicTacToe={<MatchStats counts={tally.tictactoe} />}
           statsConnect4={<MatchStats counts={tally.connect4} />}
           statsBattleship={<MatchStats counts={tally.battleship} />}
+          statsTron={<MatchStats counts={tally.tron} />}
           statsRps={<MatchStats counts={tally.rps} />}
           statsPong={<MatchStats counts={tally.pong} />}
         />

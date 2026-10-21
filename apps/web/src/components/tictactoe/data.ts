@@ -35,8 +35,8 @@ export function turnOf(match: Match): Mark | null {
 export function isMyTurn(match: Match, userId: string, chosen: ReadonlySet<string>): boolean {
   if (match.status !== "active") return false;
   if (isTurnBased(match.game)) return turnOf(match) === markOf(match, userId);
-  // Pong: aceptada, se juega en directo cuando estéis los dos.
-  if (match.game === "pong") return true;
+  // Pong y Tron: aceptada, se juega en directo cuando estéis los dos.
+  if (match.game === "pong" || match.game === "tron") return true;
   return !chosen.has(match.id);
 }
 

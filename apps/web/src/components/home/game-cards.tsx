@@ -34,6 +34,7 @@ export function GameCards({
   statsTicTacToe,
   statsConnect4,
   statsBattleship,
+  statsTron,
   statsRps,
   statsPong,
 }: {
@@ -44,6 +45,7 @@ export function GameCards({
   statsTicTacToe?: ReactNode;
   statsConnect4?: ReactNode;
   statsBattleship?: ReactNode;
+  statsTron?: ReactNode;
   statsRps?: ReactNode;
   statsPong?: ReactNode;
 }) {
@@ -203,6 +205,18 @@ export function GameCards({
               <span className="absolute top-1/2 right-0 left-0 border-t-2 border-dashed" style={{ borderColor: "var(--cell)" }} />
               <span className="absolute top-[30%] left-[58%] size-[9%] rounded-full bg-ink transition-transform duration-500 group-hover:translate-x-[-120%] group-hover:translate-y-[220%]" />
               <span className="absolute bottom-[12%] left-[22%] h-[5%] w-[30%] rounded-full" style={{ background: "var(--mark-x)" }} />
+            </div>
+          </GameCard>
+        </li>
+        <li className={ITEM}>
+          <GameCard href="/tron" title="Tron" subtitle="En directo: encierra a tu rival" stats={statsTron}>
+            <div aria-hidden className="relative aspect-square overflow-hidden rounded-xl sm:rounded-2xl" style={{ background: "var(--board)" }}>
+              <svg viewBox="0 0 100 100" className="absolute inset-0 size-full">
+                <path d="M12 70 H45 V30 H70" fill="none" stroke="var(--mark-x)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M88 30 H80 V78 H55 V48" fill="none" stroke="var(--mark-o)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="70" cy="30" r="5.5" fill="var(--mark-x)" />
+                <circle cx="55" cy="48" r="5.5" fill="var(--mark-o)" />
+              </svg>
             </div>
           </GameCard>
         </li>

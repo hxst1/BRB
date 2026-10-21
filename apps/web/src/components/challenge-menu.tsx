@@ -12,6 +12,7 @@ const OPTIONS: { game: MatchGame; label: string; icon: string }[] = [
   { game: "rps", label: MATCH_GAMES.rps.name, icon: "✂️" },
   { game: "rpsls", label: "Con lagarto y Spock", icon: "🖖" },
   { game: "pong", label: "Pong (en directo)", icon: "🏓" },
+  { game: "tron", label: "Tron (en directo)", icon: "🏍️" },
 ];
 
 /**

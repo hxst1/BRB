@@ -6,6 +6,7 @@ export const MATCH_GAMES = {
   rps: { name: "Piedra, papel o tijera", path: "/piedra-papel-tijera" },
   rpsls: { name: "Piedra, papel, tijera, lagarto o Spock", path: "/piedra-papel-tijera" },
   pong: { name: "Pong", path: "/pong" },
+  tron: { name: "Tron", path: "/tron" },
 } as const;
 
 export type MatchGame = keyof typeof MATCH_GAMES;

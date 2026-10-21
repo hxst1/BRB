@@ -80,7 +80,7 @@ export function ChallengeEmbed({
         case "active": {
           if (!isTurnBased(match.game)) {
             // Piedra, papel o tijera: quién ha elegido es secreto. Pong: se juega en directo.
-            status = match.game === "pong" ? "Aceptado: entrad los dos para jugar" : "En juego";
+            status = match.game === "pong" || match.game === "tron" ? "Aceptado: entrad los dos para jugar" : "En juego";
             actions = <EmbedLink href={href} primary>Jugar</EmbedLink>;
             break;
           }
@@ -158,7 +158,7 @@ function EmbedIcon({ kind, game }: { kind: "match" | "challenge"; game?: string 
   if (kind === "match" && game && game !== "tictactoe") {
     return (
       <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-xl text-2xl" style={{ background: "var(--board)" }}>
-        {game === "pong" ? "🏓" : game === "battleship" ? "🚢" : game === "rpsls" ? "🖖" : "✂️"}
+        {game === "pong" ? "🏓" : game === "tron" ? "🏍️" : game === "battleship" ? "🚢" : game === "rpsls" ? "🖖" : "✂️"}
       </span>
     );
   }

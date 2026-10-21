@@ -317,6 +317,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"tron_reports": {
+                  Row: {
+                    "created_at": string,"match_id": string,"o_score": number,"player_id": string,"x_score": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"match_id": string,"o_score": number,"player_id": string,"x_score": number
+                  }
+                  Update: {
+                    "created_at"?: string,"match_id"?: string,"o_score"?: number,"player_id"?: string,"x_score"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "tron_reports_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "matches"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "tron_reports_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"wordle_games": {
                   Row: {
                     "day": string,"finished_at": string | null,"guesses": (string)[],"patterns": (string)[],"solved": boolean,"user_id": string
@@ -435,6 +461,9 @@ isOneToOne: false
 { Args: { "friend_id": string }; Returns: undefined
                            },
 "report_pong_result":
+{ Args: { "match_id": string,"o_score": number,"x_score": number }; Returns: string
+                           },
+"report_tron_result":
 { Args: { "match_id": string,"o_score": number,"x_score": number }; Returns: string
                            },
 "resign_match":

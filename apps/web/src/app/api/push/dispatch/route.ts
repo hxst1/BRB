@@ -134,10 +134,10 @@ async function notificationsFor(change: Change): Promise<Notification[]> {
     return [notify(target, "Te toca", `${name(shooter)} ha disparado: ${outcome} Tu turno.`)];
   }
 
-  if (m.game === "pong") {
+  if (m.game === "pong" || m.game === "tron") {
     if (m.status !== "finished") return [];
     if (m.end_reason === "disputed") {
-      return [m.player_x, m.player_o].map((id) => notify(id, "Pong sin ganador", "Los marcadores no coincidían."));
+      return [m.player_x, m.player_o].map((id) => notify(id, `${game} sin ganador`, "Los marcadores no coincidían."));
     }
     const winner = m.winner === "x" ? m.player_x : m.player_o;
     if (m.end_reason === "resign") return [notify(winner, "Partida terminada", `${name(other(winner))} se ha rendido. ¡Ganas tú!`)];

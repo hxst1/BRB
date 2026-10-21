@@ -75,11 +75,14 @@ export function SnakeGame({ viewerId, onSaved }: { viewerId: string | null; onSa
   const runId = useRef<string | null>(null);
   const game = useRef<SnakeState | null>(null);
   const queue = useRef<Direction[]>([]);
+  /** Cuánto se ha avanzado hacia el siguiente tic (0-1), para dibujar el movimiento suave. */
+  const progress = useRef(0);
 
   const apply = useCallback((next: Prepared) => {
     runId.current = next.runId;
     game.current = next.game;
     queue.current = [];
+    progress.current = 0;
     setStoredBest(readBest());
     setNotice(next.notice);
     setSave(null);
@@ -135,6 +138,7 @@ export function SnakeGame({ viewerId, onSaved }: { viewerId: string | null; onSa
         }
         current = step(current, turn);
       }
+      progress.current = current && !current.over ? pending / tickMs(current.apples) : 0;
       if (current && current !== game.current) {
         game.current = current;
         setState(current);
@@ -236,7 +240,7 @@ export function SnakeGame({ viewerId, onSaved }: { viewerId: string | null; onSa
           onPointerUp={endSwipe}
           onPointerCancel={endSwipe}
         >
-          <Board state={state} />
+          <SnakeCanvas game={game} queue={queue} progress={progress} length={state.body.length} />
           {!running && !state.over && (
             <div className="absolute inset-x-0 bottom-6 flex justify-center">
               <p className="rounded-full bg-bg/85 px-4 py-2 text-sm font-medium backdrop-blur-sm">
@@ -272,62 +276,115 @@ export function SnakeGame({ viewerId, onSaved }: { viewerId: string | null; onSa
   );
 }
 
-/** Tablero en SVG: una unidad por casilla. */
-function Board({ state }: { state: SnakeState }) {
-  const head = state.body[0]!;
-  const eyes = EYES[state.direction];
+/**
+ * Tablero en canvas a la frecuencia de la pantalla. La lógica avanza por
+ * casillas, pero aquí cada cuadrado se desliza entre el estado actual y el
+ * siguiente (con el giro que haya en cola), así que se ve fluido.
+ */
+function SnakeCanvas({
+  game,
+  queue,
+  progress,
+  length,
+}: {
+  game: React.RefObject<SnakeState | null>;
+  queue: React.RefObject<Direction[]>;
+  progress: React.RefObject<number>;
+  length: number;
+}) {
+  const canvas = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    let frame = 0;
+    const loop = () => {
+      const state = game.current;
+      if (state && canvas.current) drawSnake(canvas.current, state, nextTurn(state, queue.current), progress.current);
+      frame = requestAnimationFrame(loop);
+    };
+    frame = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(frame);
+  }, [game, queue, progress]);
+
   return (
-    <svg
-      viewBox={`-0.25 -0.25 ${GRID + 0.5} ${GRID + 0.5}`}
+    <canvas
+      ref={canvas}
       role="img"
-      aria-label={`Serpiente de ${state.body.length} casillas`}
+      aria-label={`Serpiente de ${length} casillas`}
       className="block aspect-square w-full rounded-[22px]"
       style={{ background: "var(--board)" }}
-    >
-      {Array.from({ length: GRID * GRID }, (_, cell) => (
-        <rect key={cell} x={(cell % GRID) + 0.06} y={Math.floor(cell / GRID) + 0.06} width={0.88} height={0.88} rx={0.2} fill="var(--cell)" />
-      ))}
-      {state.food !== null && (
-        <circle cx={(state.food % GRID) + 0.5} cy={Math.floor(state.food / GRID) + 0.5} r={0.36} fill="var(--t64)" />
-      )}
-      {state.body.map((cell, i) => (
-        <rect
-          key={i}
-          x={(cell % GRID) + 0.04}
-          y={Math.floor(cell / GRID) + 0.04}
-          width={0.92}
-          height={0.92}
-          rx={i === 0 ? 0.32 : 0.22}
-          fill={i === 0 ? "var(--t1024)" : "var(--t512)"}
-          opacity={state.over && i === 0 ? 0.6 : 1}
-        />
-      ))}
-      {eyes.map(([dx, dy], i) => (
-        <circle key={i} cx={(head % GRID) + dx} cy={Math.floor(head / GRID) + dy} r={0.1} fill="var(--t-high)" />
-      ))}
-    </svg>
+    />
   );
 }
 
-/** Posición de los ojos dentro de la casilla de la cabeza según hacia dónde mira. */
-const EYES: Record<Direction, [number, number][]> = {
-  right: [
-    [0.68, 0.32],
-    [0.68, 0.68],
-  ],
-  left: [
-    [0.32, 0.32],
-    [0.32, 0.68],
-  ],
-  up: [
-    [0.32, 0.32],
-    [0.68, 0.32],
-  ],
-  down: [
-    [0.32, 0.68],
-    [0.68, 0.68],
-  ],
-};
+/** Primer giro de la cola que se podrá aplicar en el próximo tic. */
+function nextTurn(state: SnakeState, queued: Direction[]): Direction | undefined {
+  return queued.find((direction) => canTurn(state, direction));
+}
+
+type Point = { x: number; y: number };
+const center = (cell: number): Point => ({ x: (cell % GRID) + 0.5, y: Math.floor(cell / GRID) + 0.5 });
+const lerp = (a: Point, b: Point, t: number): Point => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+
+function drawSnake(canvas: HTMLCanvasElement, state: SnakeState, turn: Direction | undefined, progress: number) {
+  const ratio = window.devicePixelRatio || 1;
+  const size = canvas.clientWidth;
+  if (canvas.width !== Math.round(size * ratio)) {
+    canvas.width = Math.round(size * ratio);
+    canvas.height = Math.round(size * ratio);
+  }
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const styles = getComputedStyle(canvas);
+  const color = (name: string) => styles.getPropertyValue(name).trim();
+  // Un margen de un cuarto de casilla alrededor, como antes.
+  const unit = size / (GRID + 0.5);
+  ctx.setTransform(ratio * unit, 0, 0, ratio * unit, ratio * unit * 0.25, ratio * unit * 0.25);
+  ctx.clearRect(-0.25, -0.25, GRID + 0.5, GRID + 0.5);
+
+  const square = (p: Point, inset: number, radius: number) => {
+    ctx.beginPath();
+    ctx.roundRect(p.x - 0.5 + inset, p.y - 0.5 + inset, 1 - inset * 2, 1 - inset * 2, radius);
+    ctx.fill();
+  };
+
+  // Cuadrícula
+  ctx.fillStyle = color("--cell");
+  for (let cell = 0; cell < GRID * GRID; cell++) square(center(cell), 0.06, 0.2);
+
+  // Manzana
+  if (state.food !== null) {
+    const p = center(state.food);
+    ctx.fillStyle = color("--t64");
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 0.36, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Cada cuadrado se desliza de su casilla actual a la que ocupará en el
+  // siguiente tic; si el siguiente paso choca, se queda quieta.
+  const next = step(state, turn);
+  const t = state.over || next.over ? 0 : Math.min(progress, 1);
+  const segments = state.body.map((cell, i) => lerp(center(cell), center(next.body[i]!), t));
+
+  ctx.fillStyle = color("--t512");
+  for (const p of segments.slice(1).reverse()) square(p, 0.04, 0.22);
+
+  const head = segments[0]!;
+  ctx.globalAlpha = state.over ? 0.6 : 1;
+  ctx.fillStyle = color("--t1024");
+  square(head, 0.04, 0.32);
+  ctx.globalAlpha = 1;
+
+  // Ojos, mirando hacia donde va.
+  const heading = t > 0 ? next.direction : state.direction;
+  const [dx, dy] = heading === "up" ? [0, -1] : heading === "down" ? [0, 1] : heading === "left" ? [-1, 0] : [1, 0];
+  ctx.fillStyle = color("--t-high");
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.arc(head.x + dx * 0.18 + dy * side * 0.18, head.y + dy * 0.18 - dx * side * 0.18, 0.1, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
