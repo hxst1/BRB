@@ -5,14 +5,13 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import {
   GRID,
   ROUND_PAUSE_MS,
-  START,
   TICK_MS,
+  TRAIL_LENGTH,
   WIN_ROUNDS,
   canTurn,
   neighbor,
   newGame,
-  ownerOf,
-  paint,
+  occupancy,
   step,
   type Direction,
   type Mark,
@@ -25,8 +24,6 @@ import { createClient } from "@/lib/supabase/client";
 
 /** Giros que se pueden encadenar antes del siguiente paso (p. ej. dar la vuelta en U). */
 const MAX_QUEUED_TURNS = 2;
-/** Últimas posiciones que viajan en cada mensaje: si se pierde alguno, la estela no queda con huecos. */
-const HISTORY = 8;
 const SWIPE_THRESHOLD = 18;
 
 const KEYS: Record<string, Direction> = {
@@ -42,17 +39,8 @@ const KEYS: Record<string, Direction> = {
 
 type Phase = "lobby" | "playing" | "paused" | "reporting" | "done";
 
-/** Lo que manda el anfitrión en cada paso. */
-type Snapshot = {
-  round: number;
-  tick: number;
-  riders: TronState["riders"];
-  score: TronState["score"];
-  roundOver: TronState["roundOver"];
-  winner: TronState["winner"];
-  pause: number;
-  history: Record<Mark, number[]>;
-};
+/** Lo que manda el anfitrión en cada paso: las estelas son cortas y van enteras. */
+type Snapshot = Pick<TronState, "round" | "tick" | "riders" | "score" | "roundOver" | "winner" | "pause">;
 
 /**
  * Tron en directo. X hace de anfitrión: simula con el motor y retransmite
@@ -79,7 +67,6 @@ function LiveTron({
   const canvas = useRef<HTMLCanvasElement>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const state = useRef<TronState>(newGame());
-  const history = useRef<Record<Mark, number[]>>({ x: [], o: [] });
   const queues = useRef<Record<Mark, Direction[]>>({ x: [], o: [] });
   /** Cuándo llegó el último paso (invitado) o cuánto falta para el siguiente (anfitrión), para dibujar suave. */
   const lastStepAt = useRef(0);
@@ -178,15 +165,8 @@ function LiveTron({
           pending -= TICK_MS;
           const turns: Partial<Record<Mark, Direction>> = {};
           for (const mark of ["x", "o"] as const) turns[mark] = takeTurn(queues.current[mark], current.riders[mark]);
-          const round = current.round;
           current = step(current, turns);
-          if (current.round !== round) history.current = { x: [], o: [] };
-          for (const mark of ["x", "o"] as const) {
-            const list = history.current[mark];
-            if (current.riders[mark].alive && list.at(-1) !== current.riders[mark].head) list.push(current.riders[mark].head);
-            if (list.length > HISTORY) list.shift();
-          }
-          void channelRef.current?.send({ type: "broadcast", event: "step", payload: toSnapshot(current, history.current) });
+          void channelRef.current?.send({ type: "broadcast", event: "step", payload: toSnapshot(current) });
           if (current.roundOver || current.winner) setScore({ ...current.score });
           if (current.winner) void report(current.score);
         }
@@ -311,30 +291,14 @@ function takeTurn(queue: Direction[], rider: TronState["riders"][Mark]): Directi
   return undefined;
 }
 
-function toSnapshot(state: TronState, history: Record<Mark, number[]>): Snapshot {
+function toSnapshot(state: TronState): Snapshot {
   const { round, tick, riders, score, roundOver, winner, pause } = state;
-  return { round, tick, riders, score, roundOver, winner, pause, history: { x: [...history.x], o: [...history.o] } };
+  return { round, tick, riders, score, roundOver, winner, pause };
 }
 
-/** El invitado rehace el estado con lo que le llega: nueva ronda, estelas y motos. */
+/** El invitado toma el estado que le llega y rehace las casillas ocupadas. */
 function applySnapshot(ref: { current: TronState }, snapshot: Snapshot) {
-  let current = ref.current;
-  if (snapshot.round !== current.round) {
-    const trails = new Uint8Array(GRID * GRID);
-    paint(trails, START.x.cell, "x");
-    paint(trails, START.o.cell, "o");
-    current = { ...current, round: snapshot.round, trails };
-  }
-  for (const mark of ["x", "o"] as const) for (const cell of snapshot.history[mark]) paint(current.trails, cell, mark);
-  ref.current = {
-    ...current,
-    tick: snapshot.tick,
-    riders: snapshot.riders,
-    score: snapshot.score,
-    roundOver: snapshot.roundOver,
-    winner: snapshot.winner,
-    pause: snapshot.pause,
-  };
+  ref.current = { ...ref.current, ...snapshot, trails: occupancy(snapshot.riders) };
 }
 
 function draw(canvas: HTMLCanvasElement | null, state: TronState, progress: number, me: Mark) {
@@ -366,34 +330,45 @@ function draw(canvas: HTMLCanvasElement | null, state: TronState, progress: numb
   ctx.stroke();
 
   const colors: Record<Mark, string> = { x: color("--mark-x"), o: color("--mark-o") };
+  const center = (cell: number) => ({ x: (cell % GRID) + 0.5, y: Math.floor(cell / GRID) + 0.5 });
+  const lerp = (a: { x: number; y: number }, b: { x: number; y: number }, t: number) => ({
+    x: a.x + (b.x - a.x) * t,
+    y: a.y + (b.y - a.y) * t,
+  });
 
-  // Estelas
-  for (let cell = 0; cell < GRID * GRID; cell++) {
-    const owner = ownerOf(state.trails, cell);
-    if (!owner) continue;
-    ctx.fillStyle = colors[owner];
-    ctx.globalAlpha = 0.75;
-    ctx.fillRect(cell % GRID, Math.floor(cell / GRID), 1, 1);
-  }
-  ctx.globalAlpha = 1;
-
-  // Motos: avanzan suavemente hacia la siguiente casilla, y la estela con ellas.
   for (const mark of ["x", "o"] as const) {
     const rider = state.riders[mark];
-    const from = { x: rider.head % GRID, y: Math.floor(rider.head / GRID) };
+    const moving = rider.alive && !state.roundOver;
     const nextCell = neighbor(rider.head, rider.direction);
-    const t = rider.alive && !state.roundOver && nextCell >= 0 ? progress : 0;
-    const to = nextCell >= 0 ? { x: nextCell % GRID, y: Math.floor(nextCell / GRID) } : from;
-    const at = { x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t };
+    const t = moving && nextCell >= 0 ? progress : 0;
 
-    ctx.fillStyle = colors[mark];
-    ctx.globalAlpha = 0.75;
-    ctx.fillRect(Math.min(from.x, at.x), Math.min(from.y, at.y), Math.abs(at.x - from.x) + 1, Math.abs(at.y - from.y) + 1);
-    ctx.globalAlpha = rider.alive ? 1 : 0.4;
+    // La estela, de la cola a la moto. La punta avanza suave hacia la siguiente
+    // casilla y la cola, si ya está en su largo, se recoge a la vez.
+    const points = rider.trail.map(center);
+    if (t > 0) points.push(lerp(center(rider.head), center(nextCell), t));
+    if (t > 0 && rider.trail.length >= TRAIL_LENGTH && points.length > 2) points[0] = lerp(points[0]!, points[1]!, t);
+
+    // Línea fina y uniforme hasta el final, cortado en seco: así se ve bien
+    // hasta dónde llega la estela (y contra qué se puede chocar).
+    ctx.lineCap = "butt";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 0.32;
+    ctx.strokeStyle = colors[mark];
     ctx.shadowColor = colors[mark];
-    ctx.shadowBlur = rider.alive ? 12 * ratio : 0;
+    ctx.shadowBlur = rider.alive ? 6 * ratio : 0;
+    ctx.globalAlpha = rider.alive ? 1 : 0.5;
     ctx.beginPath();
-    ctx.roundRect(at.x - 0.2, at.y - 0.2, 1.4, 1.4, 0.35);
+    ctx.moveTo(points[0]!.x, points[0]!.y);
+    for (const p of points.slice(1)) ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+
+    // La moto: un punto brillante en la punta.
+    const tip = points.at(-1)!;
+    ctx.globalAlpha = rider.alive ? 1 : 0.4;
+    ctx.fillStyle = colors[mark];
+    ctx.shadowBlur = rider.alive ? 14 * ratio : 0;
+    ctx.beginPath();
+    ctx.arc(tip.x, tip.y, 0.55, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;
@@ -402,7 +377,7 @@ function draw(canvas: HTMLCanvasElement | null, state: TronState, progress: numb
       ctx.strokeStyle = color("--ink");
       ctx.lineWidth = 0.15;
       ctx.beginPath();
-      ctx.arc(at.x + 0.5, at.y + 0.5, 1.6, 0, Math.PI * 2);
+      ctx.arc(tip.x, tip.y, 1.6, 0, Math.PI * 2);
       ctx.stroke();
     }
   }

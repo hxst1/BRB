@@ -1,6 +1,7 @@
 /**
  * Tron: dos motos que dejan estela en un tablero de GRID × GRID. Avanzan una
- * casilla por tic; chocar con un borde o con cualquier estela elimina. Si
+ * casilla por tic y la estela solo dura TRAIL_LENGTH casillas: lo más antiguo
+ * se va borrando. Chocar con un borde o con cualquier estela elimina. Si
  * caen los dos a la vez, la ronda se repite. Gana la partida quien llega
  * antes a WIN_ROUNDS rondas.
  *
@@ -17,19 +18,23 @@ export const TICK_MS = 60;
 export const WIN_ROUNDS = 3;
 /** Pausa entre rondas (y antes de la primera), en ms. */
 export const ROUND_PAUSE_MS = 1500;
+/** Casillas que dura la estela de cada moto (algo más de un segundo y medio). */
+export const TRAIL_LENGTH = 24;
 
 export interface Rider {
   /** Casilla de la cabeza (fila × GRID + columna). */
   head: number;
   direction: Direction;
   alive: boolean;
+  /** Estela de la más antigua a la cabeza (incluida). */
+  trail: number[];
 }
 
 export interface TronState {
   round: number;
   tick: number;
   riders: Record<Mark, Rider>;
-  /** Dueño de cada casilla con estela: 0 vacía, 1 X, 2 O. */
+  /** Casillas ocupadas por alguna estela (para los choques): 0 libre, 1 X, 2 O. */
   trails: Uint8Array;
   score: Record<Mark, number>;
   /** Resultado de la ronda en curso cuando acaba; null mientras se juega. */
@@ -56,8 +61,8 @@ function startRound(score: Record<Mark, number>, round: number): TronState {
     round,
     tick: 0,
     riders: {
-      x: { head: START.x.cell, direction: START.x.direction, alive: true },
-      o: { head: START.o.cell, direction: START.o.direction, alive: true },
+      x: { head: START.x.cell, direction: START.x.direction, alive: true, trail: [START.x.cell] },
+      o: { head: START.o.cell, direction: START.o.direction, alive: true, trail: [START.o.cell] },
     },
     trails,
     score,
@@ -94,24 +99,34 @@ export function step(state: TronState, turns: Partial<Record<Mark, Direction>> =
   if (state.winner) return state;
   if (state.roundOver) return startRound(state.score, state.round + 1);
 
-  const riders = { x: { ...state.riders.x }, o: { ...state.riders.o } };
+  const riders = {
+    x: { ...state.riders.x, trail: [...state.riders.x.trail] },
+    o: { ...state.riders.o, trail: [...state.riders.o.trail] },
+  };
   for (const mark of ["x", "o"] as const) {
     const turn = turns[mark];
     if (turn && canTurn(riders[mark], turn)) riders[mark].direction = turn;
   }
 
+  // Primero se borra el final de las estelas que ya han llegado a su largo:
+  // esa casilla queda libre en este mismo tic.
+  const trails = state.trails.slice();
+  for (const mark of ["x", "o"] as const) {
+    if (riders[mark].trail.length >= TRAIL_LENGTH) trails[riders[mark].trail.shift()!] = 0;
+  }
+
   const next = { x: neighbor(riders.x.head, riders.x.direction), o: neighbor(riders.o.head, riders.o.direction) };
-  const crash = (mark: Mark) => next[mark] < 0 || state.trails[next[mark]] !== 0;
+  const crash = (mark: Mark) => next[mark] < 0 || trails[next[mark]] !== 0;
   const crashed = { x: crash("x"), o: crash("o") };
   // Chocan de frente en la misma casilla: caen los dos.
   if (next.x >= 0 && next.x === next.o) crashed.x = crashed.o = true;
 
-  const trails = state.trails.slice();
   for (const mark of ["x", "o"] as const) {
     if (crashed[mark]) {
       riders[mark].alive = false;
     } else {
       riders[mark].head = next[mark];
+      riders[mark].trail.push(next[mark]);
       trails[next[mark]] = OWNER[mark];
     }
   }
@@ -136,12 +151,14 @@ export function step(state: TronState, turns: Partial<Record<Mark, Direction>> =
   };
 }
 
-/** Dueño de una casilla de estela (para dibujar). */
+/** Dueño de una casilla de estela. */
 export function ownerOf(trails: Uint8Array, cell: number): Mark | null {
   return trails[cell] === OWNER.x ? "x" : trails[cell] === OWNER.o ? "o" : null;
 }
 
-/** Marca una casilla de estela (el invitado rehace las estelas con lo que le llega). */
-export function paint(trails: Uint8Array, cell: number, mark: Mark): void {
-  trails[cell] = OWNER[mark];
+/** Rehace las casillas ocupadas a partir de las estelas (el invitado solo recibe las estelas). */
+export function occupancy(riders: Record<Mark, Rider>): Uint8Array {
+  const trails = new Uint8Array(GRID * GRID);
+  for (const mark of ["x", "o"] as const) for (const cell of riders[mark].trail) trails[cell] = OWNER[mark];
+  return trails;
 }

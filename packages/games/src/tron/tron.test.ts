@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GRID, START, WIN_ROUNDS, newGame, ownerOf, step, type TronState } from ".";
+import { GRID, START, TRAIL_LENGTH, WIN_ROUNDS, newGame, occupancy, ownerOf, step, type TronState } from ".";
 
 /** Avanza hasta que acaba la ronda (sin giros salvo los indicados en el primer tic). */
 function untilRoundOver(state: TronState, first: Parameters<typeof step>[1] = {}): TronState {
@@ -15,6 +15,31 @@ describe("tron", () => {
     expect(state.riders.o.head).toBe(START.o.cell - 1);
     expect(ownerOf(state.trails, START.x.cell)).toBe("x");
     expect(ownerOf(state.trails, state.riders.x.head)).toBe("x");
+  });
+
+  it("la estela solo dura TRAIL_LENGTH casillas: lo más antiguo se borra", () => {
+    // X va recta: tras TRAIL_LENGTH + 1 pasos (aún no ha llegado al borde) su salida ya se ha borrado.
+    let state = newGame();
+    for (let i = 0; i < TRAIL_LENGTH + 1; i++) state = step(state);
+    expect(state.roundOver).toBeNull();
+    expect(state.riders.x.trail).toHaveLength(TRAIL_LENGTH);
+    expect(state.riders.x.trail.at(-1)).toBe(state.riders.x.head);
+    expect(ownerOf(state.trails, START.x.cell)).toBeNull();
+    expect(occupancy(state.riders)).toEqual(state.trails);
+  });
+
+  it("se puede pasar por donde ya se ha borrado la estela", () => {
+    // X da la vuelta en U a lo largo y vuelve por la fila de al lado; cuando
+    // vuelve a cruzar su salida, esa parte ya se ha borrado.
+    let state = newGame();
+    const turns: Parameters<typeof step>[1][] = [];
+    for (let i = 0; i < TRAIL_LENGTH; i++) turns.push({});
+    turns[3] = { x: "up" };
+    turns[4] = { x: "left" };
+    turns[5] = { x: "down" };
+    turns[7] = { x: "right" };
+    for (const t of turns) state = step(state, t);
+    expect(state.riders.x.alive).toBe(true);
   });
 
   it("no se puede girar hacia atrás", () => {
