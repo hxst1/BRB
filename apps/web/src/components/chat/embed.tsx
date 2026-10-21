@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import type { Match } from "@repo/db";
 import { describeChallenge, type Challenge } from "@/components/game2048/challenge-text";
-import { markOf, turnOf } from "@/components/tictactoe/data";
+import { isTurnBased, markOf, turnOf } from "@/components/tictactoe/data";
 import { formatNumber } from "@/lib/format";
 import { matchGame, matchHref } from "@/lib/games";
 import { createClient } from "@/lib/supabase/client";
@@ -78,7 +78,7 @@ export function ChallengeEmbed({
           );
           break;
         case "active": {
-          if (match.game !== "tictactoe") {
+          if (!isTurnBased(match.game)) {
             // Piedra, papel o tijera: quién ha elegido es secreto. Pong: se juega en directo.
             status = match.game === "pong" ? "Aceptado: entrad los dos para jugar" : "En juego";
             actions = <EmbedLink href={href} primary>Jugar</EmbedLink>;
@@ -142,6 +142,19 @@ export function ChallengeEmbed({
 }
 
 function EmbedIcon({ kind, game }: { kind: "match" | "challenge"; game?: string }) {
+  if (kind === "match" && game === "connect4") {
+    return (
+      <span aria-hidden className="grid size-11 shrink-0 grid-cols-4 content-end gap-0.5 rounded-xl p-1" style={{ background: "var(--board)" }}>
+        {["", "", "o", "", "", "x", "o", "", "o", "x", "x", "o"].map((mark, i) => (
+          <span
+            key={i}
+            className="aspect-square rounded-full"
+            style={{ background: mark === "x" ? "var(--mark-x)" : mark === "o" ? "var(--mark-o)" : "var(--cell)" }}
+          />
+        ))}
+      </span>
+    );
+  }
   if (kind === "match" && game && game !== "tictactoe") {
     return (
       <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-xl text-2xl" style={{ background: "var(--board)" }}>

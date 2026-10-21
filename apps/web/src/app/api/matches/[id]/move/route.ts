@@ -1,3 +1,4 @@
+import { play as playConnect4, replay as replayConnect4, type MoveError as Connect4Error } from "@repo/games/connect4";
 import { isValidChoice, replay as replayRps, type Variant } from "@repo/games/rps";
 import { play, replay, type MoveError } from "@repo/games/tictactoe";
 import type { Match } from "@repo/db";
@@ -9,11 +10,13 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** Código que lanzan apply_match_move / submit_match_choice cuando la partida cambió o no está en juego. */
 const MATCH_CHANGED = "P0002";
 
-const MOVE_ERRORS: Record<MoveError, string> = {
+const MOVE_ERRORS: Record<MoveError | Connect4Error, string> = {
   game_over: "La partida ya ha terminado",
   not_your_turn: "No es tu turno",
   invalid_cell: "Casilla no válida",
   occupied: "Esa casilla ya está ocupada",
+  invalid_column: "Columna no válida",
+  full: "Esa columna está llena",
 };
 
 type MatchRow = Pick<Match, "id" | "game" | "status" | "moves" | "player_x" | "player_o">;
@@ -26,13 +29,13 @@ const serverError = (context: string, error: unknown) => {
 
 /**
  * Valida una jugada con la lógica compartida y la guarda.
- * 3 en raya: `{ cell }`. Piedra, papel o tijera: `{ choice }` (índice de la opción).
+ * 3 en raya: `{ cell }`. 4 en raya: `{ column }`. Piedra, papel o tijera: `{ choice }` (índice de la opción).
  */
 export async function POST(request: Request, { params }: RouteContext<"/api/matches/[id]/move">) {
   const { id } = await params;
   if (!UUID.test(id)) return json({ error: "Partida no encontrada" }, 404);
 
-  const body = (await request.json().catch(() => null)) as { cell?: unknown; choice?: unknown } | null;
+  const body = (await request.json().catch(() => null)) as { cell?: unknown; column?: unknown; choice?: unknown } | null;
 
   const { supabase, userId } = await createClientForRequest(request);
   if (!userId) return json({ error: "Hay que iniciar sesión" }, 401);
@@ -49,6 +52,7 @@ export async function POST(request: Request, { params }: RouteContext<"/api/matc
   if (match.status !== "active") return json({ error: MOVE_ERRORS.game_over }, 409);
 
   if (match.game === "tictactoe") return playTicTacToe(match, userId, body?.cell);
+  if (match.game === "connect4") return playFourInARow(match, userId, body?.column);
   if (match.game === "rps" || match.game === "rpsls") return playRps(match, match.game, userId, body?.choice);
   return json({ error: "Partida no encontrada" }, 404);
 }
@@ -60,6 +64,31 @@ async function playTicTacToe(match: MatchRow, userId: string, cell: unknown) {
   if (!state) return serverError("la partida guardada no es válida", match.id);
 
   const result = play(state, match.player_x === userId ? "x" : "o", cell);
+  if (!result.ok) {
+    return json({ error: MOVE_ERRORS[result.error] }, result.error === "not_your_turn" ? 409 : 400);
+  }
+
+  const next = result.state;
+  const { error } = await createAdminClient().rpc("apply_match_move", {
+    match_id: match.id,
+    previous_count: match.moves.length,
+    moves: next.moves,
+    end_reason: next.winner ? "line" : next.draw ? "draw" : undefined,
+    winner: next.winner ?? undefined,
+  });
+  if (error?.code === MATCH_CHANGED) return json({ error: "La partida ha cambiado, recarga" }, 409);
+  if (error) return serverError("error guardando la jugada", error);
+
+  return json({ moves: next.moves });
+}
+
+async function playFourInARow(match: MatchRow, userId: string, column: unknown) {
+  if (typeof column !== "number") return json({ error: MOVE_ERRORS.invalid_column }, 400);
+
+  const state = replayConnect4(match.moves);
+  if (!state) return serverError("la partida guardada no es válida", match.id);
+
+  const result = playConnect4(state, match.player_x === userId ? "x" : "o", column);
   if (!result.ok) {
     return json({ error: MOVE_ERRORS[result.error] }, result.error === "not_your_turn" ? 409 : 400);
   }

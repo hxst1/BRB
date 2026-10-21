@@ -98,7 +98,7 @@ async function notificationsFor(change: Change): Promise<Notification[]> {
     return [notify(m.created_by, "Reto rechazado", `${name(other(m.created_by))} ha rechazado tu reto.`)];
   }
 
-  if (m.game === "tictactoe") {
+  if (m.game === "tictactoe" || m.game === "connect4") {
     // Quien acaba de mover no necesita aviso: se notifica al otro.
     const lastMover = m.moves.length % 2 === 1 ? m.player_x : m.player_o;
     const target = m.end_reason === "resign"

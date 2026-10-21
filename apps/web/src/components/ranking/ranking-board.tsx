@@ -8,7 +8,7 @@ import { formatNumber } from "@/lib/format";
 import { levelFromXp } from "@repo/games/level";
 import { createClient } from "@/lib/supabase/client";
 
-type Category = "level" | "2048" | "snake" | "lightsout" | "tictactoe" | "rps" | "pong";
+type Category = "level" | "2048" | "snake" | "lightsout" | "tictactoe" | "connect4" | "rps" | "pong";
 type Scope = "global" | "friends";
 type Period = "all" | "week";
 
@@ -75,6 +75,18 @@ const RANKED_GAMES: { id: GameId; label: string; icon: ReactNode; games?: string
       <span className="font-bold">
         <span style={{ color: "var(--mark-x)" }}>×</span>
         <span style={{ color: "var(--mark-o)" }}>○</span>
+      </span>
+    ),
+  },
+  {
+    id: "connect4",
+    label: "4 en raya",
+    games: ["connect4"],
+    icon: (
+      <span className="flex gap-px">
+        {["var(--mark-x)", "var(--mark-o)"].map((color) => (
+          <span key={color} className="size-[7px] rounded-full" style={{ background: color }} />
+        ))}
       </span>
     ),
   },

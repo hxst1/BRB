@@ -160,3 +160,77 @@ body {
     animation: none;
   }
 }
+
+/* 4 en raya */
+.c4-board {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: clamp(3px, 1.2vw, 8px);
+  padding: clamp(6px, 2vw, 14px);
+  border-radius: 22px;
+  background: var(--board);
+}
+
+.c4-column {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  gap: clamp(3px, 1.2vw, 8px);
+  padding: 2px;
+  border-radius: 9999px;
+  transition: background-color 150ms;
+}
+
+.c4-column-open {
+  cursor: pointer;
+}
+
+.c4-column-open:hover,
+.c4-column-open:focus-visible {
+  background: color-mix(in srgb, var(--cell) 55%, transparent);
+}
+
+.c4-cell {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  background: var(--cell);
+}
+
+.c4-piece,
+.c4-ghost {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+}
+
+/* Dónde caería tu ficha: solo al pasar por encima de la columna. */
+.c4-ghost {
+  opacity: 0;
+  transition: opacity 120ms;
+}
+
+.c4-column-open:hover .c4-ghost,
+.c4-column-open:focus-visible .c4-ghost {
+  opacity: 0.35;
+}
+
+.c4-cell-win .c4-piece {
+  box-shadow: 0 0 0 3px var(--ink);
+}
+
+/* La última ficha cae desde encima del tablero hasta su fila. */
+.c4-drop {
+  animation: c4-drop calc(180ms + var(--drop-rows) * 45ms) cubic-bezier(0.5, 0, 0.75, 0.2) both;
+}
+
+@keyframes c4-drop {
+  from {
+    transform: translateY(calc(var(--drop-rows) * -118%));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .c4-drop {
+    animation: none;
+  }
+}

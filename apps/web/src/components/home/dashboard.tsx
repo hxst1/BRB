@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { replay as replayConnect4 } from "@repo/games/connect4";
 import { replay } from "@repo/games/tictactoe";
 import type { Functions, Json, Match } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
@@ -17,7 +18,9 @@ type GameTally = { myTurn: number; invites: number; waiting: number };
 
 /** ¿Le toca al usuario? 3 en raya por movimientos; piedra, papel o tijera si aún no ha elegido. */
 function myTurnIn(match: Match, viewerId: string, chosen: ReadonlySet<string>): boolean {
-  if (match.game === "tictactoe") return replay(match.moves)?.turn === (match.player_x === viewerId ? "x" : "o");
+  const mark = match.player_x === viewerId ? "x" : "o";
+  if (match.game === "tictactoe") return replay(match.moves)?.turn === mark;
+  if (match.game === "connect4") return replayConnect4(match.moves)?.turn === mark;
   if (match.game === "pong") return true;
   return !chosen.has(match.id);
 }
@@ -70,15 +73,16 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
   const chosen = new Set((choices ?? []).filter((c) => roundOf.get(c.match_id) === c.round).map((c) => c.match_id));
 
   const pending: Pending[] = [];
-  const tally: Record<"tictactoe" | "rps" | "pong", GameTally> = {
+  const tally: Record<"tictactoe" | "connect4" | "rps" | "pong", GameTally> = {
     tictactoe: { myTurn: 0, invites: 0, waiting: 0 },
+    connect4: { myTurn: 0, invites: 0, waiting: 0 },
     rps: { myTurn: 0, invites: 0, waiting: 0 },
     pong: { myTurn: 0, invites: 0, waiting: 0 },
   };
   for (const match of matches ?? []) {
     const rival = match.player_x === viewer.id ? match.o : match.x;
     const name = matchGame(match.game).name;
-    const counts = tally[match.game === "tictactoe" || match.game === "pong" ? match.game : "rps"];
+    const counts = tally[match.game === "rpsls" ? "rps" : (match.game as keyof typeof tally)] ?? tally.rps;
     if (match.status === "pending") {
       if (match.created_by !== viewer.id) {
         counts.invites++;
@@ -168,6 +172,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
             )
           }
           statsTicTacToe={<MatchStats counts={tally.tictactoe} />}
+          statsConnect4={<MatchStats counts={tally.connect4} />}
           statsRps={<MatchStats counts={tally.rps} />}
           statsPong={<MatchStats counts={tally.pong} />}
         />

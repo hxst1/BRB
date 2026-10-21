@@ -3,20 +3,34 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { replay as replayConnect4 } from "@repo/games/connect4";
 import { replay, type Mark } from "@repo/games/tictactoe";
 import type { Mood } from "@repo/avatars";
 import type { Match } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
+import { Connect4Board } from "@/components/connect4/board";
+import { MATCH_GAMES } from "@/lib/games";
 import { createClient } from "@/lib/supabase/client";
 import { TicTacToeBoard } from "./board";
 import { challenge, fetchMatch, markOf, type MatchWithPlayers, type Player } from "./data";
 
 export const MARK_COLOR: Record<Mark, string> = { x: "var(--mark-x)", o: "var(--mark-o)" };
 
-export function MatchView({ matchId, viewerId }: { matchId: string; viewerId: string }) {
+/** Partida por turnos contra un amigo: 3 en raya o 4 en raya (cambian el tablero y la lógica). */
+export function MatchView({
+  matchId,
+  viewerId,
+  game = "tictactoe",
+}: {
+  matchId: string;
+  viewerId: string;
+  game?: "tictactoe" | "connect4";
+}) {
   const router = useRouter();
   const [match, setMatch] = useState<MatchWithPlayers | null | undefined>(undefined);
+  // Jugada enviada y aún sin confirmar: casilla (3 en raya) o columna (4 en raya).
   const [pendingCell, setPendingCell] = useState<number | null>(null);
+  const path = MATCH_GAMES[game].path;
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -59,12 +73,12 @@ export function MatchView({ matchId, viewerId }: { matchId: string; viewerId: st
     [matchId],
   );
 
-  if (match === undefined) return <div className="ttt-board max-w-md animate-pulse" />;
-  if (match === null) {
+  if (match === undefined) return <div className={`${game === "connect4" ? "c4-board aspect-[7/6]" : "ttt-board"} w-full max-w-md animate-pulse`} />;
+  if (match === null || match.game !== game) {
     return (
       <p className="text-muted">
         No encontramos esta partida.{" "}
-        <Link href="/3-en-raya" className="font-medium text-ink underline underline-offset-4">
+        <Link href={path} className="font-medium text-ink underline underline-offset-4">
           Ver tus partidas
         </Link>
       </p>
@@ -74,7 +88,8 @@ export function MatchView({ matchId, viewerId }: { matchId: string; viewerId: st
   const me = markOf(match, viewerId);
   const rival: Mark = me === "x" ? "o" : "x";
   const moves = pendingCell === null ? match.moves : [...match.moves, pendingCell];
-  const state = replay(moves) ?? replay(match.moves)!;
+  const replayGame = (list: number[]) => (game === "connect4" ? replayConnect4(list) : replay(list));
+  const state = replayGame(moves) ?? replayGame(match.moves)!;
   const myTurn = match.status === "active" && state.turn === me && pendingCell === null;
   const invitedMe = match.status === "pending" && match.created_by !== viewerId;
   const players: Record<Mark, Player> = { x: match.x, o: match.o };
@@ -85,7 +100,7 @@ export function MatchView({ matchId, viewerId }: { matchId: string; viewerId: st
     const response = await fetch(`/api/matches/${matchId}/move`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ cell }),
+      body: JSON.stringify(game === "connect4" ? { column: cell } : { cell }),
     });
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
@@ -102,9 +117,9 @@ export function MatchView({ matchId, viewerId }: { matchId: string; viewerId: st
 
   async function rematch() {
     setBusy(true);
-    const id = await challenge(players[rival].id);
+    const id = await challenge(players[rival].id, game);
     setBusy(false);
-    if (id) router.push(`/3-en-raya/${id}`);
+    if (id) router.push(`${path}/${id}`);
     else setError("No se ha podido crear la revancha.");
   }
 
@@ -115,9 +130,23 @@ export function MatchView({ matchId, viewerId }: { matchId: string; viewerId: st
   return (
     <div className="flex w-full max-w-md flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
-        <PlayerBadge player={players[me]} mark={me} label="Tú" active={state.turn === me && match.status === "active"} mood={moodOf(me)} />
+        <PlayerBadge
+          player={players[me]}
+          mark={me}
+          label="Tú"
+          active={state.turn === me && match.status === "active"}
+          mood={moodOf(me)}
+          detail={game === "connect4" ? <Disc mark={me} /> : undefined}
+        />
         <span className="text-sm text-muted">contra</span>
-        <PlayerBadge player={players[rival]} mark={rival} active={state.turn === rival && match.status === "active"} mood={moodOf(rival)} alignEnd />
+        <PlayerBadge
+          player={players[rival]}
+          mark={rival}
+          active={state.turn === rival && match.status === "active"}
+          mood={moodOf(rival)}
+          alignEnd
+          detail={game === "connect4" ? <Disc mark={rival} /> : undefined}
+        />
       </div>
 
       <p aria-live="polite" className="display text-center text-3xl font-bold">
@@ -125,7 +154,18 @@ export function MatchView({ matchId, viewerId }: { matchId: string; viewerId: st
       </p>
 
       <div className="w-full" style={{ "--win-color": winnerMark ? MARK_COLOR[winnerMark] : undefined } as CSSProperties}>
-        <TicTacToeBoard board={state.board} line={state.line} canPlay={myTurn && !busy} onPlay={(cell) => void playCell(cell)} />
+        {"last" in state ? (
+          <Connect4Board
+            board={state.board}
+            line={state.line}
+            last={state.last}
+            me={me}
+            canPlay={myTurn && !busy}
+            onPlay={(column) => void playCell(column)}
+          />
+        ) : (
+          <TicTacToeBoard board={state.board} line={state.line} canPlay={myTurn && !busy} onPlay={(cell) => void playCell(cell)} />
+        )}
       </div>
 
       {error && (
@@ -171,11 +211,23 @@ export function MatchView({ matchId, viewerId }: { matchId: string; viewerId: st
             {match.status === "finished" ? "Revancha" : "Retar otra vez"}
           </button>
         )}
-        <Link href="/3-en-raya" className="text-sm text-muted hover:text-ink">
+        <Link href={path} className="text-sm text-muted hover:text-ink">
           Todas tus partidas
         </Link>
       </div>
     </div>
+  );
+}
+
+/** Ficha del color de cada jugador en el 4 en raya. */
+function Disc({ mark }: { mark: Mark }) {
+  return (
+    <span
+      role="img"
+      aria-label={`Juega con las fichas ${mark === "x" ? "rojas" : "azules"}`}
+      className="mt-1 size-4 rounded-full"
+      style={{ background: MARK_COLOR[mark] }}
+    />
   );
 }
 

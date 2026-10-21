@@ -7,6 +7,7 @@ import { MATCH_GAMES, matchHref, type MatchGame } from "@/lib/games";
 
 const OPTIONS: { game: MatchGame; label: string; icon: string }[] = [
   { game: "tictactoe", label: MATCH_GAMES.tictactoe.name, icon: "×○" },
+  { game: "connect4", label: MATCH_GAMES.connect4.name, icon: "🔴" },
   { game: "rps", label: MATCH_GAMES.rps.name, icon: "✂️" },
   { game: "rpsls", label: "Con lagarto y Spock", icon: "🖖" },
   { game: "pong", label: "Pong (en directo)", icon: "🏓" },

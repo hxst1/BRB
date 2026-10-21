@@ -5,6 +5,8 @@ import type { CSSProperties, ReactNode } from "react";
 /** Tablero en miniatura para la tarjeta del 2048 (decorativo). */
 const PREVIEW_2048 = [2, 0, 8, 0, 0, 16, 64, 4, 0, 4, 128, 32, 2, 8, 512, 2048];
 const PREVIEW_TTT = ["×", "", "○", "", "×", "", "○", "", ""];
+/** 4 en raya en miniatura (5 × 4, de arriba abajo): x, o o vacía. */
+const PREVIEW_C4 = [".....", "..o..", ".xxo.", "oxox."];
 /** Snake en miniatura (5 × 5): cuerpo de la cola a la cabeza y la manzana. */
 const PREVIEW_SNAKE = { body: [20, 15, 16, 17, 12, 7, 8], food: 4 };
 /** Luces encendidas del Lights Out en miniatura (4 × 4). */
@@ -28,6 +30,7 @@ export function GameCards({
   statsLightsOut,
   statsWordle,
   statsTicTacToe,
+  statsConnect4,
   statsRps,
   statsPong,
 }: {
@@ -36,6 +39,7 @@ export function GameCards({
   statsLightsOut?: ReactNode;
   statsWordle?: ReactNode;
   statsTicTacToe?: ReactNode;
+  statsConnect4?: ReactNode;
   statsRps?: ReactNode;
   statsPong?: ReactNode;
 }) {
@@ -132,6 +136,24 @@ export function GameCards({
                   {mark}
                 </span>
               ))}
+            </div>
+          </GameCard>
+        </li>
+        <li className={ITEM}>
+          <GameCard href="/4-en-raya" title="4 en raya" subtitle="Deja caer fichas y junta cuatro" stats={statsConnect4}>
+            <div aria-hidden className="grid aspect-square grid-cols-5 content-end gap-1 rounded-xl p-1.5 sm:gap-1.5 sm:rounded-2xl sm:p-2.5" style={{ background: "var(--board)" }}>
+              {PREVIEW_C4.flatMap((row, r) =>
+                [...row].map((mark, i) => (
+                  <span
+                    key={`${r}${i}`}
+                    className="aspect-square rounded-full transition-transform duration-300 group-hover:translate-y-0.5"
+                    style={{
+                      background: mark === "x" ? "var(--mark-x)" : mark === "o" ? "var(--mark-o)" : "var(--cell)",
+                      transitionDelay: `${i * 25}ms`,
+                    }}
+                  />
+                )),
+              )}
             </div>
           </GameCard>
         </li>

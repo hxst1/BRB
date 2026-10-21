@@ -193,7 +193,9 @@ function Group({
                 <Avatar seed={rival.avatar_seed} parts={rival.avatar_parts} size={36} />
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="truncate font-medium">{rival.username}</span>
-                  {match.game !== "tictactoe" && <span className="text-xs text-muted">{GAME_MODE_LABELS[match.game as MatchGame]}</span>}
+                  {GAME_MODE_LABELS[match.game as MatchGame] && (
+                    <span className="text-xs text-muted">{GAME_MODE_LABELS[match.game as MatchGame]}</span>
+                  )}
                 </span>
                 <span className={`text-sm ${highlight ? "rounded-full bg-ink px-3 py-1 font-medium text-bg" : "text-muted"}`}>
                   {note(match)}

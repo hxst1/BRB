@@ -1,3 +1,4 @@
+import { replay as replayConnect4 } from "@repo/games/connect4";
 import { replay, type Mark } from "@repo/games/tictactoe";
 import type { Json, Match } from "@repo/db";
 import type { MatchGame } from "@/lib/games";
@@ -15,9 +16,16 @@ export function opponentOf(match: MatchWithPlayers, userId: string): Player {
   return match.player_x === userId ? match.o : match.x;
 }
 
-/** 3 en raya: a quién le toca según los movimientos guardados (null si no está en juego). */
+/** Juegos por turnos (3 y 4 en raya): el turno se deduce de los movimientos. */
+export function isTurnBased(game: string): game is "tictactoe" | "connect4" {
+  return game === "tictactoe" || game === "connect4";
+}
+
+/** 3 y 4 en raya: a quién le toca según los movimientos guardados (null si no está en juego). */
 export function turnOf(match: Match): Mark | null {
-  return match.status === "active" ? (replay(match.moves)?.turn ?? null) : null;
+  if (match.status !== "active") return null;
+  const state = match.game === "connect4" ? replayConnect4(match.moves) : replay(match.moves);
+  return state?.turn ?? null;
 }
 
 /**
@@ -26,7 +34,7 @@ export function turnOf(match: Match): Mark | null {
  */
 export function isMyTurn(match: Match, userId: string, chosen: ReadonlySet<string>): boolean {
   if (match.status !== "active") return false;
-  if (match.game === "tictactoe") return turnOf(match) === markOf(match, userId);
+  if (isTurnBased(match.game)) return turnOf(match) === markOf(match, userId);
   // Pong: aceptada, se juega en directo cuando estéis los dos.
   if (match.game === "pong") return true;
   return !chosen.has(match.id);
