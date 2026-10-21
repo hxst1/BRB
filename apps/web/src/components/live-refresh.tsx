@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { channelName, subscribeWhenReady } from "@/lib/realtime";
 
 const WATCHED = ["messages", "matches", "friendships", "challenges"] as const;
 
@@ -23,15 +24,17 @@ export function LiveRefresh({ viewerId }: { viewerId: string }) {
       timer = setTimeout(() => router.refresh(), 400);
     };
 
-    let channel = supabase.channel(`live:${viewerId}`);
-    for (const table of WATCHED) {
-      channel = channel.on("postgres_changes", { event: "*", schema: "public", table }, refresh);
-    }
-    channel.subscribe();
+    const unsubscribe = subscribeWhenReady(supabase, () => {
+      let channel = supabase.channel(channelName(`live:${viewerId}`));
+      for (const table of WATCHED) {
+        channel = channel.on("postgres_changes", { event: "*", schema: "public", table }, refresh);
+      }
+      return channel.subscribe();
+    });
 
     return () => {
       clearTimeout(timer);
-      void supabase.removeChannel(channel);
+      unsubscribe();
     };
   }, [router, viewerId]);
 

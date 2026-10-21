@@ -8,12 +8,13 @@ import { fetchFriends, type Friend } from "@/lib/friends";
 import { MATCH_GAMES, matchHref, type MatchGame } from "@/lib/games";
 import { createClient } from "@/lib/supabase/client";
 import { challenge, fetchChosen, fetchMyMatches, isMyTurn, markOf, opponentOf, type MatchWithPlayers } from "./data";
+import { channelName, subscribeWhenReady } from "@/lib/realtime";
 
 type Loaded = { matches: MatchWithPlayers[]; chosen: Set<string> };
 
-async function load(games: readonly MatchGame[]): Promise<Loaded> {
+async function load(games: readonly MatchGame[], viewerId: string): Promise<Loaded> {
   const matches = await fetchMyMatches(games);
-  return { matches, chosen: await fetchChosen(matches) };
+  return { matches, chosen: await fetchChosen(matches, viewerId) };
 }
 
 /**
@@ -28,31 +29,33 @@ export function MatchList({ viewerId, games }: { viewerId: string; games: readon
   const [game, setGame] = useState<MatchGame>(games[0]!);
   const gamesKey = games.join(",");
 
-  const reload = useCallback(async () => setLoaded(await load(games)), [games]);
+  const reload = useCallback(async () => setLoaded(await load(games, viewerId)), [games, viewerId]);
 
   useEffect(() => {
     let cancelled = false;
     const supabase = createClient();
     const list = gamesKey.split(",") as MatchGame[];
-    load(list).then((data) => {
+    load(list, viewerId).then((data) => {
       if (!cancelled) setLoaded(data);
     });
 
     // Sin filtro: RLS ya hace que solo lleguen las partidas en las que juego.
-    const channel = supabase
-      .channel(`my-matches:${gamesKey}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, () => {
-        load(list).then((data) => {
-          if (!cancelled) setLoaded(data);
-        });
-      })
-      .subscribe();
+    const unsubscribe = subscribeWhenReady(supabase, () =>
+      supabase
+        .channel(channelName(`my-matches:${gamesKey}`))
+        .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, () => {
+          load(list, viewerId).then((data) => {
+            if (!cancelled) setLoaded(data);
+          });
+        })
+        .subscribe(),
+    );
 
     return () => {
       cancelled = true;
-      void supabase.removeChannel(channel);
+      unsubscribe();
     };
-  }, [gamesKey]);
+  }, [gamesKey, viewerId]);
 
   const matches = loaded?.matches ?? null;
 

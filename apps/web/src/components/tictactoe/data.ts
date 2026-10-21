@@ -40,16 +40,39 @@ export function isMyTurn(match: Match, userId: string, chosen: ReadonlySet<strin
   return !chosen.has(match.id);
 }
 
-/** Partidas de piedra, papel o tijera en las que el usuario ya ha elegido esta ronda. */
-export async function fetchChosen(matches: Match[]): Promise<Set<string>> {
-  const active = matches.filter((m) => m.status === "active" && (m.game === "rps" || m.game === "rpsls"));
-  if (active.length === 0) return new Set();
-  const { data } = await createClient()
-    .from("match_choices")
-    .select("match_id, round")
-    .in("match_id", active.map((m) => m.id));
-  const round = new Map(active.map((m) => [m.id, m.moves.length / 2]));
-  return new Set((data ?? []).filter((c) => round.get(c.match_id) === c.round).map((c) => c.match_id));
+/**
+ * Hundir la flota: ¿le toca al usuario? Primero, colocar su flota; con las
+ * dos colocadas, disparar en su turno (X con un número par de disparos).
+ */
+export function battleshipMyTurn(match: Match, userId: string, status: { me_ready: boolean; rival_ready: boolean }): boolean {
+  if (!status.me_ready) return true;
+  return status.rival_ready && (match.moves.length % 2 === 0) === (match.player_x === userId);
+}
+
+/**
+ * Partidas en juego en las que ahora no le toca al usuario aunque no se vea
+ * por los movimientos: en piedra, papel o tijera, porque ya ha elegido esta
+ * ronda; en hundir la flota, porque espera al rival (colocar o disparar).
+ */
+export async function fetchChosen(matches: Match[], userId: string): Promise<Set<string>> {
+  const supabase = createClient();
+  const waiting = new Set<string>();
+
+  const rps = matches.filter((m) => m.status === "active" && (m.game === "rps" || m.game === "rpsls"));
+  if (rps.length > 0) {
+    const { data } = await supabase.from("match_choices").select("match_id, round").in("match_id", rps.map((m) => m.id));
+    const round = new Map(rps.map((m) => [m.id, m.moves.length / 2]));
+    for (const c of data ?? []) if (round.get(c.match_id) === c.round) waiting.add(c.match_id);
+  }
+
+  if (matches.some((m) => m.status === "active" && m.game === "battleship")) {
+    const { data } = await supabase.rpc("get_battleship_status");
+    for (const status of data ?? []) {
+      const match = matches.find((m) => m.id === status.match_id);
+      if (match && !battleshipMyTurn(match, userId, status)) waiting.add(match.id);
+    }
+  }
+  return waiting;
 }
 
 export async function fetchMatch(id: string): Promise<MatchWithPlayers | null> {

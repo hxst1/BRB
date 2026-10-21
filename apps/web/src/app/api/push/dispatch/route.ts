@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import { decodeShot } from "@repo/games/battleship";
 import { replay as replayRps, CHOICE_NAMES, type Variant } from "@repo/games/rps";
 import type { Tables } from "@repo/db";
 import { matchGame, matchHref } from "@/lib/games";
@@ -114,6 +115,23 @@ async function notificationsFor(change: Change): Promise<Notification[]> {
       return [notify(target, "Partida terminada", body)];
     }
     return [notify(target, "Te toca", `${name(other(target))} ha movido. Tu turno en el ${game.toLowerCase()}.`)];
+  }
+
+  if (m.game === "battleship") {
+    if (m.end_reason === "resign") {
+      const winner = m.winner === "x" ? m.player_x : m.player_o;
+      return [notify(winner, "Partida terminada", `${name(other(winner))} se ha rendido. ¡Ganas tú!`)];
+    }
+    // Solo los disparos avisan (colocar la flota no cambia los movimientos).
+    const shot = m.moves.length > old.moves.length ? decodeShot(m.moves.at(-1)!) : null;
+    if (!shot) return [];
+    const shooter = m.moves.length % 2 === 1 ? m.player_x : m.player_o;
+    const target = other(shooter);
+    if (m.status === "finished") {
+      return [notify(target, "Partida terminada", `${name(shooter)} ha hundido toda tu flota. ¿Revancha?`)];
+    }
+    const outcome = shot.result === "sunk" ? "¡te ha hundido un barco!" : shot.result === "hit" ? "¡tocado!" : "agua.";
+    return [notify(target, "Te toca", `${name(shooter)} ha disparado: ${outcome} Tu turno.`)];
   }
 
   if (m.game === "pong") {

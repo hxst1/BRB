@@ -23,7 +23,33 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "challenges": {
+            "battleship_fleets": {
+                  Row: {
+                    "created_at": string,"match_id": string,"player_id": string,"ships": NonNullable<Json>
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"match_id": string,"player_id": string,"ships": NonNullable<Json>
+                  }
+                  Update: {
+                    "created_at"?: string,"match_id"?: string,"player_id"?: string,"ships"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "battleship_fleets_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "matches"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "battleship_fleets_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"challenges": {
                   Row: {
                     "attempt_run_id": string | null,"challenged_id": string,"challenger_id": string,"created_at": string,"declined_at": string | null,"game": string,"id": string,"source_run_id": string,"target_score": number
                   }
@@ -341,6 +367,11 @@ isOneToOne: false
 "finish_run":
 { Args: { "max_tile": number,"moves": string,"run_id": string,"score": number }; Returns: undefined
                            },
+"get_battleship_status":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "match_id": string,"me_ready": boolean,"rival_ready": boolean
+            }[]
+                           },
 "get_conversations":
 { Args: Record<PropertyKey, never>; Returns: {
               "avatar_parts": Json,"avatar_seed": number,"friend_id": string,"last_at": string,"last_body": string,"last_from_me": boolean,"unread": number,"username": string
@@ -452,6 +483,9 @@ isOneToOne: false
 { Args: { "game": string }; Returns: {
               "id": string,"seed": number
             }[]
+                           },
+"submit_battleship_fleet":
+{ Args: { "match_id": string,"player_id": string,"ships": Json }; Returns: undefined
                            },
 "submit_match_choice":
 { Args: { "choice": number,"match_id": string,"player_id": string }; Returns: number

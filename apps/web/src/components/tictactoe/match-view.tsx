@@ -13,6 +13,7 @@ import { MATCH_GAMES } from "@/lib/games";
 import { createClient } from "@/lib/supabase/client";
 import { TicTacToeBoard } from "./board";
 import { challenge, fetchMatch, markOf, type MatchWithPlayers, type Player } from "./data";
+import { channelName, subscribeWhenReady } from "@/lib/realtime";
 
 export const MARK_COLOR: Record<Mark, string> = { x: "var(--mark-x)", o: "var(--mark-o)" };
 
@@ -42,22 +43,30 @@ export function MatchView({
       if (!cancelled) setMatch(data);
     });
 
-    const channel = supabase
-      .channel(`match:${matchId}`)
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "matches", filter: `id=eq.${matchId}` },
-        (payload) => {
-          const updated = payload.new as Match;
-          setMatch((current) => (current ? { ...current, ...updated } : current));
-          setPendingCell(null);
-        },
-      )
-      .subscribe();
+    const unsubscribe = subscribeWhenReady(supabase, () =>
+      supabase
+        .channel(channelName(`match:${matchId}`))
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "matches", filter: `id=eq.${matchId}` },
+          (payload) => {
+            const updated = payload.new as Match;
+            setMatch((current) => (current ? { ...current, ...updated } : current));
+            setPendingCell(null);
+          },
+        )
+        // Lo que cambie mientras se conecta no llega por el canal: al quedar conectado, se recarga.
+        .subscribe((status) => {
+          if (status !== "SUBSCRIBED") return;
+          fetchMatch(matchId).then((data) => {
+            if (!cancelled) setMatch(data);
+          });
+        }),
+    );
 
     return () => {
       cancelled = true;
-      void supabase.removeChannel(channel);
+      unsubscribe();
     };
   }, [matchId]);
 

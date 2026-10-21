@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Conversation } from "./conversation";
 import { ConversationList, type ConversationSummary } from "./conversation-list";
+import { channelName, subscribeWhenReady } from "@/lib/realtime";
 
 /**
  * Lista de conversaciones + conversación abierta. En el móvil se ve una cosa
@@ -24,17 +25,19 @@ export function ChatShell({ viewerId, friendId }: { viewerId: string; friendId: 
       if (!cancelled) setItems(data ?? []);
     });
     // Cualquier mensaje nuevo (enviado o recibido) reordena la lista.
-    const channel = supabase
-      .channel(`chat-list:${viewerId}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, () => {
-        supabase.rpc("get_conversations").then(({ data }) => {
-          if (!cancelled) setItems(data ?? []);
-        });
-      })
-      .subscribe();
+    const unsubscribe = subscribeWhenReady(supabase, () =>
+      supabase
+        .channel(channelName(`chat-list:${viewerId}`))
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, () => {
+          supabase.rpc("get_conversations").then(({ data }) => {
+            if (!cancelled) setItems(data ?? []);
+          });
+        })
+        .subscribe(),
+    );
     return () => {
       cancelled = true;
-      void supabase.removeChannel(channel);
+      unsubscribe();
     };
   }, [viewerId]);
 

@@ -158,7 +158,7 @@ function EmbedIcon({ kind, game }: { kind: "match" | "challenge"; game?: string 
   if (kind === "match" && game && game !== "tictactoe") {
     return (
       <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-xl text-2xl" style={{ background: "var(--board)" }}>
-        {game === "pong" ? "🏓" : game === "rpsls" ? "🖖" : "✂️"}
+        {game === "pong" ? "🏓" : game === "battleship" ? "🚢" : game === "rpsls" ? "🖖" : "✂️"}
       </span>
     );
   }

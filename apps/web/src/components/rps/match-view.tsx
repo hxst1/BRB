@@ -10,6 +10,7 @@ import { MARK_COLOR, PlayerBadge, ResignButton } from "@/components/tictactoe/ma
 import { challenge, fetchMatch, markOf, type MatchWithPlayers } from "@/components/tictactoe/data";
 import { matchGame, matchHref } from "@/lib/games";
 import { createClient } from "@/lib/supabase/client";
+import { channelName, subscribeWhenReady } from "@/lib/realtime";
 
 export const CHOICE_EMOJI: Record<Choice, string> = {
   rock: "🪨",
@@ -52,18 +53,20 @@ export function RpsMatchView({ matchId, viewerId }: { matchId: string; viewerId:
     });
 
     // Al resolverse una ronda (o aceptar, rendirse…) llega la partida actualizada.
-    const channel = supabase
-      .channel(`rps:${matchId}`)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "matches", filter: `id=eq.${matchId}` }, (payload) => {
-        const updated = payload.new as Match;
-        setMatch((current) => (current ? { ...current, ...updated } : current));
-        void loadMyChoice(updated);
-      })
-      .subscribe();
+    const unsubscribe = subscribeWhenReady(supabase, () =>
+      supabase
+        .channel(channelName(`rps:${matchId}`))
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "matches", filter: `id=eq.${matchId}` }, (payload) => {
+          const updated = payload.new as Match;
+          setMatch((current) => (current ? { ...current, ...updated } : current));
+          void loadMyChoice(updated);
+        })
+        .subscribe(),
+    );
 
     return () => {
       cancelled = true;
-      void supabase.removeChannel(channel);
+      unsubscribe();
     };
   }, [matchId, loadMyChoice]);
 

@@ -234,3 +234,77 @@ body {
     animation: none;
   }
 }
+
+/* Hundir la flota: casillas, barcos y disparos en capas sobre la misma cuadrícula. */
+.sea-board {
+  --sea-gap: clamp(2px, 0.7vw, 4px);
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+  gap: var(--sea-gap);
+  padding: clamp(5px, 1.6vw, 10px);
+  border-radius: 18px;
+  background: var(--board);
+}
+
+.sea-cell {
+  aspect-ratio: 1;
+  border-radius: 22%;
+  background: var(--cell);
+  transition: background-color 150ms;
+}
+
+.sea-open {
+  cursor: pointer;
+}
+
+.sea-open:hover,
+.sea-open:focus-visible {
+  background: color-mix(in srgb, var(--mark-x) 30%, var(--cell));
+}
+
+/* Cada barco es una sola pieza: cubre sus casillas y los huecos entre ellas. */
+.sea-ship {
+  z-index: 1;
+  pointer-events: none;
+  /* Margen fijo: en % se calcularía sobre el ancho y aplastaría los barcos horizontales. */
+  margin: clamp(2px, 0.6vw, 4px);
+  border: 2px solid color-mix(in srgb, var(--ink) 55%, transparent);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--t4) 85%, transparent);
+}
+
+.sea-ship-sunk {
+  border-color: color-mix(in srgb, var(--mark-x) 80%, #15171c);
+  background: color-mix(in srgb, var(--mark-x) 35%, var(--cell));
+}
+
+.sea-mark {
+  z-index: 2;
+  pointer-events: none;
+  place-self: center;
+  border-radius: 9999px;
+}
+
+.sea-miss {
+  width: 30%;
+  height: 30%;
+  background: var(--mark-o);
+}
+
+.sea-hit,
+.sea-sunk {
+  width: 52%;
+  height: 52%;
+  background: var(--mark-x);
+  box-shadow: 0 0 0 2px color-mix(in srgb, #15171c 35%, transparent);
+}
+
+.sea-sunk {
+  background: color-mix(in srgb, var(--mark-x) 55%, #15171c);
+}
+
+.sea-last {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}

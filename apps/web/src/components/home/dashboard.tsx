@@ -5,6 +5,7 @@ import type { Functions, Json, Match } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { DailyCard } from "@/components/daily/daily-summary";
 import { LevelBar } from "@/components/level-bar";
+import { battleshipMyTurn } from "@/components/tictactoe/data";
 import { formatNumber } from "@/lib/format";
 import { matchGame, matchHref } from "@/lib/games";
 import { MATCH_WITH_PLAYERS, PLAYER_COLUMNS } from "@/lib/queries";
@@ -16,13 +17,16 @@ type Person = { id: string; username: string; avatar_seed: number; avatar_parts:
 type Pending = { key: string; href: string; person: Person; text: string; urgent?: boolean };
 type GameTally = { myTurn: number; invites: number; waiting: number };
 
-/** ¿Le toca al usuario? 3 en raya por movimientos; piedra, papel o tijera si aún no ha elegido. */
-function myTurnIn(match: Match, viewerId: string, chosen: ReadonlySet<string>): boolean {
+/**
+ * ¿Le toca al usuario? 3 y 4 en raya, por los movimientos; piedra, papel o
+ * tijera y hundir la flota, si no está en `waiting` (ver fetchChosen).
+ */
+function myTurnIn(match: Match, viewerId: string, waiting: ReadonlySet<string>): boolean {
   const mark = match.player_x === viewerId ? "x" : "o";
   if (match.game === "tictactoe") return replay(match.moves)?.turn === mark;
   if (match.game === "connect4") return replayConnect4(match.moves)?.turn === mark;
   if (match.game === "pong") return true;
-  return !chosen.has(match.id);
+  return !waiting.has(match.id);
 }
 
 export async function Dashboard({ viewer }: { viewer: Viewer }) {
@@ -36,6 +40,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     { data: challenges },
     { data: daily },
     { data: wordle },
+    { data: battleship },
   ] =
     await Promise.all([
     supabase
@@ -60,6 +65,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
       .order("day", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    supabase.rpc("get_battleship_status"),
   ]);
   // Solo cuenta la partida de hoy (el día lo da el resumen del reto diario).
   const wordleToday = wordle && daily && wordle.day === daily.day ? wordle : null;
@@ -71,11 +77,17 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     : { data: [] };
   const roundOf = new Map(rpsActive.map((m) => [m.id, m.moves.length / 2]));
   const chosen = new Set((choices ?? []).filter((c) => roundOf.get(c.match_id) === c.round).map((c) => c.match_id));
+  // Hundir la flota: esperando a que el rival coloque o dispare.
+  for (const status of battleship ?? []) {
+    const match = matches?.find((m) => m.id === status.match_id);
+    if (match && !battleshipMyTurn(match, viewer.id, status)) chosen.add(match.id);
+  }
 
   const pending: Pending[] = [];
-  const tally: Record<"tictactoe" | "connect4" | "rps" | "pong", GameTally> = {
+  const tally: Record<"tictactoe" | "connect4" | "battleship" | "rps" | "pong", GameTally> = {
     tictactoe: { myTurn: 0, invites: 0, waiting: 0 },
     connect4: { myTurn: 0, invites: 0, waiting: 0 },
+    battleship: { myTurn: 0, invites: 0, waiting: 0 },
     rps: { myTurn: 0, invites: 0, waiting: 0 },
     pong: { myTurn: 0, invites: 0, waiting: 0 },
   };
@@ -173,6 +185,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
           }
           statsTicTacToe={<MatchStats counts={tally.tictactoe} />}
           statsConnect4={<MatchStats counts={tally.connect4} />}
+          statsBattleship={<MatchStats counts={tally.battleship} />}
           statsRps={<MatchStats counts={tally.rps} />}
           statsPong={<MatchStats counts={tally.pong} />}
         />

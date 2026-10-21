@@ -2,6 +2,7 @@
 export const MATCH_GAMES = {
   tictactoe: { name: "3 en raya", path: "/3-en-raya" },
   connect4: { name: "4 en raya", path: "/4-en-raya" },
+  battleship: { name: "Hundir la flota", path: "/hundir-la-flota" },
   rps: { name: "Piedra, papel o tijera", path: "/piedra-papel-tijera" },
   rpsls: { name: "Piedra, papel, tijera, lagarto o Spock", path: "/piedra-papel-tijera" },
   pong: { name: "Pong", path: "/pong" },

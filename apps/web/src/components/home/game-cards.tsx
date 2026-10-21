@@ -7,6 +7,8 @@ const PREVIEW_2048 = [2, 0, 8, 0, 0, 16, 64, 4, 0, 4, 128, 32, 2, 8, 512, 2048];
 const PREVIEW_TTT = ["×", "", "○", "", "×", "", "○", "", ""];
 /** 4 en raya en miniatura (5 × 4, de arriba abajo): x, o o vacía. */
 const PREVIEW_C4 = [".....", "..o..", ".xxo.", "oxox."];
+/** Hundir la flota en miniatura (5 × 5): barco (s), tocado (h), agua (m). */
+const PREVIEW_SEA = ["m....", ".sss.", "....m", "h....", "h..m."];
 /** Snake en miniatura (5 × 5): cuerpo de la cola a la cabeza y la manzana. */
 const PREVIEW_SNAKE = { body: [20, 15, 16, 17, 12, 7, 8], food: 4 };
 /** Luces encendidas del Lights Out en miniatura (4 × 4). */
@@ -31,6 +33,7 @@ export function GameCards({
   statsWordle,
   statsTicTacToe,
   statsConnect4,
+  statsBattleship,
   statsRps,
   statsPong,
 }: {
@@ -40,6 +43,7 @@ export function GameCards({
   statsWordle?: ReactNode;
   statsTicTacToe?: ReactNode;
   statsConnect4?: ReactNode;
+  statsBattleship?: ReactNode;
   statsRps?: ReactNode;
   statsPong?: ReactNode;
 }) {
@@ -152,6 +156,26 @@ export function GameCards({
                       transitionDelay: `${i * 25}ms`,
                     }}
                   />
+                )),
+              )}
+            </div>
+          </GameCard>
+        </li>
+        <li className={ITEM}>
+          <GameCard href="/hundir-la-flota" title="Hundir la flota" subtitle="Agua, tocado y hundido" stats={statsBattleship}>
+            <div aria-hidden className="grid aspect-square grid-cols-5 gap-1 rounded-xl p-1.5 sm:gap-1.5 sm:rounded-2xl sm:p-2.5" style={{ background: "var(--board)" }}>
+              {PREVIEW_SEA.flatMap((row, r) =>
+                [...row].map((kind, i) => (
+                  <span
+                    key={`${r}${i}`}
+                    className="grid aspect-square place-items-center rounded-md transition-transform duration-300 group-hover:scale-95 sm:rounded-lg"
+                    style={{
+                      background: kind === "s" ? "var(--t4)" : kind === "h" ? "var(--mark-x)" : "var(--cell)",
+                      transitionDelay: `${i * 25}ms`,
+                    }}
+                  >
+                    {kind === "m" && <span className="size-1.5 rounded-full sm:size-2" style={{ background: "var(--mark-o)" }} />}
+                  </span>
                 )),
               )}
             </div>

@@ -1,3 +1,4 @@
+import { isValidFleet, shoot, type Fleet, type ShotError } from "@repo/games/battleship";
 import { play as playConnect4, replay as replayConnect4, type MoveError as Connect4Error } from "@repo/games/connect4";
 import { isValidChoice, replay as replayRps, type Variant } from "@repo/games/rps";
 import { play, replay, type MoveError } from "@repo/games/tictactoe";
@@ -10,13 +11,14 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** Código que lanzan apply_match_move / submit_match_choice cuando la partida cambió o no está en juego. */
 const MATCH_CHANGED = "P0002";
 
-const MOVE_ERRORS: Record<MoveError | Connect4Error, string> = {
+const MOVE_ERRORS: Record<MoveError | Connect4Error | ShotError, string> = {
   game_over: "La partida ya ha terminado",
   not_your_turn: "No es tu turno",
   invalid_cell: "Casilla no válida",
   occupied: "Esa casilla ya está ocupada",
   invalid_column: "Columna no válida",
   full: "Esa columna está llena",
+  already_shot: "Ya has disparado ahí",
 };
 
 type MatchRow = Pick<Match, "id" | "game" | "status" | "moves" | "player_x" | "player_o">;
@@ -29,7 +31,8 @@ const serverError = (context: string, error: unknown) => {
 
 /**
  * Valida una jugada con la lógica compartida y la guarda.
- * 3 en raya: `{ cell }`. 4 en raya: `{ column }`. Piedra, papel o tijera: `{ choice }` (índice de la opción).
+ * 3 en raya: `{ cell }`. 4 en raya: `{ column }`. Hundir la flota: `{ cell }` (disparo).
+ * Piedra, papel o tijera: `{ choice }` (índice de la opción).
  */
 export async function POST(request: Request, { params }: RouteContext<"/api/matches/[id]/move">) {
   const { id } = await params;
@@ -53,6 +56,7 @@ export async function POST(request: Request, { params }: RouteContext<"/api/matc
 
   if (match.game === "tictactoe") return playTicTacToe(match, userId, body?.cell);
   if (match.game === "connect4") return playFourInARow(match, userId, body?.column);
+  if (match.game === "battleship") return fire(match, userId, body?.cell);
   if (match.game === "rps" || match.game === "rpsls") return playRps(match, match.game, userId, body?.choice);
   return json({ error: "Partida no encontrada" }, 404);
 }
@@ -80,6 +84,40 @@ async function playTicTacToe(match: MatchRow, userId: string, cell: unknown) {
   if (error) return serverError("error guardando la jugada", error);
 
   return json({ moves: next.moves });
+}
+
+/** Hundir la flota: solo el servidor ve la flota del rival, así que resuelve aquí el disparo. */
+async function fire(match: MatchRow, userId: string, cell: unknown) {
+  if (typeof cell !== "number") return json({ error: MOVE_ERRORS.invalid_cell }, 400);
+
+  const admin = createAdminClient();
+  const { data: fleets, error: fleetError } = await admin
+    .from("battleship_fleets")
+    .select("player_id, ships")
+    .eq("match_id", match.id);
+  if (fleetError) return serverError("error leyendo las flotas", fleetError);
+
+  const rivalId = match.player_x === userId ? match.player_o : match.player_x;
+  const rivalShips = fleets?.find((f) => f.player_id === rivalId)?.ships;
+  if (!fleets?.some((f) => f.player_id === userId) || !rivalShips) {
+    return json({ error: "Aún falta que los dos coloquéis la flota" }, 409);
+  }
+  if (!isValidFleet(rivalShips)) return serverError("flota guardada no válida", match.id);
+
+  const result = shoot(match.moves, match.player_x === userId ? "x" : "o", rivalShips as Fleet, cell);
+  if (!result.ok) return json({ error: MOVE_ERRORS[result.error] }, result.error === "not_your_turn" ? 409 : 400);
+
+  const { error } = await admin.rpc("apply_match_move", {
+    match_id: match.id,
+    previous_count: match.moves.length,
+    moves: result.moves,
+    end_reason: result.winner ? "fleet" : undefined,
+    winner: result.winner ?? undefined,
+  });
+  if (error?.code === MATCH_CHANGED) return json({ error: "La partida ha cambiado, recarga" }, 409);
+  if (error) return serverError("error guardando el disparo", error);
+
+  return json({ moves: result.moves, result: result.result });
 }
 
 async function playFourInARow(match: MatchRow, userId: string, column: unknown) {

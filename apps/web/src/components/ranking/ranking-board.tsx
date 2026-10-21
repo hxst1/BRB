@@ -8,7 +8,7 @@ import { formatNumber } from "@/lib/format";
 import { levelFromXp } from "@repo/games/level";
 import { createClient } from "@/lib/supabase/client";
 
-type Category = "level" | "2048" | "snake" | "lightsout" | "tictactoe" | "connect4" | "rps" | "pong";
+type Category = "level" | "2048" | "snake" | "lightsout" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong";
 type Scope = "global" | "friends";
 type Period = "all" | "week";
 
@@ -90,6 +90,7 @@ const RANKED_GAMES: { id: GameId; label: string; icon: ReactNode; games?: string
       </span>
     ),
   },
+  { id: "battleship", label: "Hundir la flota", games: ["battleship"], icon: "🚢" },
   { id: "rps", label: "Piedra, papel o tijera", games: ["rps", "rpsls"], icon: "✂️" },
   { id: "pong", label: "Pong", games: ["pong"], icon: "🏓" },
 ];

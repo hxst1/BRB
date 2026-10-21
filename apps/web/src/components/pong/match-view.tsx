@@ -23,6 +23,7 @@ import { challenge, fetchMatch, markOf, type MatchWithPlayers } from "@/componen
 import { MARK_COLOR, ResignButton } from "@/components/tictactoe/match-view";
 import { matchHref } from "@/lib/games";
 import { createClient } from "@/lib/supabase/client";
+import { channelName, subscribeWhenReady } from "@/lib/realtime";
 
 /** Cada cuánto se retransmite el estado (el anfitrión) o la pala (el invitado). */
 const SEND_INTERVAL_MS = 33;
@@ -49,15 +50,17 @@ export function PongMatchView({ matchId, viewerId }: { matchId: string; viewerId
     fetchMatch(matchId).then((data) => {
       if (!cancelled) setMatch(data);
     });
-    const channel = supabase
-      .channel(`pong-match:${matchId}`)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "matches", filter: `id=eq.${matchId}` }, (payload) => {
-        setMatch((current) => (current ? { ...current, ...(payload.new as Match) } : current));
-      })
-      .subscribe();
+    const unsubscribe = subscribeWhenReady(supabase, () =>
+      supabase
+        .channel(channelName(`pong-match:${matchId}`))
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "matches", filter: `id=eq.${matchId}` }, (payload) => {
+          setMatch((current) => (current ? { ...current, ...(payload.new as Match) } : current));
+        })
+        .subscribe(),
+    );
     return () => {
       cancelled = true;
-      void supabase.removeChannel(channel);
+      unsubscribe();
     };
   }, [matchId]);
 

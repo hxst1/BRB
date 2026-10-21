@@ -10,6 +10,7 @@ import { ChallengeMenu } from "@/components/challenge-menu";
 import type { Friend } from "@/lib/friends";
 import { createClient } from "@/lib/supabase/client";
 import { ChallengeEmbed } from "./embed";
+import { channelName, subscribeWhenReady } from "@/lib/realtime";
 
 type Message = Tables<"messages">;
 /** Mensaje propio aún sin confirmar por el servidor (o que ha fallado). */
@@ -68,22 +69,24 @@ export function Conversation({ viewerId, friend, onActivity }: { viewerId: strin
         if (data?.some((m) => m.sender_id === friend.id && !m.read_at)) void markRead();
       });
 
-    const channel = supabase
-      .channel(`chat:${viewerId}:${friend.id}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload) => {
-        const message = payload.new as Message;
-        const inPair =
-          (message.sender_id === friend.id && message.recipient_id === viewerId) ||
-          (message.sender_id === viewerId && message.recipient_id === friend.id);
-        if (!inPair) return;
-        setMessages((current) => (current && !current.some((m) => m.id === message.id) ? [...current, message] : current));
-        if (message.sender_id === friend.id && document.visibilityState === "visible") void markRead();
-      })
-      .subscribe();
+    const unsubscribe = subscribeWhenReady(supabase, () =>
+      supabase
+        .channel(channelName(`chat:${viewerId}:${friend.id}`))
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload) => {
+          const message = payload.new as Message;
+          const inPair =
+            (message.sender_id === friend.id && message.recipient_id === viewerId) ||
+            (message.sender_id === viewerId && message.recipient_id === friend.id);
+          if (!inPair) return;
+          setMessages((current) => (current && !current.some((m) => m.id === message.id) ? [...current, message] : current));
+          if (message.sender_id === friend.id && document.visibilityState === "visible") void markRead();
+        })
+        .subscribe(),
+    );
 
     return () => {
       cancelled = true;
-      void supabase.removeChannel(channel);
+      unsubscribe();
     };
   }, [viewerId, friend.id, markRead]);
 
@@ -114,15 +117,17 @@ export function Conversation({ viewerId, friend, onActivity }: { viewerId: strin
     if (!matchIds && !hasChallenges) return;
     const supabase = createClient();
     const bump = () => setRefsVersion((n) => n + 1);
-    const channel = supabase
-      .channel(`chat-refs:${viewerId}:${friend.id}`)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "matches" }, bump)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "challenges" }, bump)
-      .subscribe();
+    const unsubscribe = subscribeWhenReady(supabase, () =>
+      supabase
+        .channel(channelName(`chat-refs:${viewerId}:${friend.id}`))
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "matches" }, bump)
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "challenges" }, bump)
+        .subscribe(),
+    );
     window.addEventListener("focus", bump);
     return () => {
       window.removeEventListener("focus", bump);
-      void supabase.removeChannel(channel);
+      unsubscribe();
     };
   }, [viewerId, friend.id, matchIds, hasChallenges]);
 
