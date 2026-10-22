@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque } from "next/font/google";
 import { brand, siteUrl } from "@repo/brand";
+import { ErrorReporter } from "@/components/error-reporter";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { ServiceWorker } from "@/components/pwa/service-worker";
 import { SiteHeader } from "@/components/site-header";
@@ -63,6 +64,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SiteHeader />
         {children}
         <InstallPrompt />
+        <ErrorReporter />
       </body>
     </html>
   );

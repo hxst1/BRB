@@ -469,7 +469,70 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "apply_match_move":
+            "admin_assign_supporter_event":
+{ Args: { "admin_id": string,"event_id": string,"reason"?: string,"user_id": string }; Returns: undefined
+                           },
+"admin_attention":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "new_errors_24h": number,"open_errors": number,"rejected_runs_24h": number,"unlinked_payments": number,"unread_feedback": number
+            }[]
+                           },
+"admin_daily_stats":
+{ Args: { "days"?: number }; Returns: {
+              "active_users": number,"day": string,"matches": number,"messages": number,"new_users": number,"solo_runs": number
+            }[]
+                           },
+"admin_games_played":
+{ Args: { "days"?: number }; Returns: {
+              "game": string,"kind": string,"players": number,"plays": number
+            }[]
+                           },
+"admin_get_audit":
+{ Args: { "max_rows"?: number,"target_user"?: string }; Returns: {
+              "action": string,"admin_id": string,"admin_username": string,"created_at": string,"details": Json,"id": number,"reason": string,"target_ref": string,"target_user": string
+            }[]
+                           },
+"admin_get_error_events":
+{ Args: { "fingerprint": string,"max_rows"?: number }; Returns: {
+              "app_version": string,"created_at": string,"friend_code": string,"id": number,"message": string,"path": string,"source": string,"stack": string,"user_agent": string,"user_id": string,"username": string
+            }[]
+                           },
+"admin_get_error_group":
+{ Args: { "fingerprint": string }; Returns: {
+              "count": number,"fingerprint": string,"first_seen": string,"last_seen": string,"last_version": string,"message": string,"paths": (string)[],"source": string,"status": string,"user_agents": (string)[],"users": number
+            }[]
+                           },
+"admin_invalidate_run":
+{ Args: { "admin_id": string,"reason": string,"run_id": string }; Returns: number
+                           },
+"admin_list_error_groups":
+{ Args: { "max_rows"?: number,"status"?: string }; Returns: {
+              "count": number,"fingerprint": string,"first_seen": string,"last_seen": string,"last_version": string,"message": string,"paths": (string)[],"source": string,"status": string,"user_agents": (string)[],"users": number
+            }[]
+                           },
+"admin_list_users":
+{ Args: { "max_rows"?: number,"search"?: string,"skip"?: number }; Returns: {
+              "avatar_parts": Json,"avatar_seed": number,"created_at": string,"friend_code": string,"id": string,"push_devices": number,"seen_at": string,"streak_best": number,"streak_days": number,"streak_last_day": string,"supporter_tier": string,"total_count": number,"username": string,"xp": number
+            }[]
+                           },
+"admin_rename_user":
+{ Args: { "admin_id": string,"reason": string,"user_id": string,"username": string }; Returns: undefined
+                           },
+"admin_reset_scores":
+{ Args: { "admin_id": string,"game"?: string,"reason": string,"user_id": string }; Returns: {
+              "runs": number,"xp": number
+            }[]
+                           },
+"admin_set_error_status":
+{ Args: { "admin_id": string,"fingerprint": string,"reason"?: string,"status": string }; Returns: undefined
+                           },
+"admin_set_supporter":
+{ Args: { "active": boolean,"admin_id": string,"reason": string,"user_id": string }; Returns: undefined
+                           },
+"admin_update_feedback":
+{ Args: { "admin_id": string,"feedback_id": string,"reason"?: string,"reply": string,"status": string }; Returns: undefined
+                           },
+"apply_match_move":
 { Args: { "end_reason"?: string,"match_id": string,"moves": (number)[],"previous_count": number,"winner"?: string }; Returns: undefined
                            },
 "apply_supporter_event":
@@ -567,6 +630,9 @@ isOneToOne: false
                            },
 "remove_friend":
 { Args: { "friend_id": string }; Returns: undefined
+                           },
+"report_app_error":
+{ Args: { "app_version"?: string,"message": string,"path"?: string,"source"?: string,"stack"?: string,"user_agent"?: string,"user_id"?: string }; Returns: string
                            },
 "report_pong_result":
 { Args: { "match_id": string,"o_score": number,"x_score": number }; Returns: string
