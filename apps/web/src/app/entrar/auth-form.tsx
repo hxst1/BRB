@@ -23,8 +23,8 @@ const COPY = {
 const inputClass =
   "w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-base outline-none transition-colors focus:border-focus";
 
-export function AuthForm({ next }: { next: string }) {
-  const [mode, setMode] = useState<AuthState["mode"]>("signin");
+export function AuthForm({ next, initialMode = "signin" }: { next: string; initialMode?: AuthState["mode"] }) {
+  const [mode, setMode] = useState<AuthState["mode"]>(initialMode);
   const [state, action, pending] = useActionState(authenticate, { error: null, mode });
   const copy = COPY[mode];
   const error = state.mode === mode ? state.error : null;

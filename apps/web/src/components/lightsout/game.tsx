@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { randomSeed } from "@repo/games";
 import { budgetForLevel, newGame, press, type LightsOutState } from "@repo/games/lightsout";
 import { formatNumber } from "@/lib/format";
 import { startRun } from "@/lib/start-run";
+import { GuestNotice } from "@/components/guest-notice";
 
 const BEST_KEY = "lightsout:best";
 /** Cuánto se ve el aviso de nivel superado. */
@@ -219,15 +219,7 @@ export function LightsOutGame({
 
       {notice && <p className="text-sm text-muted">{notice}</p>}
 
-      {!signedIn && (
-        <p className="text-sm text-muted">
-          Estás jugando sin cuenta.{" "}
-          <Link href="/entrar?next=/lights-out" className="font-medium text-ink underline underline-offset-4">
-            Entra
-          </Link>{" "}
-          para que tus partidas cuenten en el ranking.
-        </p>
-      )}
+      {!signedIn && <GuestNotice next="/lights-out" />}
 
       <p className="text-sm text-muted">
         Cada casilla cambia ella y sus vecinas. Apágalo todo con {state ? budgetForLevel(state.level) : "las"} pulsaciones
@@ -261,7 +253,7 @@ function GameOver({
   onRestart?: () => void;
 }) {
   const message = !signedIn
-    ? "Sin cuenta, esta partida no entra en el ranking."
+    ? "Sin cuenta, esta partida no se guarda. Crea una gratis aquí abajo."
     : save?.status === "saving"
       ? "Guardando…"
       : save?.status === "saved"

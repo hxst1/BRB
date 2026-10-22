@@ -1,12 +1,12 @@
 "use client";
 
 import { startRun } from "@/lib/start-run";
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { randomSeed } from "@repo/games";
 import { GAME_IDS, PEERS, box, col, conflicts, encodeGrid, generate, isSolved, row, type Difficulty } from "@repo/games/sudoku";
 import { formatTime } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
+import { GuestNotice } from "@/components/guest-notice";
 
 /** Hora actual (fuera del componente: solo se llama desde eventos y efectos). */
 const clock = () => Date.now();
@@ -384,15 +384,7 @@ export function SudokuGame({
 
       {notice && <p className="text-sm text-muted">{notice}</p>}
 
-      {!signedIn && (
-        <p className="text-sm text-muted">
-          Estás jugando sin cuenta.{" "}
-          <Link href="/entrar?next=/sudoku" className="font-medium text-ink underline underline-offset-4">
-            Entra
-          </Link>{" "}
-          para que tus partidas cuenten en el ranking.
-        </p>
-      )}
+      {!signedIn && <GuestNotice next="/sudoku" />}
 
       <p className="hidden text-sm text-muted sm:block">Teclado: números para escribir, 0 o retroceso para borrar, flechas para moverte, N para las notas y Z para deshacer.</p>
     </section>

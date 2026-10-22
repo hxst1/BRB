@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState, type MouseEvent, type PointerEvent } from "react";
 import { randomSeed } from "@repo/games";
 import { DIFFICULTIES, GAME_IDS, chord, encodeOpened, newGame, reveal, type Difficulty, type MinesweeperState } from "@repo/games/minesweeper";
 import { startRun } from "@/lib/start-run";
 import { createClient } from "@/lib/supabase/client";
 import { formatTime } from "@/lib/format";
+import { GuestNotice } from "@/components/guest-notice";
 
 /** Cuánto hay que mantener pulsado para poner una bandera en el móvil. */
 const LONG_PRESS_MS = 380;
@@ -237,7 +237,7 @@ export function MinesweeperGame({
             <p className="text-sm">
               {status === "won"
                 ? !signedIn
-                  ? "Sin cuenta, esta partida no entra en el ranking."
+                  ? "Sin cuenta, esta partida no se guarda. Crea una gratis aquí abajo."
                   : save?.status === "saving"
                     ? "Guardando…"
                     : save?.status === "saved"
@@ -263,15 +263,7 @@ export function MinesweeperGame({
 
       {notice && <p className="text-sm text-muted">{notice}</p>}
 
-      {!signedIn && (
-        <p className="text-sm text-muted">
-          Estás jugando sin cuenta.{" "}
-          <Link href="/entrar?next=/buscaminas" className="font-medium text-ink underline underline-offset-4">
-            Entra
-          </Link>{" "}
-          para que tus partidas cuenten en el ranking.
-        </p>
-      )}
+      {!signedIn && <GuestNotice next="/buscaminas" />}
 
       <p className="text-sm text-muted">
         La primera casilla nunca es mina. Bandera: clic derecho, mantener pulsado o el modo bandera. Pulsa un número con todas

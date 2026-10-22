@@ -21,6 +21,7 @@ export default function SignInPage({ searchParams }: PageProps<"/entrar">) {
  * el formulario antes de que cargue el JavaScript, vuelve igualmente a donde estaba.
  */
 async function AuthFormForRequest({ searchParams }: { searchParams: PageProps<"/entrar">["searchParams"] }) {
-  const { next } = await searchParams;
-  return <AuthForm next={safeNext(next)} />;
+  const { next, modo } = await searchParams;
+  // /entrar?modo=registro abre directamente "Crear cuenta" (los botones de registro de la portada y los juegos).
+  return <AuthForm next={safeNext(next)} initialMode={modo === "registro" ? "signup" : "signin"} />;
 }

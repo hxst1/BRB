@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { randomSeed } from "@repo/games";
 import { GRID, canTurn, newGame, step, tickMs, type Direction, type SnakeState } from "@repo/games/snake";
 import { formatNumber } from "@/lib/format";
 import { startRun } from "@/lib/start-run";
+import { GuestNotice } from "@/components/guest-notice";
 
 const KEYS: Record<string, Direction> = {
   ArrowUp: "up",
@@ -267,15 +267,7 @@ export function SnakeGame({
 
       {notice && <p className="text-sm text-muted">{notice}</p>}
 
-      {!signedIn && (
-        <p className="text-sm text-muted">
-          Estás jugando sin cuenta.{" "}
-          <Link href="/entrar?next=/snake" className="font-medium text-ink underline underline-offset-4">
-            Entra
-          </Link>{" "}
-          para que tus partidas cuenten en el ranking.
-        </p>
-      )}
+      {!signedIn && <GuestNotice next="/snake" />}
 
       <p className="hidden text-sm text-muted sm:block">Usa las flechas o W A S D. En el móvil, desliza.</p>
     </section>
@@ -414,7 +406,7 @@ function GameOver({
   onRestart?: () => void;
 }) {
   const message = !signedIn
-    ? "Sin cuenta, esta partida no entra en el ranking."
+    ? "Sin cuenta, esta partida no se guarda. Crea una gratis aquí abajo."
     : save?.status === "saving"
       ? "Guardando…"
       : save?.status === "saved"

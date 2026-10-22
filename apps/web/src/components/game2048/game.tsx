@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { randomSeed } from "@repo/games";
 import { maxTile, move, newGame, type Direction, type Game2048State } from "@repo/games/2048";
@@ -10,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Board } from "@repo/ui/board-2048";
 import { ChallengeFriends } from "./challenge-friends";
 import type { ActiveChallenge } from "./screen";
+import { GuestNotice } from "@/components/guest-notice";
 
 const KEYS: Record<string, Direction> = {
   ArrowUp: "up",
@@ -301,15 +301,7 @@ export function Game2048({
 
       {notice && <p className="text-sm text-muted">{notice}</p>}
 
-      {!signedIn && (
-        <p className="text-sm text-muted">
-          Estás jugando sin cuenta.{" "}
-          <Link href="/entrar?next=/2048" className="font-medium text-ink underline underline-offset-4">
-            Entra
-          </Link>{" "}
-          para que tus partidas cuenten en el ranking.
-        </p>
-      )}
+      {!signedIn && <GuestNotice next="/2048" />}
 
       <p className="hidden text-sm text-muted sm:block">Usa las flechas o W A S D. En el móvil, desliza.</p>
     </section>
@@ -344,7 +336,7 @@ function GameOver({
 }) {
   const beatChallenge = challenge !== null && state.score > challenge.targetScore;
   const message = !signedIn
-    ? "Sin cuenta, esta partida no entra en el ranking."
+    ? "Sin cuenta, esta partida no se guarda. Crea una gratis aquí abajo."
     : save?.status === "saving"
       ? "Guardando…"
       : save?.status === "saved"

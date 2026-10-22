@@ -4,6 +4,7 @@ import { brand } from "@repo/brand";
 import { AchievementToaster } from "@/components/achievements/achievement-toaster";
 import { FeedbackDialog } from "@/components/feedback/feedback-dialog";
 import { NewGamesPopup } from "@/components/news/new-games-popup";
+import { GuestBar } from "@/components/guest-bar";
 import { LiveRefresh } from "@/components/live-refresh";
 import { PresenceReporter } from "@/components/presence-reporter";
 import { PersonalIcons } from "@/components/pwa/personal-icons";
@@ -31,9 +32,9 @@ async function getNavCounts(): Promise<NavCounts> {
 }
 
 export function SiteHeader() {
-  // En el móvil, 4 px más de margen arriba: la zona de estado del iPhone difumina lo que queda muy pegado.
+  // En el móvil, 12 px más de margen arriba: la zona de estado del iPhone difumina lo que queda muy pegado.
   return (
-    <header className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 pt-5 pb-4 sm:px-6 sm:py-4">
+    <header className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 pt-7 pb-4 sm:px-6 sm:py-4">
       <Link href="/" className="display text-2xl font-bold">
         {brand.name}
       </Link>
@@ -53,9 +54,12 @@ async function Navigation() {
 
   if (!viewer || !counts) {
     return (
-      <Link href="/entrar" className="rounded-full bg-ink px-4 py-1.5 text-sm font-medium text-bg">
-        Entrar
-      </Link>
+      <>
+        <Link href="/entrar" className="rounded-full bg-ink px-4 py-1.5 text-sm font-medium text-bg">
+          Entrar
+        </Link>
+        <GuestBar />
+      </>
     );
   }
 

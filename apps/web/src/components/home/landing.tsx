@@ -2,6 +2,7 @@ import { brand } from "@repo/brand";
 import { JsonLd } from "@/components/seo/json-ld";
 import { absoluteUrl, GAME_GUIDES, HOME_FAQ } from "@/lib/seo";
 import { GameCards } from "./game-cards";
+import { SignupButtons, SignupPerks } from "./signup-pitch";
 
 export function Landing() {
   return (
@@ -11,8 +12,13 @@ export function Landing() {
         Minijuegos online gratis para cuando necesitas desconectar cinco minutos: 2048, Sudoku, Wordle en español,
         Buscaminas y Snake, y partidas contra tus amigos. Sin descargar nada.
       </p>
+      <SignupButtons />
       <div className="mt-16">
         <GameCards />
+      </div>
+
+      <div className="mt-16">
+        <SignupPerks />
       </div>
 
       <section aria-labelledby="faq-title" className="mt-20 flex max-w-2xl flex-col gap-1">
