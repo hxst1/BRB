@@ -99,6 +99,7 @@ export function AvatarEditor({
             {status.kind === "saved" && "Guardado"}
             {status.kind === "error" && <span className="text-danger">{status.message}</span>}
           </p>
+          {status.kind === "saved" && <InstalledIconNote />}
         </div>
       </div>
 
@@ -205,5 +206,32 @@ function CheeringAvatar({ seed, parts, animate }: { seed: number; parts: Partial
     <span className={happy ? "monster-cheer" : undefined}>
       <Avatar seed={seed} parts={parts} size={128} mood={happy ? "happy" : "neutral"} label="Tu monstruo" />
     </span>
+  );
+}
+
+/**
+ * En la app instalada, el icono de la pantalla de inicio no cambia al momento:
+ * Android lo actualiza solo al cabo de un tiempo; en iPhone hay que volver a
+ * añadir la app. Solo se avisa dentro de la app instalada.
+ */
+function InstalledIconNote() {
+  const [platform, setPlatform] = useState<"ios" | "other" | null>(null);
+
+  useEffect(() => {
+    const standalone = window.matchMedia("(display-mode: standalone)").matches || ("standalone" in navigator && navigator.standalone === true);
+    if (!standalone) return;
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (/macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+    // Tras guardar, una sola vez: no hay bucle de renders.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPlatform(ios ? "ios" : "other");
+  }, []);
+
+  if (!platform) return null;
+  return (
+    <p className="max-w-56 text-xs text-muted">
+      {platform === "ios"
+        ? "El icono de la app no cambia solo en iPhone: para verlo, vuelve a añadirla a la pantalla de inicio."
+        : "El icono de la app se actualizará solo en un rato."}
+    </p>
   );
 }
