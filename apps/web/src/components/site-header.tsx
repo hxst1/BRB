@@ -7,6 +7,7 @@ import { NewGamesPopup } from "@/components/news/new-games-popup";
 import { LiveRefresh } from "@/components/live-refresh";
 import { PresenceReporter } from "@/components/presence-reporter";
 import { PersonalIcons } from "@/components/pwa/personal-icons";
+import { TintGuard } from "@/components/pwa/tint-picker";
 import { SupportButton } from "@/components/support/support-button";
 import { AccountMenu } from "@/components/nav/account-menu";
 import { MainNav } from "@/components/nav/main-nav";
@@ -61,6 +62,7 @@ async function Navigation() {
     <>
       <LiveRefresh viewerId={viewer.id} />
       <PresenceReporter />
+      <TintGuard isSupporter={viewer.supporter_tier !== null} />
       <PersonalIcons avatarSeed={viewer.avatar_seed} avatarParts={viewer.avatar_parts} />
       <FeedbackDialog />
       <NewGamesPopup viewerId={viewer.id} />

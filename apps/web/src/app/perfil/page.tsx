@@ -113,7 +113,7 @@ async function SettingsSection({ viewer }: { viewer: Viewer }) {
 
   return (
     <div className="flex flex-col gap-8">
-      <AppSettings />
+      <AppSettings isSupporter={viewer.supporter_tier !== null} />
 
       <FeedbackSection items={feedback ?? []} />
 

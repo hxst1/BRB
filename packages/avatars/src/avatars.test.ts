@@ -76,7 +76,11 @@ describe("partes de supporter", () => {
   it("coinciden con las que bloquea la base de datos", async () => {
     const { readFileSync, readdirSync } = await import("node:fs");
     const dir = new URL("../../../supabase/migrations/", import.meta.url);
-    const file = readdirSync(dir).find((name) => name.endsWith("_supporter_avatar_parts.sql"))!;
+    // La definición vigente es la de la última migración que la crea o la reemplaza.
+    const file = readdirSync(dir)
+      .sort()
+      .filter((name) => readFileSync(new URL(name, dir), "utf8").includes("function private.is_supporter_avatar"))
+      .at(-1)!;
     const sql = readFileSync(new URL(file, dir), "utf8");
     const listed = (slot: string) =>
       [...sql.matchAll(new RegExp(`'${slot}' in \\(([^)]*)\\)`, "g"))].flatMap((m) =>

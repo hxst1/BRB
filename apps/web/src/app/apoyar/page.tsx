@@ -15,8 +15,11 @@ export const metadata: Metadata = {
 
 const PERKS = [
   { title: "Corona", detail: "Para el monstruo que se lo merece." },
-  { title: "Paleta dorada", detail: "Que se note en el ranking." },
-  { title: "Paleta nocturna", detail: "Para los que juegan de madrugada." },
+  { title: "Gafas de sol", detail: "Para ganar con estilo." },
+  { title: "Color arcoíris", detail: "Un monstruo de todos los colores." },
+  { title: "Color galaxia", detail: "Morado de otro planeta." },
+  { title: "Colores dorado y nocturno", detail: "Que se note en el ranking." },
+  { title: "Color de la app", detail: "Tiñe toda la app de uva, mar, bosque o atardecer." },
   { title: "Insignia ✦", detail: "Junto a tu nombre en rankings y perfil." },
 ];
 
@@ -44,9 +47,9 @@ async function SupportForViewer() {
     <div className="flex flex-col gap-10">
       {/* Tu propio monstruo con las partes exclusivas */}
       <div className="flex items-end justify-center gap-4 rounded-3xl bg-surface p-6 shadow-soft">
-        <Avatar seed={seed} parts={{ ...(parts as object), top: "crown" }} size={88} />
-        <Avatar seed={seed} parts={{ ...(parts as object), palette: "gold", top: "crown" }} size={120} mood="happy" />
-        <Avatar seed={seed} parts={{ ...(parts as object), palette: "night" }} size={88} />
+        <Avatar seed={seed} parts={{ ...(parts as object), palette: "galaxy", top: "sunglasses" }} size={88} />
+        <Avatar seed={seed} parts={{ ...(parts as object), palette: "rainbow", top: "crown" }} size={120} mood="happy" />
+        <Avatar seed={seed} parts={{ ...(parts as object), palette: "gold", top: "sunglasses" }} size={88} />
       </div>
 
       <ul className="grid gap-3 sm:grid-cols-2">

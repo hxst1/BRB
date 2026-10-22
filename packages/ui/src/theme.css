@@ -93,6 +93,41 @@
   color-scheme: light;
 }
 
+/*
+ * Tinte de la app (exclusivo de quien apoya): mezcla un color con fondos,
+ * tarjetas y casillas. data-tint en <html>, lo pone el script del tema.
+ */
+:root[data-tint="grape"] { --tint: #845ef7; }
+:root[data-tint="sea"] { --tint: #22b8cf; }
+:root[data-tint="forest"] { --tint: #40c057; }
+:root[data-tint="sunset"] { --tint: #ff6b6b; }
+
+:root[data-tint] {
+  --bg: color-mix(in oklab, #f3f4f7 86%, var(--tint));
+  --surface: color-mix(in oklab, #ffffff 94%, var(--tint));
+  --line: color-mix(in oklab, #e3e5eb 78%, var(--tint));
+  --board: color-mix(in oklab, #e4e7ee 80%, var(--tint));
+  --cell: color-mix(in oklab, #d6dae4 78%, var(--tint));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-tint]:not([data-theme="light"]) {
+    --bg: color-mix(in oklab, #111318 88%, var(--tint));
+    --surface: color-mix(in oklab, #1b1e25 88%, var(--tint));
+    --line: color-mix(in oklab, #2a2e38 78%, var(--tint));
+    --board: color-mix(in oklab, #1b1e25 88%, var(--tint));
+    --cell: color-mix(in oklab, #23262e 82%, var(--tint));
+  }
+}
+
+:root[data-tint][data-theme="dark"] {
+  --bg: color-mix(in oklab, #111318 88%, var(--tint));
+  --surface: color-mix(in oklab, #1b1e25 88%, var(--tint));
+  --line: color-mix(in oklab, #2a2e38 78%, var(--tint));
+  --board: color-mix(in oklab, #1b1e25 88%, var(--tint));
+  --cell: color-mix(in oklab, #23262e 82%, var(--tint));
+}
+
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);

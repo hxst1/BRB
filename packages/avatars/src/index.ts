@@ -92,6 +92,8 @@ interface Palette {
   body: string;
   shade: string;
   accent: string;
+  /** Degradados que usa `body` (url(#...)). Los ids son fijos: el mismo degradado en todos los SVG. */
+  defs?: string;
   supporter?: boolean;
   /** Id del logro que la desbloquea. */
   achievement?: string;
@@ -108,6 +110,20 @@ const PALETTES = {
   lime: { body: "#b8e05a", shade: "#8cb932", accent: "#7a5af8" },
   gold: { body: "#f5c84c", shade: "#c99a1c", accent: "#fff4c7", supporter: true },
   night: { body: "#434866", shade: "#2c3048", accent: "#ff7ab6", supporter: true },
+  rainbow: {
+    body: "url(#brb-rainbow)",
+    shade: "#845ef7",
+    accent: "#ffffff",
+    supporter: true,
+    defs: `<linearGradient id="brb-rainbow" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6b6b"/><stop offset=".25" stop-color="#ffd43b"/><stop offset=".5" stop-color="#8ce99a"/><stop offset=".75" stop-color="#3bc9db"/><stop offset="1" stop-color="#845ef7"/></linearGradient>`,
+  },
+  galaxy: {
+    body: "url(#brb-galaxy)",
+    shade: "#2b1a5e",
+    accent: "#ffd43b",
+    supporter: true,
+    defs: `<radialGradient id="brb-galaxy" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#b197fc"/><stop offset=".45" stop-color="#5f3dc4"/><stop offset="1" stop-color="#1c1340"/></radialGradient>`,
+  },
   ember: { body: "#ff7a45", shade: "#e8590c", accent: "#ffd43b", achievement: "streak-30" },
   ultra: { body: "#845ef7", shade: "#6741d9", accent: "#ffd43b", achievement: "tile-2048" },
   ice: { body: "#a5e8f2", shade: "#66c5d9", accent: "#4c6ef5", achievement: "minesweeper-hard" },
@@ -156,7 +172,8 @@ const MOUTHS = {
 } satisfies Record<string, MouthDrawer>;
 
 interface Top {
-  layer: "back" | "front";
+  /** back: detrás del cuerpo; front: encima del cuerpo; face: encima de la cara (gafas…). */
+  layer: "back" | "front" | "face";
   draw: (body: Body, palette: Palette) => string;
   supporter?: boolean;
   /** Id del logro que la desbloquea. */
@@ -215,6 +232,19 @@ const TOPS = {
     draw: (b) =>
       `<path d="M37 ${b.top + 4}l-2-14 8 7 7-10 7 10 8-7-2 14z" fill="#ffd43b" stroke="#e8a90c" stroke-width="2" stroke-linejoin="round"/>` +
       `<circle cx="50" cy="${b.top - 2}" r="2.3" fill="#ff6b8a"/>`,
+  },
+  sunglasses: {
+    layer: "face",
+    supporter: true,
+    draw: (b) => {
+      const { x, y } = b.eyes;
+      return (
+        `<path d="M${x - 25} ${y - 6}h50" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>` +
+        `<rect x="${x - 24}" y="${y - 8}" width="20" height="14" rx="6" fill="${INK}"/>` +
+        `<rect x="${x + 4}" y="${y - 8}" width="20" height="14" rx="6" fill="${INK}"/>` +
+        `<path d="M${x - 20} ${y - 4}l5 0M${x + 8} ${y - 4}l5 0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity=".7"/>`
+      );
+    },
   },
   cap: {
     layer: "front",
@@ -401,6 +431,7 @@ export function renderMonsterSvg(parts: MonsterParts, mood: Mood = "neutral"): s
 
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">` +
+    (palette.defs ? `<defs>${palette.defs}</defs>` : "") +
     (top.layer === "back" ? top.draw(body, palette) : "") +
     body.shape(palette.body) +
     (top.layer === "front" ? top.draw(body, palette) : "") +
@@ -408,6 +439,7 @@ export function renderMonsterSvg(parts: MonsterParts, mood: Mood = "neutral"): s
     `<g class="monster-eyes" style="transform-origin:${x}px ${y}px">${eyes}</g>` +
     brows +
     mouth +
+    (top.layer === "face" ? top.draw(body, palette) : "") +
     `</svg>`
   );
 }
@@ -477,11 +509,13 @@ export function renderStickerSvg(parts: MonsterParts, sticker: Sticker): string 
       : "";
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">` +
+    (palette.defs ? `<defs>${palette.defs}</defs>` : "") +
     (top.layer === "back" ? top.draw(body, palette) : "") +
     body.shape(palette.body) +
     (top.layer === "front" ? top.draw(body, palette) : "") +
     blush +
     STICKER_FACES[sticker](body.eyes, body.mouthY, parts) +
+    (top.layer === "face" ? top.draw(body, palette) : "") +
     `</svg>`
   );
 }
