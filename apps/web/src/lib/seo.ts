@@ -53,7 +53,7 @@ export const GAME_GUIDES: GameGuide[] = [
       "Tu puntuación es la suma de todas las fichas que has juntado. Intenta llegar a 2048 y seguir.",
     ],
     faq: [
-      { q: "¿Hay un 2048 diario?", a: "Sí. En el reto diario todo el mundo juega la misma partida de 2048, con un solo intento al día y su propio ranking." },
+      { q: "¿Hay un 2048 diario?", a: "Sí. Los lunes el reto diario es de 2048: todo el mundo juega la misma partida, con un solo intento y su propio ranking. El resto de días toca otro juego." },
       { q: "¿Puedo retar a un amigo?", a: "Sí. Al terminar una partida puedes retar a un amigo a superar tu puntuación." },
       { q: "¿Hay que descargar algo?", a: NO_DOWNLOAD },
     ],

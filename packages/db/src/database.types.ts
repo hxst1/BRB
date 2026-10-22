@@ -469,7 +469,10 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "admin_assign_supporter_event":
+            "abandon_run":
+{ Args: { "run_id": string }; Returns: undefined
+                           },
+"admin_assign_supporter_event":
 { Args: { "admin_id": string,"event_id": string,"reason"?: string,"user_id": string }; Returns: undefined
                            },
 "admin_attention":
@@ -566,6 +569,11 @@ isOneToOne: false
               "avatar_parts": Json,"avatar_seed": number,"friend_id": string,"last_at": string,"last_body": string,"last_from_me": boolean,"unread": number,"username": string
             }[]
                            },
+"get_daily_info":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "day": string,"game": string,"next_game": string
+            }[]
+                           },
 "get_daily_leaderboard":
 { Args: { "max_rows"?: number,"scope"?: string }; Returns: {
               "achieved_at": string,"avatar_parts": Json,"avatar_seed": number,"rank": number,"score": number,"supporter_tier": string,"user_id": string,"username": string
@@ -598,7 +606,7 @@ isOneToOne: false
                            },
 "get_my_daily":
 { Args: Record<PropertyKey, never>; Returns: {
-              "day": string,"played_today": boolean,"players": number,"rank": number,"score": number,"status": string,"streak_best": number,"streak_days": number
+              "day": string,"game": string,"next_game": string,"played_today": boolean,"players": number,"rank": number,"score": number,"status": string,"streak_best": number,"streak_days": number
             }[]
                            },
 "get_my_standing":
@@ -699,7 +707,7 @@ isOneToOne: false
                            },
 "start_daily_run":
 { Args: Record<PropertyKey, never>; Returns: {
-              "id": string,"seed": number
+              "game": string,"id": string,"seed": number
             }[]
                            },
 "start_run":

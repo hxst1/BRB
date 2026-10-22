@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPoi
 import { randomSeed } from "@repo/games";
 import { GRID, canTurn, newGame, step, tickMs, type Direction, type SnakeState } from "@repo/games/snake";
 import { formatNumber } from "@/lib/format";
-import { createClient } from "@/lib/supabase/client";
+import { startRun } from "@/lib/start-run";
 
 const KEYS: Record<string, Direction> = {
   ArrowUp: "up",
@@ -33,20 +33,14 @@ type Save =
 
 type Prepared = { game: SnakeState; runId: string | null; notice: string | null };
 
-/** Con sesión, el servidor da la semilla y la partida cuenta; sin ella (o si falla), se juega en local. */
-async function prepareGame(signedIn: boolean): Promise<Prepared> {
+/**
+ * Con sesión, el servidor da la semilla y la partida cuenta (también la del
+ * reto diario, con `daily`); sin ella (o si falla), se juega en local.
+ */
+async function prepareGame(signedIn: boolean, daily: boolean): Promise<Prepared> {
   if (!signedIn) return { game: newGame(randomSeed()), runId: null, notice: null };
-  const { data, error } = await createClient().rpc("start_run", { game: "snake" });
-  const run = data?.[0];
-  if (run) return { game: newGame(run.seed), runId: run.id, notice: null };
-  return {
-    game: newGame(randomSeed()),
-    runId: null,
-    notice:
-      error?.hint === "rate_limited"
-        ? "Has empezado muchas partidas seguidas. Esta no contará para el ranking."
-        : "No hemos podido conectar. Esta partida no contará para el ranking.",
-  };
+  const { run, notice } = await startRun("snake", daily);
+  return run ? { game: newGame(run.seed), runId: run.id, notice: null } : { game: newGame(randomSeed()), runId: null, notice };
 }
 
 function readBest(): number {
@@ -65,7 +59,16 @@ function writeBest(score: number) {
   }
 }
 
-export function SnakeGame({ viewerId, onSaved }: { viewerId: string | null; onSaved: () => void }) {
+export function SnakeGame({
+  viewerId,
+  onSaved,
+  daily = null,
+}: {
+  viewerId: string | null;
+  onSaved: () => void;
+  /** Día del reto diario (AAAA-MM-DD) si se juega el reto. */
+  daily?: string | null;
+}) {
   const signedIn = viewerId !== null;
   const [state, setState] = useState<SnakeState | null>(null);
   const [running, setRunning] = useState(false);
@@ -90,13 +93,13 @@ export function SnakeGame({ viewerId, onSaved }: { viewerId: string | null; onSa
     setState(next.game);
   }, []);
 
-  const restart = useCallback(async () => apply(await prepareGame(signedIn)), [apply, signedIn]);
+  const restart = useCallback(async () => apply(await prepareGame(signedIn, daily !== null)), [apply, signedIn, daily]);
 
   // Como en el 2048: los dos montajes de desarrollo comparten la misma petición.
   const initialGame = useRef<{ key: boolean; promise: Promise<Prepared> } | null>(null);
   useEffect(() => {
     if (initialGame.current?.key !== signedIn) {
-      initialGame.current = { key: signedIn, promise: prepareGame(signedIn) };
+      initialGame.current = { key: signedIn, promise: prepareGame(signedIn, daily !== null) };
     }
     let cancelled = false;
     initialGame.current.promise.then((next) => {
@@ -105,7 +108,7 @@ export function SnakeGame({ viewerId, onSaved }: { viewerId: string | null; onSa
     return () => {
       cancelled = true;
     };
-  }, [apply, signedIn]);
+  }, [apply, signedIn, daily]);
 
   /** Encola un giro; la primera dirección pulsada arranca la partida. */
   const press = useCallback((direction: Direction) => {
@@ -223,13 +226,16 @@ export function SnakeGame({ viewerId, onSaved }: { viewerId: string | null; onSa
           <Stat label="Puntos" value={state?.score ?? 0} />
           <Stat label="Tu récord" value={best} />
         </div>
-        <button
-          type="button"
-          onClick={() => void restart()}
-          className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium shadow-soft transition-colors hover:border-muted"
-        >
-          Nueva partida
-        </button>
+        {/* En el reto diario hay un solo intento. */}
+        {daily === null && (
+          <button
+            type="button"
+            onClick={() => void restart()}
+            className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium shadow-soft transition-colors hover:border-muted"
+          >
+            Nueva partida
+          </button>
+        )}
       </div>
 
       {state ? (
@@ -253,7 +259,7 @@ export function SnakeGame({ viewerId, onSaved }: { viewerId: string | null; onSa
         <div className="aspect-square w-full animate-pulse rounded-[22px]" style={{ background: "var(--board)" }} />
       )}
 
-      {state?.over && <GameOver state={state} save={save} signedIn={signedIn} onRestart={() => void restart()} />}
+      {state?.over && <GameOver state={state} save={save} signedIn={signedIn} onRestart={daily === null ? () => void restart() : undefined} />}
 
       <p aria-live="polite" className="sr-only">
         {state?.over ? `Partida terminada con ${state.score} puntos` : ""}
@@ -404,7 +410,8 @@ function GameOver({
   state: SnakeState;
   save: Save | null;
   signedIn: boolean;
-  onRestart: () => void;
+  /** Sin él (reto diario), no hay "Otra partida". */
+  onRestart?: () => void;
 }) {
   const message = !signedIn
     ? "Sin cuenta, esta partida no entra en el ranking."
@@ -429,9 +436,11 @@ function GameOver({
         </p>
         {message && <p className="text-sm">{message}</p>}
       </div>
-      <button type="button" onClick={onRestart} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-        Otra partida
-      </button>
+      {onRestart && (
+        <button type="button" onClick={onRestart} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
+          Otra partida
+        </button>
+      )}
     </div>
   );
 }

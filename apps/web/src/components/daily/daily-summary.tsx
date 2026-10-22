@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { DailySummary } from "@repo/db";
-import { formatNumber } from "@/lib/format";
+import { dailyGameName, DAILY_GAMES, formatDailyScore } from "@/lib/daily";
+import { formatNumber, formatTime } from "@/lib/format";
 
 /** "martes, 20 de octubre" a partir de la fecha del reto (AAAA-MM-DD). */
 export function formatDay(day: string): string {
@@ -26,9 +27,11 @@ export function StreakText({ summary }: { summary: DailySummary }) {
 /** Estado del reto de hoy: por jugar, o cómo quedaste. */
 export function DailyResult({ summary }: { summary: DailySummary }) {
   if (summary.status === "finished") {
+    const timed = DAILY_GAMES[summary.game]?.time;
     return (
       <span>
-        Hoy has hecho <strong className="tabular">{formatNumber(summary.score)}</strong> puntos:{" "}
+        {timed ? "Hoy has tardado " : "Hoy has hecho "}
+        <strong className="tabular">{formatDailyScore(summary.game, summary.score, formatNumber, formatTime)}</strong>:{" "}
         <strong>
           {summary.rank}º de {summary.players}
         </strong>
@@ -37,7 +40,7 @@ export function DailyResult({ summary }: { summary: DailySummary }) {
     );
   }
   if (summary.status === "available") {
-    return <span>La misma partida de 2048 para todos. Un solo intento.</span>;
+    return <span>Hoy toca {dailyGameName(summary.game)}. La misma partida para todos, un solo intento.</span>;
   }
   return <span className="text-muted">Ya has usado el intento de hoy. Mañana hay otro.</span>;
 }
@@ -59,6 +62,7 @@ export function DailyCard({ summary }: { summary: DailySummary }) {
       <p className="text-sm">
         <StreakText summary={summary} />
       </p>
+      <NextGame summary={summary} />
       <Link
         href="/reto-diario"
         className={`self-start rounded-full px-4 py-2 text-sm font-medium ${
@@ -69,4 +73,10 @@ export function DailyCard({ summary }: { summary: DailySummary }) {
       </Link>
     </section>
   );
+}
+
+/** Qué toca mañana, para volver. */
+export function NextGame({ summary }: { summary: Pick<DailySummary, "next_game"> }) {
+  if (!summary.next_game) return null;
+  return <p className="text-sm text-muted">Mañana toca {dailyGameName(summary.next_game)}.</p>;
 }

@@ -11,7 +11,8 @@ const BACKGROUND = "#15171c";
  * Con `monster`, el de esa persona (icono personal); si no, la mascota.
  */
 export function appIcon(size: number, { maskable = false, monster: parts = MASCOT }: { maskable?: boolean; monster?: MonsterParts } = {}) {
-  const svg = renderMonsterSvg(parts, "happy");
+  // La mascota, contenta; el monstruo de cada uno, tal y como lo ha configurado.
+  const svg = renderMonsterSvg(parts, parts === MASCOT ? "happy" : "neutral");
   const src = `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
   const monster = Math.round(size * (maskable ? 0.58 : 0.74));
 

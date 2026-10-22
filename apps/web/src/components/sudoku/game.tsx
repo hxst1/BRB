@@ -1,5 +1,6 @@
 "use client";
 
+import { startRun } from "@/lib/start-run";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { randomSeed } from "@repo/games";
@@ -15,26 +16,27 @@ type Save = { status: "saving" } | { status: "saved"; time: number } | { status:
 /** Lo que se guarda en el navegador para retomar la partida al volver. */
 type Stored = { runId: string | null; seed: number; startedAt: number; values: number[]; notes: number[] };
 
-const storageKey = (difficulty: Difficulty) => `sudoku:${difficulty}`;
+/** Clave del progreso guardado: una por dificultad, y una por día para el reto diario. */
+const storageKey = (difficulty: Difficulty, daily: string | null) => (daily ? `sudoku:daily:${daily}` : `sudoku:${difficulty}`);
 
 /** Casillas de cada caja, en orden de lectura. */
 const BOX_CELLS: number[][] = Array.from({ length: 9 }, (_, b) =>
   Array.from({ length: 81 }, (_, cell) => cell).filter((cell) => box(cell) === b),
 );
 
-function readStored(difficulty: Difficulty): Stored | null {
+function readStored(difficulty: Difficulty, daily: string | null): Stored | null {
   try {
-    const raw = localStorage.getItem(storageKey(difficulty));
+    const raw = localStorage.getItem(storageKey(difficulty, daily));
     return raw ? (JSON.parse(raw) as Stored) : null;
   } catch {
     return null;
   }
 }
 
-function writeStored(difficulty: Difficulty, stored: Stored | null) {
+function writeStored(difficulty: Difficulty, daily: string | null, stored: Stored | null) {
   try {
-    if (stored) localStorage.setItem(storageKey(difficulty), JSON.stringify(stored));
-    else localStorage.removeItem(storageKey(difficulty));
+    if (stored) localStorage.setItem(storageKey(difficulty, daily), JSON.stringify(stored));
+    else localStorage.removeItem(storageKey(difficulty, daily));
   } catch {
     // Sin almacenamiento (modo privado): simplemente no se podrá retomar.
   }
@@ -44,8 +46,8 @@ function writeStored(difficulty: Difficulty, stored: Stored | null) {
  * Retoma la partida guardada si sigue abierta en el servidor; si no, empieza
  * otra (con sesión, el servidor da la semilla y empieza a contar el tiempo).
  */
-async function prepare(difficulty: Difficulty, signedIn: boolean): Promise<{ stored: Stored; notice: string | null }> {
-  const saved = readStored(difficulty);
+async function prepare(difficulty: Difficulty, signedIn: boolean, daily: string | null): Promise<{ stored: Stored; notice: string | null }> {
+  const saved = readStored(difficulty, daily);
   if (saved) {
     if (!saved.runId && !signedIn) return { stored: saved, notice: null };
     if (saved.runId && signedIn) {
@@ -60,26 +62,21 @@ async function prepare(difficulty: Difficulty, signedIn: boolean): Promise<{ sto
   };
   if (!signedIn) return { stored: fresh(randomSeed(), null, clock()), notice: null };
 
-  const { data, error } = await createClient().rpc("start_run", { game: GAME_IDS[difficulty] });
-  const run = data?.[0];
-  if (run) return { stored: fresh(run.seed, run.id, clock()), notice: null };
-  return {
-    stored: fresh(randomSeed(), null, clock()),
-    notice:
-      error?.hint === "rate_limited"
-        ? "Has empezado muchas partidas seguidas. Esta no contará para el ranking."
-        : "No hemos podido conectar. Esta partida no contará para el ranking.",
-  };
+  const { run, notice } = await startRun(GAME_IDS[difficulty], daily !== null);
+  return run ? { stored: fresh(run.seed, run.id, clock()), notice: null } : { stored: fresh(randomSeed(), null, clock()), notice };
 }
 
 export function SudokuGame({
   viewerId,
   difficulty,
   onSaved,
+  daily = null,
 }: {
   viewerId: string | null;
   difficulty: Difficulty;
   onSaved: () => void;
+  /** Día del reto diario (AAAA-MM-DD) si se juega el reto: un solo intento, sin "Nuevo sudoku". */
+  daily?: string | null;
 }) {
   const signedIn = viewerId !== null;
   const [game, setGame] = useState<Stored | null>(null);
@@ -99,11 +96,11 @@ export function SudokuGame({
 
   const load = useCallback(
     async (fresh: boolean) => {
-      if (fresh) writeStored(difficulty, null);
+      if (fresh) writeStored(difficulty, daily, null);
       // Los dos montajes de desarrollo comparten la misma petición.
-      if (fresh || !loading.current) loading.current = prepare(difficulty, signedIn);
+      if (fresh || !loading.current) loading.current = prepare(difficulty, signedIn, daily);
       const { stored, notice: message } = await loading.current;
-      writeStored(difficulty, stored);
+      writeStored(difficulty, daily, stored);
       setGame(stored);
       setNotice(message);
       setSave(null);
@@ -111,14 +108,14 @@ export function SudokuGame({
       setConfirmingNew(false);
       setNow(clock());
     },
-    [difficulty, signedIn],
+    [difficulty, signedIn, daily],
   );
 
   useEffect(() => {
     let cancelled = false;
-    (loading.current ?? (loading.current = prepare(difficulty, signedIn))).then(({ stored, notice: message }) => {
+    (loading.current ?? (loading.current = prepare(difficulty, signedIn, daily))).then(({ stored, notice: message }) => {
       if (cancelled) return;
-      writeStored(difficulty, stored);
+      writeStored(difficulty, daily, stored);
       setGame(stored);
       setNotice(message);
       setNow(clock());
@@ -126,7 +123,7 @@ export function SudokuGame({
     return () => {
       cancelled = true;
     };
-  }, [difficulty, signedIn]);
+  }, [difficulty, signedIn, daily]);
 
   // Cronómetro de la pantalla (el oficial lo mide el servidor).
   useEffect(() => {
@@ -139,11 +136,11 @@ export function SudokuGame({
     (next: Stored) => {
       setGame(next);
       if (!puzzle || !isSolved(next.values, puzzle.solution)) {
-        writeStored(difficulty, next);
+        writeStored(difficulty, daily, next);
         return;
       }
       // Resuelto: se envía el tablero para que el servidor lo valide.
-      writeStored(difficulty, null);
+      writeStored(difficulty, daily, null);
       if (!next.runId) return;
       setSave({ status: "saving" });
       fetch(`/api/runs/${next.runId}/finish`, {
@@ -164,7 +161,7 @@ export function SudokuGame({
         })
         .catch(() => setSave({ status: "error", message: "Sin conexión: la partida no se ha guardado." }));
     },
-    [difficulty, puzzle, onSaved],
+    [difficulty, daily, puzzle, onSaved],
   );
 
   /** Escribe (o quita, con 0) un número en la casilla seleccionada. */
@@ -223,7 +220,7 @@ export function SudokuGame({
           <span className="text-xs text-muted">Tiempo</span>
           <span className="tabular display text-4xl font-bold">{formatTime(elapsed)}</span>
         </div>
-        {confirmingNew ? (
+        {daily ? null : confirmingNew ? (
           <span className="flex items-center gap-3 text-sm">
             ¿Empezar otro? Este se pierde.
             <button type="button" onClick={() => void load(true)} className="font-medium text-danger">
@@ -305,9 +302,11 @@ export function SudokuGame({
                         : null}
             </p>
           </div>
-          <button type="button" onClick={() => void load(true)} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-            Otro
-          </button>
+          {!daily && (
+            <button type="button" onClick={() => void load(true)} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
+              Otro
+            </button>
+          )}
         </div>
       ) : (
         <div className="flex flex-col gap-2">

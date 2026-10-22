@@ -11,6 +11,12 @@ export function monsterCode(seed: number, parts: Json): string {
   return [m.body, m.palette, m.eyes, m.mouth, m.top, m.cheeks ? 1 : 0].join(".");
 }
 
+/**
+ * Versión del dibujo de los iconos personales. Las URL se cachean para siempre:
+ * si cambia cómo se dibujan, súbela para que se pidan de nuevo.
+ */
+export const ICON_VERSION = 2;
+
 /** null si el código no es válido (entonces se usa la mascota). */
 export function monsterFromCode(code: string | null): MonsterParts | null {
   const [body, palette, eyes, mouth, top, cheeks] = (code ?? "").split(".");

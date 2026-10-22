@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type MouseEvent, type PointerEvent } from "react";
 import { randomSeed } from "@repo/games";
 import { DIFFICULTIES, GAME_IDS, chord, encodeOpened, newGame, reveal, type Difficulty, type MinesweeperState } from "@repo/games/minesweeper";
-import { formatTime } from "@/lib/format";
+import { startRun } from "@/lib/start-run";
 import { createClient } from "@/lib/supabase/client";
+import { formatTime } from "@/lib/format";
 
 /** Cuánto hay que mantener pulsado para poner una bandera en el móvil. */
 const LONG_PRESS_MS = 380;
@@ -26,10 +27,13 @@ export function MinesweeperGame({
   viewerId,
   difficulty,
   onSaved,
+  daily = null,
 }: {
   viewerId: string | null;
   difficulty: Difficulty;
   onSaved: () => void;
+  /** Día del reto diario (AAAA-MM-DD) si se juega el reto. */
+  daily?: string | null;
 }) {
   const signedIn = viewerId !== null;
   const { columns, rows, mines } = DIFFICULTIES[difficulty];
@@ -68,17 +72,12 @@ export function MinesweeperGame({
     setStarting(true);
     let seed = randomSeed();
     if (signedIn) {
-      const { data, error } = await createClient().rpc("start_run", { game: GAME_IDS[difficulty] });
-      const run = data?.[0];
+      const { run, notice: message } = await startRun(GAME_IDS[difficulty], daily !== null);
       if (run) {
         seed = run.seed;
         runId.current = run.id;
       } else {
-        setNotice(
-          error?.hint === "rate_limited"
-            ? "Has empezado muchas partidas seguidas. Esta no contará para el ranking."
-            : "No hemos podido conectar. Esta partida no contará para el ranking.",
-        );
+        setNotice(message);
       }
     }
     setStarting(false);
@@ -90,6 +89,17 @@ export function MinesweeperGame({
 
   function finishIfOver(next: MinesweeperState) {
     setState(next);
+    if (next.status === "lost" && runId.current) {
+      // Perdida: se cierra en el servidor (en el reto diario, el intento queda usado).
+      const id = runId.current;
+      runId.current = null;
+      void createClient()
+        .rpc("abandon_run", { run_id: id })
+        .then(() => {
+          if (daily !== null) onSaved();
+        });
+      return;
+    }
     if (next.status !== "won") return;
     const id = runId.current;
     runId.current = null;
@@ -237,12 +247,17 @@ export function MinesweeperGame({
                         : save?.status === "error"
                           ? save.message
                           : null
-                : "Las minas quedan a la vista. ¿Otra?"}
+                : daily === null
+                  ? "Las minas quedan a la vista. ¿Otra?"
+                  : "Las minas quedan a la vista. Mañana hay otro reto."}
             </p>
           </div>
-          <button type="button" onClick={restart} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-            Otra partida
-          </button>
+          {/* En el reto diario hay un solo intento. */}
+          {daily === null && (
+            <button type="button" onClick={restart} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
+              Otra partida
+            </button>
+          )}
         </div>
       )}
 

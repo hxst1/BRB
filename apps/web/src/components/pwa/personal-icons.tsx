@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { renderMonsterSvg, resolveMonster } from "@repo/avatars";
 import type { Json } from "@repo/db";
-import { monsterCode } from "@/lib/monster-code";
+import { ICON_VERSION, monsterCode } from "@/lib/monster-code";
 
 /**
  * Con sesión, los iconos de la app son tu monstruo: el de la pestaña (al
@@ -16,11 +16,11 @@ import { monsterCode } from "@/lib/monster-code";
 export function PersonalIcons({ avatarSeed, avatarParts }: { avatarSeed: number; avatarParts: Json }) {
   useEffect(() => {
     const code = encodeURIComponent(monsterCode(avatarSeed, avatarParts));
-    const favicon = `data:image/svg+xml,${encodeURIComponent(renderMonsterSvg(resolveMonster(avatarSeed, avatarParts), "happy"))}`;
+    const favicon = `data:image/svg+xml,${encodeURIComponent(renderMonsterSvg(resolveMonster(avatarSeed, avatarParts)))}`;
     const wanted: [string, Record<string, string>][] = [
       ['link[rel="icon"]', { href: favicon, type: "image/svg+xml" }],
-      ['link[rel="apple-touch-icon"]', { href: `/icons/me/apple-180.png?m=${code}` }],
-      ['link[rel="manifest"]', { href: `/me.webmanifest?m=${code}` }],
+      ['link[rel="apple-touch-icon"]', { href: `/icons/me/apple-180.png?m=${code}&v=${ICON_VERSION}` }],
+      ['link[rel="manifest"]', { href: `/me.webmanifest?m=${code}&v=${ICON_VERSION}` }],
     ];
     // Valores originales de cada etiqueta, para devolverlos al cerrar sesión.
     const originals = new Map<HTMLLinkElement, Record<string, string | null>>();

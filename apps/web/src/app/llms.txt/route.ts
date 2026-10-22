@@ -26,7 +26,7 @@ ${section("friends")}
 
 ## Más
 
-- [Reto diario](${absoluteUrl("/reto-diario")}): la misma partida de 2048 para todo el mundo cada día, con un solo intento.
+- [Reto diario](${absoluteUrl("/reto-diario")}): cada día un juego (lunes 2048, martes Snake, miércoles Buscaminas, jueves Lights Out, viernes Sudoku y el fin de semana sorpresa), la misma partida para todo el mundo y un solo intento.
 - [Ranking](${absoluteUrl("/ranking")}): clasificaciones por juego y por nivel.
 
 ## Preguntas frecuentes

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { randomSeed } from "@repo/games";
 import { budgetForLevel, newGame, press, type LightsOutState } from "@repo/games/lightsout";
 import { formatNumber } from "@/lib/format";
-import { createClient } from "@/lib/supabase/client";
+import { startRun } from "@/lib/start-run";
 
 const BEST_KEY = "lightsout:best";
 /** Cuánto se ve el aviso de nivel superado. */
@@ -19,20 +19,14 @@ type Save =
 
 type Prepared = { game: LightsOutState; runId: string | null; notice: string | null };
 
-/** Con sesión, el servidor da la semilla y la partida cuenta; sin ella (o si falla), se juega en local. */
-async function prepareGame(signedIn: boolean): Promise<Prepared> {
+/**
+ * Con sesión, el servidor da la semilla y la partida cuenta (también la del
+ * reto diario, con `daily`); sin ella (o si falla), se juega en local.
+ */
+async function prepareGame(signedIn: boolean, daily: boolean): Promise<Prepared> {
   if (!signedIn) return { game: newGame(randomSeed()), runId: null, notice: null };
-  const { data, error } = await createClient().rpc("start_run", { game: "lightsout" });
-  const run = data?.[0];
-  if (run) return { game: newGame(run.seed), runId: run.id, notice: null };
-  return {
-    game: newGame(randomSeed()),
-    runId: null,
-    notice:
-      error?.hint === "rate_limited"
-        ? "Has empezado muchas partidas seguidas. Esta no contará para el ranking."
-        : "No hemos podido conectar. Esta partida no contará para el ranking.",
-  };
+  const { run, notice } = await startRun("lightsout", daily);
+  return run ? { game: newGame(run.seed), runId: run.id, notice: null } : { game: newGame(randomSeed()), runId: null, notice };
 }
 
 function readBest(): number {
@@ -51,7 +45,16 @@ function writeBest(score: number) {
   }
 }
 
-export function LightsOutGame({ viewerId, onSaved }: { viewerId: string | null; onSaved: () => void }) {
+export function LightsOutGame({
+  viewerId,
+  onSaved,
+  daily = null,
+}: {
+  viewerId: string | null;
+  onSaved: () => void;
+  /** Día del reto diario (AAAA-MM-DD) si se juega el reto. */
+  daily?: string | null;
+}) {
   const signedIn = viewerId !== null;
   const [state, setState] = useState<LightsOutState | null>(null);
   /** Se ha plantado: la partida acaba aunque le queden pulsaciones. */
@@ -72,13 +75,13 @@ export function LightsOutGame({ viewerId, onSaved }: { viewerId: string | null; 
     setState(next.game);
   }, []);
 
-  const restart = useCallback(async () => apply(await prepareGame(signedIn)), [apply, signedIn]);
+  const restart = useCallback(async () => apply(await prepareGame(signedIn, daily !== null)), [apply, signedIn, daily]);
 
   // Como en el 2048: los dos montajes de desarrollo comparten la misma petición.
   const initialGame = useRef<{ key: boolean; promise: Promise<Prepared> } | null>(null);
   useEffect(() => {
     if (initialGame.current?.key !== signedIn) {
-      initialGame.current = { key: signedIn, promise: prepareGame(signedIn) };
+      initialGame.current = { key: signedIn, promise: prepareGame(signedIn, daily !== null) };
     }
     let cancelled = false;
     initialGame.current.promise.then((next) => {
@@ -87,7 +90,7 @@ export function LightsOutGame({ viewerId, onSaved }: { viewerId: string | null; 
     return () => {
       cancelled = true;
     };
-  }, [apply, signedIn]);
+  }, [apply, signedIn, daily]);
 
   const ended = state !== null && (state.over || stopped);
 
@@ -158,7 +161,8 @@ export function LightsOutGame({ viewerId, onSaved }: { viewerId: string | null; 
           >
             Plantarse
           </button>
-        ) : (
+        ) : daily === null ? (
+          // En el reto diario hay un solo intento.
           <button
             type="button"
             onClick={() => void restart()}
@@ -166,7 +170,7 @@ export function LightsOutGame({ viewerId, onSaved }: { viewerId: string | null; 
           >
             Nueva partida
           </button>
-        )}
+        ) : null}
       </div>
 
       {state ? (
@@ -206,7 +210,7 @@ export function LightsOutGame({ viewerId, onSaved }: { viewerId: string | null; 
       )}
 
       {state && ended && (
-        <GameOver state={state} stopped={stopped} save={save} signedIn={signedIn} onRestart={() => void restart()} />
+        <GameOver state={state} stopped={stopped} save={save} signedIn={signedIn} onRestart={daily === null ? () => void restart() : undefined} />
       )}
 
       <p aria-live="polite" className="sr-only">
@@ -253,7 +257,8 @@ function GameOver({
   stopped: boolean;
   save: Save | null;
   signedIn: boolean;
-  onRestart: () => void;
+  /** Sin él (reto diario), no hay "Otra partida". */
+  onRestart?: () => void;
 }) {
   const message = !signedIn
     ? "Sin cuenta, esta partida no entra en el ranking."
@@ -282,9 +287,11 @@ function GameOver({
         </p>
         {message && <p className="text-sm">{message}</p>}
       </div>
-      <button type="button" onClick={onRestart} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-        Otra partida
-      </button>
+      {onRestart && (
+        <button type="button" onClick={onRestart} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
+          Otra partida
+        </button>
+      )}
     </div>
   );
 }
