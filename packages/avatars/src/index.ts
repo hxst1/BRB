@@ -133,6 +133,13 @@ const PALETTES = {
   ice: { body: "#a5e8f2", shade: "#66c5d9", accent: "#4c6ef5", achievement: "minesweeper-hard" },
   jungle: { body: "#40c057", shade: "#2b8a3e", accent: "#ffe066", achievement: "snake-30" },
   terminal: { body: "#1f2a24", shade: "#69db7c", accent: "#69db7c", achievement: "contributor" },
+  neon: {
+    body: "url(#brb-neon)",
+    shade: "#e64980",
+    accent: "#ffffff",
+    achievement: "referrals-5",
+    defs: `<linearGradient id="brb-neon" gradientUnits="userSpaceOnUse" x1="20" y1="20" x2="80" y2="90"><stop offset="0" stop-color="#ff4fd8"/><stop offset=".5" stop-color="#a26bff"/><stop offset="1" stop-color="#22e1ff"/></linearGradient>`,
+  },
 } satisfies Record<string, Palette>;
 
 type EyeDrawer = (at: Point) => string;

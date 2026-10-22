@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Suspense } from "react";
+import { INVITE_COOKIE } from "@/lib/invite";
 import { safeNext } from "@/lib/safe-next";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { AuthForm } from "./auth-form";
 import { PRIVATE_PAGE } from "@/lib/seo";
 
@@ -22,6 +25,27 @@ export default function SignInPage({ searchParams }: PageProps<"/entrar">) {
  */
 async function AuthFormForRequest({ searchParams }: { searchParams: PageProps<"/entrar">["searchParams"] }) {
   const { next, modo } = await searchParams;
+  const inviter = await invitedBy();
   // /entrar?modo=registro abre directamente "Crear cuenta" (los botones de registro de la portada y los juegos).
-  return <AuthForm next={safeNext(next)} initialMode={modo === "registro" ? "signup" : "signin"} />;
+  return (
+    <>
+      {inviter && (
+        <p className="mb-4 rounded-2xl p-3 text-sm" style={{ background: "var(--cell)" }}>
+          👋 <strong>{inviter}</strong> te ha invitado. Al crear tu cuenta seréis amigos.
+        </p>
+      )}
+      <AuthForm next={safeNext(next)} initialMode={modo === "registro" ? "signup" : "signin"} />
+    </>
+  );
+}
+
+/** Nombre de quien te invitó, si llegaste por su enlace (app/invita/[code]). */
+async function invitedBy(): Promise<string | null> {
+  const code = (await cookies()).get(INVITE_COOKIE)?.value;
+  if (!code) return null;
+  const admin = createAdminClient();
+  const { data: userId } = await admin.rpc("user_id_by_friend_code", { code });
+  if (!userId) return null;
+  const { data } = await admin.from("profiles").select("username").eq("id", userId).maybeSingle();
+  return data?.username ?? null;
 }

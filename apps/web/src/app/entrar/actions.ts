@@ -1,7 +1,9 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { siteUrl } from "@repo/brand";
+import { INVITE_COOKIE } from "@/lib/invite";
 import { safeNext } from "@/lib/safe-next";
 import { createClient } from "@/lib/supabase/server";
 
@@ -46,12 +48,14 @@ export async function authenticate(_prev: AuthState, formData: FormData): Promis
     }
 
     const next = safeNext(formData.get("next"));
+    // Si llegó por el enlace de invitación de alguien (app/invita/[code]).
+    const invitedBy = (await cookies()).get(INVITE_COOKIE)?.value;
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         // Constancia del consentimiento: qué versión de cada texto se aceptó y cuándo.
-        data: { username, legal: await acceptedVersions(supabase) },
+        data: { username, legal: await acceptedVersions(supabase), ...(invitedBy ? { invited_by: invitedBy } : {}) },
         // El enlace del email de confirmación vuelve aquí con la sesión iniciada.
         emailRedirectTo: `${siteUrl()}/auth/callback?next=${encodeURIComponent(next)}`,
       },
@@ -67,6 +71,7 @@ export async function authenticate(_prev: AuthState, formData: FormData): Promis
               : error.message,
       };
     }
+    if (invitedBy) (await cookies()).delete(INVITE_COOKIE);
     // Si el proyecto exige confirmar el email, todavía no hay sesión.
     if (!data.session) return { mode, error: null, confirmEmail: email };
   } else {

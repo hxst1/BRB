@@ -629,6 +629,11 @@ isOneToOne: false
               "day": string,"game": string,"next_game": string,"played_today": boolean,"players": number,"rank": number,"score": number,"status": string,"streak_best": number,"streak_days": number
             }[]
                            },
+"get_my_referrals":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "active": number,"invited": number
+            }[]
+                           },
 "get_my_standing":
 { Args: { "game": string }; Returns: {
               "best_score": number,"friends_players": number,"friends_rank": number,"global_players": number,"global_rank": number

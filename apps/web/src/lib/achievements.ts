@@ -96,6 +96,13 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "💻",
     reward: { slot: "palette", id: "terminal", label: "Color terminal" },
   },
+  {
+    id: "referrals-5",
+    name: "Embajador",
+    description: "Invita a 5 amigos con tu enlace: que se registren y jueguen al menos una partida.",
+    icon: "📣",
+    reward: { slot: "palette", id: "neon", label: "Color neón" },
+  },
 ];
 
 export function achievementById(id: string): Achievement | undefined {

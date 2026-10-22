@@ -25,8 +25,9 @@ export function FriendCode({ code }: { code: string }) {
   }
 
   async function share() {
-    const url = `${window.location.origin}/amigos?codigo=${code}`;
-    const text = `Añádeme en ${brand.name} y echamos una partida. Mi código es ${code}.`;
+    // Con /invita, quien aún no tiene cuenta se registra y ya sale como amigo (y cuenta para el logro Embajador).
+    const url = `${window.location.origin}/invita/${code}`;
+    const text = `Juega conmigo en ${brand.name}: minijuegos gratis para echar un rato. Entra con mi enlace y ya seremos amigos.`;
     if (navigator.share) {
       try {
         await navigator.share({ title: brand.name, text, url });
