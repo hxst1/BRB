@@ -173,6 +173,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"legal_documents": {
+                  Row: {
+                    "body": string,"slug": string,"title": string,"updated_at": string,"version": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body": string,"slug": string,"title": string,"updated_at"?: string,"version"?: number
+                  }
+                  Update: {
+                    "body"?: string,"slug"?: string,"title"?: string,"updated_at"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"match_choices": {
                   Row: {
                     "choice": number,"created_at": string,"match_id": string,"player_id": string,"round": number
@@ -534,6 +548,9 @@ isOneToOne: false
                            },
 "admin_update_feedback":
 { Args: { "admin_id": string,"feedback_id": string,"reason"?: string,"reply": string,"status": string }; Returns: undefined
+                           },
+"admin_update_legal_document":
+{ Args: { "admin_id": string,"body": string,"reason"?: string,"slug": string,"title": string }; Returns: number
                            },
 "apply_match_move":
 { Args: { "end_reason"?: string,"match_id": string,"moves": (number)[],"previous_count": number,"winner"?: string }; Returns: undefined

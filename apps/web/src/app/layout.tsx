@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { Bricolage_Grotesque } from "next/font/google";
 import { brand, siteUrl } from "@repo/brand";
 import { ErrorReporter } from "@/components/error-reporter";
+import { SiteFooter } from "@/components/site-footer";
 import { THEME_SCRIPT } from "@/lib/theme";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { ServiceWorker } from "@/components/pwa/service-worker";
@@ -69,6 +71,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ServiceWorker />
         <SiteHeader />
         {children}
+        <Suspense fallback={null}>
+          <SiteFooter />
+        </Suspense>
         <InstallPrompt />
         <ErrorReporter />
       </body>

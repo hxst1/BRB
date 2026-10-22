@@ -109,6 +109,24 @@ export function AuthForm({ next }: { next: string }) {
         </label>
       )}
 
+      {mode === "signup" && (
+        // Edad mínima para dar el consentimiento en España: 14 años (LOPDGDD, art. 7).
+        <label className="flex items-start gap-3 text-sm">
+          <input type="checkbox" name="accept" required className="mt-0.5 size-4 shrink-0 accent-ink" />
+          <span>
+            Tengo 14 años o más y acepto los{" "}
+            <Link href="/legal/terminos" target="_blank" className="font-medium underline underline-offset-4">
+              términos
+            </Link>{" "}
+            y la{" "}
+            <Link href="/legal/privacidad" target="_blank" className="font-medium underline underline-offset-4">
+              política de privacidad
+            </Link>
+            .
+          </span>
+        </label>
+      )}
+
       {mode === "signin" && (
         <Link href="/entrar/recuperar" className="-mt-2 self-end text-sm text-muted underline-offset-4 hover:text-ink hover:underline">
           ¿Has olvidado tu contraseña?

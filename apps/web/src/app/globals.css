@@ -433,3 +433,38 @@ body {
     animation: none;
   }
 }
+
+/* Textos legales (Markdown de lib/markdown.ts). */
+.legal-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  line-height: 1.6;
+}
+.legal-text h2 {
+  margin-top: 1rem;
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+.legal-text h3 {
+  margin-top: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 650;
+}
+.legal-text ul,
+.legal-text ol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-left: 1.25rem;
+}
+.legal-text ul {
+  list-style: disc;
+}
+.legal-text ol {
+  list-style: decimal;
+}
+.legal-text a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

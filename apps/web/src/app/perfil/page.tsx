@@ -10,6 +10,7 @@ import { Achievements } from "@/components/profile/achievements";
 import { AvatarEditor } from "@/components/profile/avatar-editor";
 import { Records } from "@/components/profile/records";
 import { AppSettings } from "@/components/pwa/app-settings";
+import { LEGAL_LINKS } from "@/components/site-footer";
 import { getViewer, type Viewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { PRIVATE_PAGE } from "@/lib/seo";
@@ -127,6 +128,13 @@ async function SettingsSection({ viewer }: { viewer: Viewer }) {
         <Link href="/apoyar" className="text-sm font-medium underline-offset-4 hover:underline">
           {viewer.supporter_tier ? "Gracias por apoyar ✦" : "Apoyar el proyecto"}
         </Link>
+        <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
+          {LEGAL_LINKS.map((link) => (
+            <Link key={link.href} href={link.href} className="underline-offset-4 hover:text-ink hover:underline">
+              {link.label}
+            </Link>
+          ))}
+        </p>
         <form action={signOut}>
           <button
             type="submit"

@@ -15,5 +15,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl("/reto-diario"), lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: absoluteUrl("/ranking"), lastModified, changeFrequency: "daily", priority: 0.6 },
     { url: absoluteUrl("/apoyar"), lastModified, changeFrequency: "yearly", priority: 0.3 },
+    ...["terminos", "privacidad", "cookies"].map((slug) => ({
+      url: absoluteUrl(`/legal/${slug}`),
+      lastModified,
+      changeFrequency: "yearly" as const,
+      priority: 0.1,
+    })),
   ];
 }

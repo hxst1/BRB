@@ -36,6 +36,9 @@ export async function authenticate(_prev: AuthState, formData: FormData): Promis
     if (password !== String(formData.get("password_confirm") ?? "")) {
       return { mode, error: "Las contraseñas no coinciden." };
     }
+    if (formData.get("accept") !== "on") {
+      return { mode, error: "Para crear la cuenta tienes que tener 14 años o más y aceptar los términos y la política de privacidad." };
+    }
 
     const { data: taken } = await supabase.from("profiles").select("id").ilike("username", username).maybeSingle();
     if (taken) {
@@ -47,7 +50,8 @@ export async function authenticate(_prev: AuthState, formData: FormData): Promis
       email,
       password,
       options: {
-        data: { username },
+        // Constancia del consentimiento: qué versión de cada texto se aceptó y cuándo.
+        data: { username, legal: await acceptedVersions(supabase) },
         // El enlace del email de confirmación vuelve aquí con la sesión iniciada.
         emailRedirectTo: `${siteUrl()}/auth/callback?next=${encodeURIComponent(next)}`,
       },
@@ -73,6 +77,12 @@ export async function authenticate(_prev: AuthState, formData: FormData): Promis
   }
 
   redirect(safeNext(formData.get("next")));
+}
+
+/** Versiones de los términos y la privacidad que se aceptan al registrarse. */
+async function acceptedVersions(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const { data } = await supabase.from("legal_documents").select("slug, version").in("slug", ["terminos", "privacidad"]);
+  return { accepted_at: new Date().toISOString(), ...Object.fromEntries((data ?? []).map((doc) => [doc.slug, doc.version])) };
 }
 
 export async function signOut() {
