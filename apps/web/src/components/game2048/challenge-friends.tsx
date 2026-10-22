@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Avatar } from "@repo/ui/avatar";
-import { formatNumber } from "@/lib/format";
+import { useMessages } from "@/lib/i18n/client";
 import { fetchFriends, type Friend } from "@/lib/friends";
 import { createClient } from "@/lib/supabase/client";
 
@@ -19,6 +19,7 @@ export function ChallengeFriends({
   score: number;
   onClose: () => void;
 }) {
+  const m = useMessages();
   const [friends, setFriends] = useState<Friend[] | null>(null);
   const [sent, setSent] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +37,7 @@ export function ChallengeFriends({
   async function send(friendId: string) {
     setError(null);
     const { error: rpcError } = await createClient().rpc("create_challenge", { run_id: runId, friend: friendId });
-    if (rpcError) setError("No se ha podido enviar el reto. Inténtalo otra vez.");
+    if (rpcError) setError(m.challenge2048.sendError);
     else setSent((current) => new Set(current).add(friendId));
   }
 
@@ -44,20 +45,20 @@ export function ChallengeFriends({
     <section aria-labelledby="challenge-title" className="rounded-3xl bg-surface p-4 shadow-soft">
       <div className="mb-2 flex items-center justify-between gap-3">
         <h2 id="challenge-title" className="font-semibold">
-          ¿Quién supera tus {formatNumber(score)}?
+          {m.challenge2048.whoBeats(m.format.number(score))}
         </h2>
         <button type="button" onClick={onClose} className="text-sm text-muted hover:text-ink">
-          Cerrar
+          {m.common.close}
         </button>
       </div>
-      <p className="mb-3 text-sm text-muted">Jugarán exactamente la misma partida que tú, con un solo intento.</p>
+      <p className="mb-3 text-sm text-muted">{m.challenge2048.sameGame}</p>
 
-      {friends === null && <p className="text-sm text-muted">Cargando amigos…</p>}
+      {friends === null && <p className="text-sm text-muted">{m.matchList.loadingFriends}</p>}
       {friends?.length === 0 && (
         <p className="text-sm text-muted">
-          Aún no tienes amigos.{" "}
+          {m.matchList.noFriends}{" "}
           <Link href="/amigos" className="font-medium text-ink underline underline-offset-4">
-            Añade a alguien con su código
+            {m.matchList.addSomeone}
           </Link>
           .
         </p>
@@ -68,14 +69,14 @@ export function ChallengeFriends({
             <Avatar seed={friend.avatar_seed} parts={friend.avatar_parts} size={34} />
             <span className="min-w-0 flex-1 truncate font-medium">{friend.username}</span>
             {sent.has(friend.id) ? (
-              <span className="text-sm text-muted">Reto enviado</span>
+              <span className="text-sm text-muted">{m.challenge2048.sent}</span>
             ) : (
               <button
                 type="button"
                 onClick={() => void send(friend.id)}
                 className="rounded-full bg-ink px-3 py-1 text-sm font-medium text-bg"
               >
-                Retar
+                {m.challengeMenu.challenge}
               </button>
             )}
           </li>

@@ -3,16 +3,18 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { challenge } from "@/components/tictactoe/data";
-import { MATCH_GAMES, matchHref, type MatchGame } from "@/lib/games";
+import { matchHref, type MatchGame } from "@/lib/games";
+import { useMessages } from "@/lib/i18n/client";
 
-const OPTIONS: { game: MatchGame; label: string; icon: string }[] = [
-  { game: "tictactoe", label: MATCH_GAMES.tictactoe.name, icon: "×○" },
-  { game: "connect4", label: MATCH_GAMES.connect4.name, icon: "🔴" },
-  { game: "battleship", label: MATCH_GAMES.battleship.name, icon: "🚢" },
-  { game: "rps", label: MATCH_GAMES.rps.name, icon: "✂️" },
-  { game: "rpsls", label: "Con lagarto y Spock", icon: "🖖" },
-  { game: "pong", label: "Pong (en directo)", icon: "🏓" },
-  { game: "tron", label: "Tron (en directo)", icon: "🏍️" },
+/** Las etiquetas están en m.challengeMenu. */
+const OPTIONS: { game: MatchGame; icon: string }[] = [
+  { game: "tictactoe", icon: "×○" },
+  { game: "connect4", icon: "🔴" },
+  { game: "battleship", icon: "🚢" },
+  { game: "rps", icon: "✂️" },
+  { game: "rpsls", icon: "🖖" },
+  { game: "pong", icon: "🏓" },
+  { game: "tron", icon: "🏍️" },
 ];
 
 /**
@@ -21,6 +23,7 @@ const OPTIONS: { game: MatchGame; label: string; icon: string }[] = [
  */
 export function ChallengeMenu({ friendId, className = "" }: { friendId: string; className?: string }) {
   const router = useRouter();
+  const m = useMessages();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
@@ -65,7 +68,7 @@ export function ChallengeMenu({ friendId, className = "" }: { friendId: string; 
         onClick={() => setOpen((value) => !value)}
         className={`flex items-center gap-1 rounded-full bg-ink px-3 py-1 text-sm font-medium text-bg disabled:opacity-50 ${className}`}
       >
-        Retar
+        {m.challengeMenu.challenge}
         <svg width="10" height="10" viewBox="0 0 12 12" aria-hidden className={`transition-transform ${open ? "rotate-180" : ""}`}>
           <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
         </svg>
@@ -84,10 +87,10 @@ export function ChallengeMenu({ friendId, className = "" }: { friendId: string; 
               <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-lg text-base" style={{ background: "var(--board)" }}>
                 {option.icon}
               </span>
-              {option.label}
+              {m.challengeMenu[option.game]}
             </button>
           ))}
-          {error && <p className="px-3 pb-1 text-xs text-danger">No se ha podido crear el reto. Inténtalo otra vez.</p>}
+          {error && <p className="px-3 pb-1 text-xs text-danger">{m.challengeMenu.error}</p>}
         </div>
       )}
     </div>

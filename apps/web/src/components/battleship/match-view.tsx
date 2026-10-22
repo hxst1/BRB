@@ -13,6 +13,7 @@ import { MATCH_GAMES } from "@/lib/games";
 import { createClient } from "@/lib/supabase/client";
 import { SeaBoard } from "./board";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
+import { useMessages } from "@/lib/i18n/client";
 
 const PATH = MATCH_GAMES.battleship.path;
 
@@ -42,6 +43,7 @@ function newDraft(): Fleet {
 
 export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; viewerId: string }) {
   const router = useRouter();
+  const m = useMessages();
   const [match, setMatch] = useState<MatchWithPlayers | null | undefined>(undefined);
   const [fleets, setFleets] = useState<Fleets | null>(null);
   const [draft, setDraft] = useState<Fleet>(newDraft);
@@ -94,7 +96,7 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
       setError(null);
       const { error: actionError } = await action();
       setBusy(false);
-      if (actionError) setError("No se ha podido completar. Recarga la página e inténtalo otra vez.");
+      if (actionError) setError(m.match.actionError);
       else await refresh();
     },
     [refresh],
@@ -110,7 +112,7 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
     });
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
-      setError(data.error ?? "No se ha podido completar.");
+      setError(data.error ?? m.battleship.actionError);
     }
     await refresh();
     setBusy(false);
@@ -122,9 +124,9 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
   if (match === null || match.game !== "battleship") {
     return (
       <p className="text-muted">
-        No encontramos esta partida.{" "}
+        {m.match.notFound}{" "}
         <Link href={PATH} className="font-medium text-ink underline underline-offset-4">
-          Ver tus partidas
+          {m.match.seeYours}
         </Link>
       </p>
     );
@@ -148,18 +150,18 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
   const status = (() => {
     switch (match.status) {
       case "pending":
-        return invitedMe ? `${rivalName} te reta` : `Esperando a que ${rivalName} acepte`;
+        return invitedMe ? m.match.challengesYou(rivalName) : m.match.waitingAccept(rivalName);
       case "declined":
-        return `${rivalName} ha rechazado el reto`;
+        return m.match.declined(rivalName);
       case "cancelled":
-        return "Reto retirado";
+        return m.match.withdrawn;
       case "active":
-        if (placing) return "Coloca tu flota";
-        if (!fleets?.rivalReady) return `Esperando a que ${rivalName} coloque su flota`;
-        return myTurn ? "Te toca disparar" : `Le toca a ${rivalName}`;
+        if (placing) return m.battleship.place;
+        if (!fleets?.rivalReady) return m.battleship.waitingFleet(rivalName);
+        return myTurn ? m.battleship.yourShot : m.match.theirTurn(rivalName);
       default:
-        if (match.end_reason === "resign") return match.winner === me ? `${rivalName} se ha rendido` : "Te has rendido";
-        return match.winner === me ? "¡Has hundido su flota!" : `${rivalName} ha hundido tu flota`;
+        if (match.end_reason === "resign") return match.winner === me ? m.match.theyResigned(rivalName) : m.match.youResigned;
+        return match.winner === me ? m.battleship.youSank : m.battleship.theySank(rivalName);
     }
   })();
 
@@ -168,7 +170,7 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
     const id = await challenge(players[rival].id, "battleship");
     setBusy(false);
     if (id) router.push(`${PATH}/${id}`);
-    else setError("No se ha podido crear la revancha.");
+    else setError(m.match.rematchError);
   }
 
   return (
@@ -177,12 +179,12 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
         <PlayerBadge
           player={players[me]}
           mark={me}
-          label="Tú"
+          label={m.match.you}
           active={myTurn}
           mood={moodOf(me)}
           detail={<Afloat count={afloat(me)} />}
         />
-        <span className="text-sm text-muted">contra</span>
+        <span className="text-sm text-muted">{m.match.versus}</span>
         <PlayerBadge
           player={players[rival]}
           mark={rival}
@@ -199,16 +201,16 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
         </p>
         {lastShot && match.status === "active" && (
           <p className="mt-1 text-sm text-muted">
-            {lastShot.by === me ? "Tu disparo" : `Disparo de ${rivalName}`}: {SHOT_TEXT[lastShot.result]}
+            {lastShot.by === me ? m.battleship.yourShotWas : m.battleship.theirShot(rivalName)}: {m.battleship.shotText[lastShot.result]}
           </p>
         )}
       </div>
 
       {placing && (
         <div className="flex flex-col gap-3">
-          <SeaBoard label="Tu flota" fleet={draft} shots={[]} />
+          <SeaBoard label={m.battleship.yourFleet} fleet={draft} shots={[]} />
           <p className="text-sm text-muted">
-            Cinco barcos: de 5, 4, 3, 3 y 2 casillas. Muévelos hasta que te guste la colocación; {rivalName} no la verá.
+            {m.battleship.placeHint(rivalName)}
           </p>
           <div className="flex flex-wrap gap-3">
             <button
@@ -217,7 +219,7 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
               onClick={() => void post("fleet", { ships: draft })}
               className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg disabled:opacity-50"
             >
-              Listo, a jugar
+              {m.battleship.ready}
             </button>
             <button
               type="button"
@@ -225,7 +227,7 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
               onClick={() => setDraft(newDraft())}
               className="rounded-full border border-line bg-surface px-5 py-2.5 font-semibold"
             >
-              Mover los barcos
+              {m.battleship.shuffle}
             </button>
           </div>
         </div>
@@ -234,9 +236,9 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
       {match.status !== "pending" && !placing && fleets?.mine && (
         <>
           <section className="flex flex-col gap-2">
-            <h2 className="text-sm font-medium">Flota de {rivalName}</h2>
+            <h2 className="text-sm font-medium">{m.battleship.theirFleet(rivalName)}</h2>
             <SeaBoard
-              label={`Flota de ${rivalName}`}
+              label={m.battleship.theirFleet(rivalName)}
               fleet={fleets.rival}
               shots={state?.shots[me] ?? []}
               onShoot={myTurn && !busy ? (cell) => void post("move", { cell }) : undefined}
@@ -244,10 +246,10 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
             />
           </section>
           <section className="flex flex-col gap-2">
-            <h2 className="text-sm font-medium">Tu flota</h2>
+            <h2 className="text-sm font-medium">{m.battleship.yourFleet}</h2>
             <div className="mx-auto w-3/4">
               <SeaBoard
-                label="Tu flota"
+                label={m.battleship.yourFleet}
                 fleet={fleets.mine}
                 shots={state?.shots[rival] ?? []}
                 highlight={lastShot?.by === rival ? lastShot.cell : null}
@@ -272,7 +274,7 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
               onClick={() => void act(() => createClient().rpc("respond_match", { match_id: match.id, accept: true }))}
               className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg"
             >
-              Aceptar el reto
+              {m.match.accept}
             </button>
             <button
               type="button"
@@ -280,7 +282,7 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
               onClick={() => void act(() => createClient().rpc("respond_match", { match_id: match.id, accept: false }))}
               className="text-sm text-muted hover:text-ink"
             >
-              Rechazar
+              {m.now.decline}
             </button>
           </>
         )}
@@ -291,7 +293,7 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
             onClick={() => void act(() => createClient().rpc("cancel_match", { match_id: match.id }))}
             className="text-sm text-muted hover:text-ink"
           >
-            Retirar el reto
+            {m.match.withdraw}
           </button>
         )}
         {match.status === "active" && (
@@ -299,19 +301,18 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
         )}
         {(match.status === "finished" || match.status === "declined" || match.status === "cancelled") && (
           <button type="button" disabled={busy} onClick={() => void rematch()} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-            {match.status === "finished" ? "Revancha" : "Retar otra vez"}
+            {match.status === "finished" ? m.match.rematch : m.match.challengeAgain}
           </button>
         )}
         <Link href={PATH} className="text-sm text-muted hover:text-ink">
-          Todas tus partidas
+          {m.match.all}
         </Link>
       </div>
     </div>
   );
 }
 
-const SHOT_TEXT = { miss: "agua", hit: "¡tocado!", sunk: "¡hundido!" } as const;
-
 function Afloat({ count }: { count: number }) {
-  return <span className="text-sm text-muted">{count === 1 ? "1 barco a flote" : `${count} barcos a flote`}</span>;
+  const m = useMessages();
+  return <span className="text-sm text-muted">{m.battleship.afloat(count)}</span>;
 }

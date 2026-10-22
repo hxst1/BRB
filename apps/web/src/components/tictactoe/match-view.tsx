@@ -14,6 +14,8 @@ import { createClient } from "@/lib/supabase/client";
 import { TicTacToeBoard } from "./board";
 import { challenge, fetchMatch, markOf, type MatchWithPlayers, type Player } from "./data";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
+import type { Messages } from "@/lib/i18n";
+import { useMessages } from "@/lib/i18n/client";
 
 export const MARK_COLOR: Record<Mark, string> = { x: "var(--mark-x)", o: "var(--mark-o)" };
 
@@ -28,6 +30,7 @@ export function MatchView({
   game?: "tictactoe" | "connect4";
 }) {
   const router = useRouter();
+  const m = useMessages();
   const [match, setMatch] = useState<MatchWithPlayers | null | undefined>(undefined);
   // Jugada enviada y aún sin confirmar: casilla (3 en raya) o columna (4 en raya).
   const [pendingCell, setPendingCell] = useState<number | null>(null);
@@ -76,7 +79,7 @@ export function MatchView({
       setError(null);
       const { error: actionError } = await action();
       setBusy(false);
-      if (actionError) setError("No se ha podido completar. Recarga la página e inténtalo otra vez.");
+      if (actionError) setError(m.match.actionError);
       else setMatch(await fetchMatch(matchId));
     },
     [matchId],
@@ -86,9 +89,9 @@ export function MatchView({
   if (match === null || match.game !== game) {
     return (
       <p className="text-muted">
-        No encontramos esta partida.{" "}
+        {m.match.notFound}{" "}
         <Link href={path} className="font-medium text-ink underline underline-offset-4">
-          Ver tus partidas
+          {m.match.seeYours}
         </Link>
       </p>
     );
@@ -113,7 +116,7 @@ export function MatchView({
     });
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
-      setError(body.error ?? "No se ha podido hacer la jugada.");
+      setError(body.error ?? m.match.moveError);
       setPendingCell(null);
       setMatch(await fetchMatch(matchId));
       return;
@@ -129,7 +132,7 @@ export function MatchView({
     const id = await challenge(players[rival].id, game);
     setBusy(false);
     if (id) router.push(`${path}/${id}`);
-    else setError("No se ha podido crear la revancha.");
+    else setError(m.match.rematchError);
   }
 
   const winnerMark = match.status === "finished" ? (match.winner as Mark | null) : null;
@@ -142,12 +145,12 @@ export function MatchView({
         <PlayerBadge
           player={players[me]}
           mark={me}
-          label="Tú"
+          label={m.match.you}
           active={state.turn === me && match.status === "active"}
           mood={moodOf(me)}
           detail={game === "connect4" ? <Disc mark={me} /> : undefined}
         />
-        <span className="text-sm text-muted">contra</span>
+        <span className="text-sm text-muted">{m.match.versus}</span>
         <PlayerBadge
           player={players[rival]}
           mark={rival}
@@ -159,7 +162,7 @@ export function MatchView({
       </div>
 
       <p aria-live="polite" className="display text-center text-3xl font-bold">
-        {statusText(match, me, state.turn, players[rival].username)}
+        {statusText(m, match, me, state.turn, players[rival].username)}
       </p>
 
       <div className="w-full" style={{ "--win-color": winnerMark ? MARK_COLOR[winnerMark] : undefined } as CSSProperties}>
@@ -192,7 +195,7 @@ export function MatchView({
               onClick={() => void act(() => createClient().rpc("respond_match", { match_id: match.id, accept: true }))}
               className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg"
             >
-              Aceptar el reto
+              {m.match.accept}
             </button>
             <button
               type="button"
@@ -200,7 +203,7 @@ export function MatchView({
               onClick={() => void act(() => createClient().rpc("respond_match", { match_id: match.id, accept: false }))}
               className="text-sm text-muted hover:text-ink"
             >
-              Rechazar
+              {m.now.decline}
             </button>
           </>
         )}
@@ -211,17 +214,17 @@ export function MatchView({
             onClick={() => void act(() => createClient().rpc("cancel_match", { match_id: match.id }))}
             className="text-sm text-muted hover:text-ink"
           >
-            Retirar el reto
+            {m.match.withdraw}
           </button>
         )}
         {match.status === "active" && <ResignButton disabled={busy} onConfirm={() => void act(() => createClient().rpc("resign_match", { match_id: match.id }))} />}
         {(match.status === "finished" || match.status === "declined" || match.status === "cancelled") && (
           <button type="button" disabled={busy} onClick={() => void rematch()} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-            {match.status === "finished" ? "Revancha" : "Retar otra vez"}
+            {match.status === "finished" ? m.match.rematch : m.match.challengeAgain}
           </button>
         )}
         <Link href={path} className="text-sm text-muted hover:text-ink">
-          Todas tus partidas
+          {m.match.all}
         </Link>
       </div>
     </div>
@@ -230,32 +233,33 @@ export function MatchView({
 
 /** Ficha del color de cada jugador en el 4 en raya. */
 function Disc({ mark }: { mark: Mark }) {
+  const m = useMessages();
   return (
     <span
       role="img"
-      aria-label={`Juega con las fichas ${mark === "x" ? "rojas" : "azules"}`}
+      aria-label={mark === "x" ? m.match.redPieces : m.match.bluePieces}
       className="mt-1 size-4 rounded-full"
       style={{ background: MARK_COLOR[mark] }}
     />
   );
 }
 
-function statusText(match: Match, me: Mark, turn: Mark | null, rivalName: string): string {
+function statusText(m: Messages, match: Match, me: Mark, turn: Mark | null, rivalName: string): string {
   switch (match.status) {
     case "pending":
       return match.created_by === (me === "x" ? match.player_x : match.player_o)
-        ? `Esperando a que ${rivalName} acepte`
-        : `${rivalName} te reta`;
+        ? m.match.waitingAccept(rivalName)
+        : m.match.challengesYou(rivalName);
     case "declined":
-      return `${rivalName} ha rechazado el reto`;
+      return m.match.declined(rivalName);
     case "cancelled":
-      return "Reto retirado";
+      return m.match.withdrawn;
     case "active":
-      return turn === me ? "Te toca" : `Le toca a ${rivalName}`;
+      return turn === me ? m.match.yourTurn : m.match.theirTurn(rivalName);
     case "finished":
-      if (!match.winner) return "Empate";
-      if (match.end_reason === "resign") return match.winner === me ? `${rivalName} se ha rendido` : "Te has rendido";
-      return match.winner === me ? "¡Has ganado!" : `Gana ${rivalName}`;
+      if (!match.winner) return m.match.draw;
+      if (match.end_reason === "resign") return match.winner === me ? m.match.theyResigned(rivalName) : m.match.youResigned;
+      return match.winner === me ? m.match.youWon : m.match.theyWon(rivalName);
     default:
       return "";
   }
@@ -279,6 +283,7 @@ export function PlayerBadge({
   /** Sustituye al símbolo × / ○ (p. ej. el marcador en piedra, papel o tijera). */
   detail?: React.ReactNode;
 }) {
+  const m = useMessages();
   return (
     <div className={`flex items-center gap-3 ${alignEnd ? "flex-row-reverse text-right" : ""}`}>
       <span
@@ -290,7 +295,7 @@ export function PlayerBadge({
       <span className="flex min-w-0 flex-col">
         <span className="truncate font-semibold">{label ?? player.username}</span>
         {detail ?? (
-          <span className="text-lg leading-none font-bold" style={{ color: MARK_COLOR[mark] }} aria-label={`Juega con ${mark.toUpperCase()}`}>
+          <span className="text-lg leading-none font-bold" style={{ color: MARK_COLOR[mark] }} aria-label={m.match.playsWith(mark.toUpperCase())}>
             {mark === "x" ? "×" : "○"}
           </span>
         )}
@@ -301,21 +306,22 @@ export function PlayerBadge({
 
 export function ResignButton({ disabled, onConfirm }: { disabled: boolean; onConfirm: () => void }) {
   const [asking, setAsking] = useState(false);
+  const m = useMessages();
   if (!asking) {
     return (
       <button type="button" disabled={disabled} onClick={() => setAsking(true)} className="text-sm text-muted hover:text-ink">
-        Rendirse
+        {m.match.resign}
       </button>
     );
   }
   return (
     <span className="flex items-center gap-3 text-sm">
-      ¿Seguro?
+      {m.match.sure}
       <button type="button" onClick={onConfirm} className="font-medium text-danger">
-        Sí, me rindo
+        {m.match.yesResign}
       </button>
       <button type="button" onClick={() => setAsking(false)} className="text-muted hover:text-ink">
-        No
+        {m.run.no}
       </button>
     </span>
   );

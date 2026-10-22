@@ -9,6 +9,8 @@ import { MATCH_GAMES, matchHref, type MatchGame } from "@/lib/games";
 import { createClient } from "@/lib/supabase/client";
 import { challenge, fetchChosen, fetchMyMatches, isMyTurn, markOf, opponentOf, type MatchWithPlayers } from "./data";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
+import { useMessages } from "@/lib/i18n/client";
+import type { Messages } from "@/lib/i18n";
 
 type Loaded = { matches: MatchWithPlayers[]; chosen: Set<string> };
 
@@ -23,6 +25,7 @@ async function load(games: readonly MatchGame[], viewerId: string): Promise<Load
  */
 export function MatchList({ viewerId, games }: { viewerId: string; games: readonly MatchGame[] }) {
   const router = useRouter();
+  const m = useMessages();
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [friends, setFriends] = useState<Friend[] | null>(null);
   const [picking, setPicking] = useState(false);
@@ -82,12 +85,12 @@ export function MatchList({ viewerId, games }: { viewerId: string; games: readon
           aria-expanded={picking}
           className="self-start rounded-full bg-ink px-5 py-2.5 font-semibold text-bg"
         >
-          Retar a un amigo
+          {m.run.challengeFriend}
         </button>
         {picking && (
           <div className="rounded-3xl bg-surface p-3 shadow-soft">
             {games.length > 1 && (
-              <div role="radiogroup" aria-label="Modo" className="mb-2 flex gap-1 rounded-full bg-line/60 p-1">
+              <div role="radiogroup" aria-label={m.matchList.mode} className="mb-2 flex gap-1 rounded-full bg-line/60 p-1">
                 {games.map((option) => (
                   <button
                     key={option}
@@ -97,17 +100,17 @@ export function MatchList({ viewerId, games }: { viewerId: string; games: readon
                     onClick={() => setGame(option)}
                     className={`flex-1 rounded-full px-3 py-1.5 text-sm ${game === option ? "bg-surface font-medium shadow-soft" : "text-muted"}`}
                   >
-                    {GAME_MODE_LABELS[option] ?? MATCH_GAMES[option].name}
+                    {modeLabel(m, option) ?? m.matchGames[option]}
                   </button>
                 ))}
               </div>
             )}
-            {friends === null && <p className="p-2 text-sm text-muted">Cargando amigos…</p>}
+            {friends === null && <p className="p-2 text-sm text-muted">{m.matchList.loadingFriends}</p>}
             {friends?.length === 0 && (
               <p className="p-2 text-sm text-muted">
-                Aún no tienes amigos.{" "}
+                {m.matchList.noFriends}{" "}
                 <Link href="/amigos" className="font-medium text-ink underline underline-offset-4">
-                  Añade a alguien con su código
+                  {m.matchList.addSomeone}
                 </Link>
                 .
               </p>
@@ -122,7 +125,7 @@ export function MatchList({ viewerId, games }: { viewerId: string; games: readon
                   >
                     <Avatar seed={friend.avatar_seed} parts={friend.avatar_parts} size={36} />
                     <span className="flex-1 font-medium">{friend.username}</span>
-                    <span className="text-sm text-muted">Retar</span>
+                    <span className="text-sm text-muted">{m.challengeMenu.challenge}</span>
                   </button>
                 </li>
               ))}
@@ -134,21 +137,23 @@ export function MatchList({ viewerId, games }: { viewerId: string; games: readon
       {matches === null ? (
         <div className="h-40 animate-pulse rounded-3xl bg-line/40" />
       ) : matches.length === 0 ? (
-        <p className="text-muted">Todavía no has jugado ninguna partida. Reta a un amigo para empezar.</p>
+        <p className="text-muted">{m.matchList.empty}</p>
       ) : (
         <>
-          <Group title="Te retan" matches={groups.invited} viewerId={viewerId} note={() => "Quiere jugar contigo"} />
-          <Group title="Te toca" matches={groups.myTurn} viewerId={viewerId} note={() => "Tu turno"} highlight />
-          <Group title="Esperando" matches={groups.waiting} viewerId={viewerId} note={(m) => (m.status === "pending" ? "Aún no ha aceptado" : "Le toca")} />
-          <Group title="Terminadas" matches={groups.finished} viewerId={viewerId} note={(m) => resultText(m, viewerId)} />
+          <Group title={m.matchList.invited} matches={groups.invited} viewerId={viewerId} note={() => m.matchList.wantsToPlay} />
+          <Group title={m.match.yourTurn} matches={groups.myTurn} viewerId={viewerId} note={() => m.matchList.yourTurn} highlight />
+          <Group title={m.matchList.waiting} matches={groups.waiting} viewerId={viewerId} note={(match) => (match.status === "pending" ? m.matchList.notAccepted : m.matchList.theirTurn)} />
+          <Group title={m.matchList.finished} matches={groups.finished} viewerId={viewerId} note={(match) => resultText(m, match, viewerId)} />
         </>
       )}
     </div>
   );
 }
 
-/** Nombre corto de cada modo en el selector. */
-const GAME_MODE_LABELS: Partial<Record<MatchGame, string>> = { rps: "Clásico", rpsls: "Lagarto Spock" };
+/** Nombre corto de cada modo en el selector (solo piedra, papel o tijera tiene dos). */
+function modeLabel(m: Messages, game: MatchGame): string | undefined {
+  return game === "rps" ? m.matchList.classic : game === "rpsls" ? m.matchList.lizardSpock : undefined;
+}
 
 function groupMatches(matches: MatchWithPlayers[], viewerId: string, chosen: ReadonlySet<string>) {
   const groups = { invited: [], myTurn: [], waiting: [], finished: [] } as Record<
@@ -165,9 +170,9 @@ function groupMatches(matches: MatchWithPlayers[], viewerId: string, chosen: Rea
   return groups;
 }
 
-function resultText(match: MatchWithPlayers, viewerId: string): string {
-  if (!match.winner) return "Empate";
-  return match.winner === markOf(match, viewerId) ? "Ganaste" : "Perdiste";
+function resultText(m: Messages, match: MatchWithPlayers, viewerId: string): string {
+  if (!match.winner) return m.match.draw;
+  return match.winner === markOf(match, viewerId) ? m.matchList.won : m.matchList.lost;
 }
 
 function Group({
@@ -183,6 +188,7 @@ function Group({
   note: (match: MatchWithPlayers) => string;
   highlight?: boolean;
 }) {
+  const m = useMessages();
   if (matches.length === 0) return null;
   return (
     <section className="flex flex-col gap-1">
@@ -196,9 +202,7 @@ function Group({
                 <Avatar seed={rival.avatar_seed} parts={rival.avatar_parts} size={36} />
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="truncate font-medium">{rival.username}</span>
-                  {GAME_MODE_LABELS[match.game as MatchGame] && (
-                    <span className="text-xs text-muted">{GAME_MODE_LABELS[match.game as MatchGame]}</span>
-                  )}
+                  {modeLabel(m, match.game as MatchGame) && <span className="text-xs text-muted">{modeLabel(m, match.game as MatchGame)}</span>}
                 </span>
                 <span className={`text-sm ${highlight ? "rounded-full bg-ink px-3 py-1 font-medium text-bg" : "text-muted"}`}>
                   {note(match)}

@@ -6,8 +6,8 @@ import { useState, type ReactNode } from "react";
 import type { Match } from "@repo/db";
 import { describeChallenge, type Challenge } from "@/components/game2048/challenge-text";
 import { isTurnBased, markOf, turnOf } from "@/components/tictactoe/data";
-import { formatNumber } from "@/lib/format";
-import { matchGame, matchHref } from "@/lib/games";
+import { matchGameKey, matchHref } from "@/lib/games";
+import { useMessages } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 
 /** Tarjeta de un reto dentro del chat, con su estado actual y sus acciones. */
@@ -29,6 +29,7 @@ export function ChallengeEmbed({
   onChanged: () => void;
 }) {
   const router = useRouter();
+  const m = useMessages();
   const [busy, setBusy] = useState(false);
 
   async function run(action: () => PromiseLike<{ error: unknown }>, then?: () => void) {
@@ -44,15 +45,15 @@ export function ChallengeEmbed({
   let actions: ReactNode = null;
 
   if (kind === "match") {
-    title = match ? matchGame(match.game).name : "Partida";
+    title = match ? m.matchGames[matchGameKey(match.game)] : m.embed.match;
     if (!match) {
-      status = "Cargando…";
+      status = m.embed.loading;
     } else {
       const href = matchHref(match);
       const incoming = match.created_by !== viewerId;
       switch (match.status) {
         case "pending":
-          status = incoming ? `${friendName} te reta` : `Esperando a que ${friendName} acepte`;
+          status = incoming ? m.match.challengesYou(friendName) : m.match.waitingAccept(friendName);
           actions = incoming ? (
             <>
               <EmbedButton
@@ -65,56 +66,56 @@ export function ChallengeEmbed({
                   )
                 }
               >
-                Aceptar
+                {m.now.accept}
               </EmbedButton>
               <EmbedButton disabled={busy} onClick={() => run(() => createClient().rpc("respond_match", { match_id: match.id, accept: false }))}>
-                Rechazar
+                {m.now.decline}
               </EmbedButton>
             </>
           ) : (
             <EmbedButton disabled={busy} onClick={() => run(() => createClient().rpc("cancel_match", { match_id: match.id }))}>
-              Retirar
+              {m.embed.withdraw}
             </EmbedButton>
           );
           break;
         case "active": {
           if (!isTurnBased(match.game)) {
             // Piedra, papel o tijera: quién ha elegido es secreto. Pong: se juega en directo.
-            status = match.game === "pong" || match.game === "tron" ? "Aceptado: entrad los dos para jugar" : "En juego";
-            actions = <EmbedLink href={href} primary>Jugar</EmbedLink>;
+            status = match.game === "pong" || match.game === "tron" ? m.embed.acceptedLive : m.embed.inPlay;
+            actions = <EmbedLink href={href} primary>{m.common.play}</EmbedLink>;
             break;
           }
           const myTurn = turnOf(match) === markOf(match, viewerId);
-          status = myTurn ? "En juego: te toca" : `En juego: le toca a ${friendName}`;
-          actions = <EmbedLink href={href} primary={myTurn}>{myTurn ? "Jugar" : "Ver partida"}</EmbedLink>;
+          status = myTurn ? m.embed.yourTurn : m.embed.theirTurn(friendName);
+          actions = <EmbedLink href={href} primary={myTurn}>{myTurn ? m.common.play : m.embed.see}</EmbedLink>;
           break;
         }
         case "finished":
-          status = !match.winner ? "Empate" : match.winner === markOf(match, viewerId) ? "Ganaste" : `Ganó ${friendName}`;
-          actions = <EmbedLink href={href}>Ver partida</EmbedLink>;
+          status = !match.winner ? m.match.draw : match.winner === markOf(match, viewerId) ? m.matchList.won : m.embed.theyWon(friendName);
+          actions = <EmbedLink href={href}>{m.embed.see}</EmbedLink>;
           break;
         case "declined":
-          status = incoming ? "Lo rechazaste" : `${friendName} lo rechazó`;
+          status = incoming ? m.embed.youDeclined : m.embed.theyDeclined(friendName);
           break;
         default:
-          status = "Reto retirado";
+          status = m.match.withdrawn;
       }
     }
   } else {
     title = "2048";
     if (!challenge) {
-      status = "Cargando…";
+      status = m.embed.loading;
     } else {
-      status = describeChallenge(challenge);
+      status = describeChallenge(challenge, m);
       if (challenge.incoming && challenge.status === "pending") {
-        status = `Supera ${formatNumber(challenge.target_score)} jugando su misma partida`;
+        status = m.embed.beat(m.format.number(challenge.target_score));
         actions = (
           <>
             <EmbedLink href={`/2048?reto=${challenge.id}`} primary>
-              Jugar
+              {m.common.play}
             </EmbedLink>
             <EmbedButton disabled={busy} onClick={() => run(() => createClient().rpc("decline_challenge", { challenge_id: challenge.id }))}>
-              Rechazar
+              {m.now.decline}
             </EmbedButton>
           </>
         );
@@ -131,7 +132,7 @@ export function ChallengeEmbed({
       <div className="flex items-center gap-3">
         <EmbedIcon kind={kind} game={match?.game} />
         <div className="min-w-0">
-          <p className="text-xs text-muted">{mine ? "Tu reto" : `Reto de ${friendName}`}</p>
+          <p className="text-xs text-muted">{mine ? m.embed.yourChallenge : m.embed.challengeFrom(friendName)}</p>
           <p className="display text-xl leading-tight font-bold">{title}</p>
         </div>
       </div>

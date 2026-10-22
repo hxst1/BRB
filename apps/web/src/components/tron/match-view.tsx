@@ -21,6 +21,8 @@ import type { Match } from "@repo/db";
 import { LiveMatchShell } from "@/components/live/match-shell";
 import { MARK_COLOR } from "@/components/tictactoe/match-view";
 import { createClient } from "@/lib/supabase/client";
+import { useMessages } from "@/lib/i18n/client";
+import type { Messages } from "@/lib/i18n";
 
 /** Giros que se pueden encadenar antes del siguiente paso (p. ej. dar la vuelta en U). */
 const MAX_QUEUED_TURNS = 2;
@@ -62,6 +64,7 @@ function LiveTron({
   rivalName: string;
   onReported: () => void;
 }) {
+  const m = useMessages();
   const host = me === "x";
   const rival: Mark = me === "x" ? "o" : "x";
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -90,11 +93,11 @@ function LiveTron({
         x_score: final.x,
         o_score: final.o,
       });
-      setResult(error ? "No se ha podido guardar el resultado." : data === "waiting" ? `Esperando a que ${rivalName} confirme el resultado…` : null);
+      setResult(error ? m.live.saveError : data === "waiting" ? m.live.waitingConfirm(rivalName) : null);
       setPhase("done");
       onReported();
     },
-    [match.id, rivalName, onReported],
+    [match.id, rivalName, onReported, m],
   );
 
   // Canal privado de la partida: presencia, giros del invitado y pasos del anfitrión.
@@ -178,12 +181,12 @@ function LiveTron({
       }
 
       const progress = state.current.pause > 0 ? 0 : Math.min(1, (now - lastStepAt.current) / TICK_MS);
-      draw(canvas.current, state.current, progress, me);
+      draw(canvas.current, state.current, progress, me, m);
       frame = requestAnimationFrame(loop);
     };
     frame = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frame);
-  }, [host, me, report]);
+  }, [host, me, report, m]);
 
   // Giros: el anfitrión los encola para el siguiente paso; el invitado se los manda.
   const turn = useCallback(
@@ -230,12 +233,12 @@ function LiveTron({
   const overlay =
     phase === "lobby"
       ? rivalHere
-        ? "¡Vamos!"
-        : `Esperando a ${rivalName}…`
+        ? m.live.go
+        : m.live.waitingFor(rivalName)
       : phase === "paused"
-        ? `${rivalName} se ha desconectado. Esperando…`
+        ? m.live.disconnected(rivalName)
         : phase === "reporting"
-          ? "Guardando el resultado…"
+          ? m.live.saving
           : phase === "done"
             ? result
             : null;
@@ -245,10 +248,10 @@ function LiveTron({
       <div className="flex items-baseline justify-between">
         <span className="flex items-center gap-2 text-sm">
           <span className="size-3 rounded-sm" style={{ background: MARK_COLOR[me] }} />
-          Tú
+          {m.match.you}
           <span className="tabular display text-2xl font-bold">{score[me]}</span>
         </span>
-        <span className="text-xs text-muted">a {WIN_ROUNDS} rondas</span>
+        <span className="text-xs text-muted">{m.live.toRounds(WIN_ROUNDS)}</span>
         <span className="flex items-center gap-2 text-sm">
           <span className="tabular display text-2xl font-bold">{score[rival]}</span>
           {rivalName}
@@ -263,7 +266,7 @@ function LiveTron({
           onPointerUp={() => (swipe.current = null)}
           onPointerCancel={() => (swipe.current = null)}
           role="img"
-          aria-label={`Tron contra ${rivalName}. Gira con las flechas, W A S D o deslizando.`}
+          aria-label={m.live.tronAria(rivalName)}
           className="block aspect-square w-full touch-none rounded-3xl select-none"
           style={{ background: "var(--board)" }}
         />
@@ -301,7 +304,7 @@ function applySnapshot(ref: { current: TronState }, snapshot: Snapshot) {
   ref.current = { ...ref.current, ...snapshot, trails: occupancy(snapshot.riders) };
 }
 
-function draw(canvas: HTMLCanvasElement | null, state: TronState, progress: number, me: Mark) {
+function draw(canvas: HTMLCanvasElement | null, state: TronState, progress: number, me: Mark, m: Messages) {
   if (!canvas) return;
   const ratio = window.devicePixelRatio || 1;
   const size = canvas.clientWidth;
@@ -387,14 +390,14 @@ function draw(canvas: HTMLCanvasElement | null, state: TronState, progress: numb
     ? null
     : state.roundOver
       ? state.roundOver === "draw"
-        ? "Empate"
+        ? m.match.draw
         : state.roundOver === me
-          ? "¡Ronda para ti!"
-          : "Ronda para tu rival"
+          ? m.live.roundYours
+          : m.live.roundTheirs
       : state.pause > 0
         ? state.pause > ROUND_PAUSE_MS / 2
-          ? `Ronda ${state.round}`
-          : "¡Ya!"
+          ? m.rps.round(state.round)
+          : m.live.now
         : null;
   if (message) {
     ctx.fillStyle = color("--ink");

@@ -1,5 +1,8 @@
+"use client";
+
 import { CELLS, SIZE, type Fleet, type ShotResult } from "@repo/games/battleship";
 import type { CSSProperties } from "react";
+import { useMessages } from "@/lib/i18n/client";
 
 const COLUMN_LABELS = "ABCDEFGHIJ";
 
@@ -38,6 +41,7 @@ export function SeaBoard({
   /** Último disparo, para resaltarlo. */
   highlight?: number | null;
 }) {
+  const m = useMessages();
   const shotAt = new Map(shots.map((shot) => [shot.cell, shot.result]));
   const shipCells = new Set(fleet?.flat() ?? []);
 
@@ -46,9 +50,9 @@ export function SeaBoard({
       {Array.from({ length: CELLS }, (_, cell) => {
         const result = shotAt.get(cell);
         const name = `${COLUMN_LABELS[cell % SIZE]}${Math.floor(cell / SIZE) + 1}`;
-        const description = result ? RESULT_LABEL[result] : shipCells.has(cell) ? "barco" : "sin disparar";
+        const description = result ? m.battleship.result[result] : shipCells.has(cell) ? m.battleship.ship : m.battleship.notShot;
         return onShoot && !result ? (
-          <button key={cell} type="button" className="sea-cell sea-open" style={at(cell)} aria-label={`Disparar a ${name}`} onClick={() => onShoot(cell)} />
+          <button key={cell} type="button" className="sea-cell sea-open" style={at(cell)} aria-label={m.battleship.shootAt(name)} onClick={() => onShoot(cell)} />
         ) : (
           <span key={cell} role="img" className="sea-cell" style={at(cell)} aria-label={`${name}: ${description}`} />
         );
@@ -71,4 +75,3 @@ export function SeaBoard({
   );
 }
 
-const RESULT_LABEL: Record<ShotResult, string> = { miss: "agua", hit: "tocado", sunk: "hundido" };

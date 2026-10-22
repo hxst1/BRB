@@ -19,6 +19,7 @@ import type { Match } from "@repo/db";
 import { LiveMatchShell } from "@/components/live/match-shell";
 import { MARK_COLOR } from "@/components/tictactoe/match-view";
 import { createClient } from "@/lib/supabase/client";
+import { useMessages } from "@/lib/i18n/client";
 
 /** Cada cuánto se retransmite el estado (el anfitrión) o la pala (el invitado). */
 const SEND_INTERVAL_MS = 33;
@@ -52,6 +53,7 @@ function LiveGame({
   rivalName: string;
   onReported: () => void;
 }) {
+  const m = useMessages();
   const host = me === "x";
   const rival: Mark = me === "x" ? "o" : "x";
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -81,11 +83,11 @@ function LiveGame({
         x_score: final.score.x,
         o_score: final.score.o,
       });
-      setResult(error ? "No se ha podido guardar el resultado." : data === "waiting" ? `Esperando a que ${rivalName} confirme el resultado…` : null);
+      setResult(error ? m.live.saveError : data === "waiting" ? m.live.waitingConfirm(rivalName) : null);
       setPhase("done");
       onReported();
     },
-    [match.id, rivalName, onReported],
+    [match.id, rivalName, onReported, m],
   );
 
   // Canal privado de la partida: presencia + retransmisión.
@@ -201,12 +203,12 @@ function LiveGame({
   const overlay =
     phase === "lobby"
       ? rivalHere
-        ? "¡Vamos!"
-        : `Esperando a ${rivalName}…`
+        ? m.live.go
+        : m.live.waitingFor(rivalName)
       : phase === "paused"
-        ? `${rivalName} se ha desconectado. Esperando…`
+        ? m.live.disconnected(rivalName)
         : phase === "reporting"
-          ? "Guardando el resultado…"
+          ? m.live.saving
           : phase === "done"
             ? result
             : null;
@@ -224,7 +226,7 @@ function LiveGame({
           ref={canvas}
           onPointerMove={onPointer}
           onPointerDown={onPointer}
-          aria-label={`Pong contra ${rivalName}. Mueve tu pala con el dedo, el ratón, las flechas o A y D.`}
+          aria-label={m.live.pongAria(rivalName)}
           role="img"
           className="block aspect-[1/1.6] w-full touch-none rounded-3xl bg-[var(--board)]"
         />
@@ -237,7 +239,7 @@ function LiveGame({
         )}
       </div>
       <div className="flex items-baseline justify-between">
-        <span className="text-sm text-muted">Tú · a {WIN_SCORE} puntos</span>
+        <span className="text-sm text-muted">{m.live.youTo(WIN_SCORE)}</span>
         <span className="tabular display text-3xl font-bold" style={{ color: MARK_COLOR[me] }}>
           {score[me]}
         </span>

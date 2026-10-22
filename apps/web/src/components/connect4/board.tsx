@@ -1,5 +1,6 @@
 import { COLUMNS, ROWS, dropRow, type Cell, type Mark } from "@repo/games/connect4";
 import type { CSSProperties } from "react";
+import { useMessages } from "@/lib/i18n/client";
 
 /**
  * Tablero de 4 en raya: cada columna es un botón (se juega pulsando en
@@ -21,6 +22,7 @@ export function Connect4Board({
   canPlay: boolean;
   onPlay: (column: number) => void;
 }) {
+  const m = useMessages();
   return (
     <div className="c4-board" role="group" aria-label="Tablero de 4 en raya">
       {Array.from({ length: COLUMNS }, (_, column) => {
@@ -33,7 +35,7 @@ export function Connect4Board({
             type="button"
             disabled={!open}
             onClick={() => onPlay(column)}
-            aria-label={`Columna ${column + 1}${target < 0 ? ", llena" : filled > 0 ? `, ${filled} ${filled === 1 ? "ficha" : "fichas"}` : ", vacía"}`}
+            aria-label={m.connect4.column(column + 1, target < 0 ? null : filled)}
             className={`c4-column ${open ? "c4-column-open" : ""}`}
           >
             {Array.from({ length: ROWS }, (_, row) => {

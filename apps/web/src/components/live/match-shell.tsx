@@ -10,6 +10,8 @@ import { ResignButton } from "@/components/tictactoe/match-view";
 import { MATCH_GAMES, matchHref } from "@/lib/games";
 import { createClient } from "@/lib/supabase/client";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
+import type { Messages } from "@/lib/i18n";
+import { useMessages } from "@/lib/i18n/client";
 
 type Mark = "x" | "o";
 
@@ -30,6 +32,7 @@ export function LiveMatchShell({
   live: (props: { match: Match; me: Mark; rivalName: string; onReported: () => void }) => ReactNode;
 }) {
   const router = useRouter();
+  const m = useMessages();
   const [match, setMatch] = useState<MatchWithPlayers | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -62,7 +65,7 @@ export function LiveMatchShell({
     setError(null);
     const { error: actionError } = await action();
     setBusy(false);
-    if (actionError) setError("No se ha podido completar. Recarga la página e inténtalo otra vez.");
+    if (actionError) setError(m.match.actionError);
     else await reload();
   }
 
@@ -73,16 +76,16 @@ export function LiveMatchShell({
     const id = await challenge(rival, game);
     setBusy(false);
     if (id) router.push(matchHref({ id, game }));
-    else setError("No se ha podido crear la revancha.");
+    else setError(m.match.rematchError);
   }
 
   if (match === undefined) return <div className="aspect-[1/1.6] w-full max-w-sm animate-pulse rounded-3xl bg-line/40" />;
   if (match === null || match.game !== game) {
     return (
       <p className="text-muted">
-        No encontramos esta partida.{" "}
+        {m.match.notFound}{" "}
         <Link href={path} className="font-medium text-ink underline underline-offset-4">
-          Ver tus partidas
+          {m.match.seeYours}
         </Link>
       </p>
     );
@@ -100,10 +103,10 @@ export function LiveMatchShell({
         <div className="flex flex-col items-center gap-3 py-6 text-center">
           <div className="flex items-center gap-4">
             <Avatar seed={match.x.avatar_seed} parts={match.x.avatar_parts} size={64} mood={moodOf(match, "x")} />
-            <span className="text-sm text-muted">contra</span>
+            <span className="text-sm text-muted">{m.match.versus}</span>
             <Avatar seed={match.o.avatar_seed} parts={match.o.avatar_parts} size={64} mood={moodOf(match, "o")} />
           </div>
-          <p className="display text-3xl font-bold text-balance">{statusText(match, me, rival.username)}</p>
+          <p className="display text-3xl font-bold text-balance">{statusText(m, match, me, rival.username)}</p>
           {match.status === "finished" && match.end_reason === "points" && (
             <p className="tabular display text-5xl font-bold">
               {match.moves[me === "x" ? 0 : 1]} – {match.moves[me === "x" ? 1 : 0]}
@@ -127,7 +130,7 @@ export function LiveMatchShell({
               onClick={() => void act(() => createClient().rpc("respond_match", { match_id: match.id, accept: true }))}
               className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg"
             >
-              Aceptar el reto
+              {m.match.accept}
             </button>
             <button
               type="button"
@@ -135,7 +138,7 @@ export function LiveMatchShell({
               onClick={() => void act(() => createClient().rpc("respond_match", { match_id: match.id, accept: false }))}
               className="text-sm text-muted hover:text-ink"
             >
-              Rechazar
+              {m.now.decline}
             </button>
           </>
         )}
@@ -146,7 +149,7 @@ export function LiveMatchShell({
             onClick={() => void act(() => createClient().rpc("cancel_match", { match_id: match.id }))}
             className="text-sm text-muted hover:text-ink"
           >
-            Retirar el reto
+            {m.match.withdraw}
           </button>
         )}
         {match.status === "active" && (
@@ -154,11 +157,11 @@ export function LiveMatchShell({
         )}
         {(match.status === "finished" || match.status === "declined" || match.status === "cancelled") && (
           <button type="button" disabled={busy} onClick={() => void rematch()} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-            {match.status === "finished" ? "Revancha" : "Retar otra vez"}
+            {match.status === "finished" ? m.match.rematch : m.match.challengeAgain}
           </button>
         )}
         <Link href={path} className="text-sm text-muted hover:text-ink">
-          Todas tus partidas
+          {m.match.all}
         </Link>
       </div>
     </div>
@@ -170,18 +173,18 @@ function moodOf(match: Match, mark: Mark) {
   return match.winner === mark ? ("happy" as const) : ("sad" as const);
 }
 
-function statusText(match: Match, me: Mark, rivalName: string): string {
+function statusText(m: Messages, match: Match, me: Mark, rivalName: string): string {
   switch (match.status) {
     case "pending":
-      return match.created_by === (me === "x" ? match.player_x : match.player_o) ? `Esperando a que ${rivalName} acepte` : `${rivalName} te reta`;
+      return match.created_by === (me === "x" ? match.player_x : match.player_o) ? m.match.waitingAccept(rivalName) : m.match.challengesYou(rivalName);
     case "declined":
-      return `${rivalName} ha rechazado el reto`;
+      return m.match.declined(rivalName);
     case "cancelled":
-      return "Reto retirado";
+      return m.match.withdrawn;
     case "finished":
-      if (match.end_reason === "disputed") return "Los marcadores no coincidían: partida sin ganador";
-      if (match.end_reason === "resign") return match.winner === me ? `${rivalName} se ha rendido` : "Te has rendido";
-      return match.winner === me ? "¡Has ganado!" : `Gana ${rivalName}`;
+      if (match.end_reason === "disputed") return m.match.disputed;
+      if (match.end_reason === "resign") return match.winner === me ? m.match.theyResigned(rivalName) : m.match.youResigned;
+      return match.winner === me ? m.match.youWon : m.match.theyWon(rivalName);
     default:
       return "";
   }
