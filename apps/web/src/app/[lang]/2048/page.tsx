@@ -8,10 +8,12 @@ import { createClient } from "@/lib/supabase/server";
 import { GameGuideSection } from "@/components/seo/game-guide";
 import { gameMetadata } from "@/lib/seo";
 import { HowToPlayButton } from "@/components/how-to-play";
+import { getMessages } from "@/lib/i18n/server";
 
 export const metadata: Metadata = gameMetadata("2048");
 
-export default function Game2048Page({ searchParams }: PageProps<"/[lang]/2048">) {
+export default async function Game2048Page({ searchParams }: PageProps<"/[lang]/2048">) {
+  const m = await getMessages();
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pt-4 pb-16 sm:px-6">
       {/* Hasta lg, una sola columna del ancho del tablero, centrada como en el 3 en raya. */}
@@ -21,9 +23,9 @@ export default function Game2048Page({ searchParams }: PageProps<"/[lang]/2048">
           <HowToPlayButton game="2048" name="2048" />
         </div>
         <p className="mb-8 text-muted">
-          Junta fichas iguales hasta llegar a 2048.{" "}
+          {m.gamePages.game2048}
           <Link href="/reto-diario" className="font-medium text-ink underline underline-offset-4">
-            Juega el reto diario
+            {m.gamePages.playDaily}
           </Link>
           .
         </p>

@@ -6,17 +6,19 @@ import { GameGuideSection } from "@/components/seo/game-guide";
 import { SignInPrompt } from "@/components/seo/sign-in-prompt";
 import { gameMetadata } from "@/lib/seo";
 import { HowToPlayButton } from "@/components/how-to-play";
+import { getMessages } from "@/lib/i18n/server";
 
 export const metadata: Metadata = gameMetadata("connect4");
 
-export default function ConnectFourPage() {
+export default async function ConnectFourPage() {
+  const m = await getMessages();
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pt-4 pb-16 sm:px-6">
       <div className="mb-1 flex items-center justify-between gap-3">
-        <h1 className="display text-6xl font-bold sm:text-7xl">4 en raya</h1>
-        <HowToPlayButton game="connect4" name="4 en raya" />
+        <h1 className="display text-6xl font-bold sm:text-7xl">{m.gameCards["connect4"].title}</h1>
+        <HowToPlayButton game="connect4" name={m.gameCards["connect4"].title} />
       </div>
-      <p className="mb-8 text-muted">Deja caer tus fichas y junta cuatro en línea. Cada uno juega cuando puede.</p>
+      <p className="mb-8 text-muted">{m.gamePages["connect4"]}</p>
       <Suspense fallback={<div className="h-40 max-w-xl animate-pulse rounded-3xl bg-line/40" />}>
         <ListForViewer />
       </Suspense>

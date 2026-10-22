@@ -4,7 +4,9 @@ import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPoi
 import { randomSeed } from "@repo/games";
 import { maxTile, move, newGame, type Direction, type Game2048State } from "@repo/games/2048";
 import { Avatar } from "@repo/ui/avatar";
-import { formatNumber } from "@/lib/format";
+import type { Messages } from "@/lib/i18n";
+import { useMessages } from "@/lib/i18n/client";
+import type { RunNotice } from "@/lib/start-run";
 import { createClient } from "@/lib/supabase/client";
 import { Board } from "@repo/ui/board-2048";
 import { ChallengeFriends } from "./challenge-friends";
@@ -36,7 +38,7 @@ type Save =
  * en un reto, la semilla es la de la partida del retador, y en el reto diario,
  * la del día. Sin sesión (o si falla), se juega en local con una semilla aleatoria.
  */
-type PreparedGame = { game: Game2048State; runId: string | null; notice: string | null; special: boolean };
+type PreparedGame = { game: Game2048State; runId: string | null; notice: RunNotice | null; special: boolean };
 
 async function prepareGame(signedIn: boolean, challengeId: string | null, daily: boolean): Promise<PreparedGame> {
   if (!signedIn) return { game: newGame(randomSeed()), runId: null, notice: null, special: false };
@@ -57,11 +59,11 @@ async function prepareGame(signedIn: boolean, challengeId: string | null, daily:
     notice:
       error?.hint === "already_played"
         ? daily
-          ? "Ya has usado el intento de hoy. Esta partida es de práctica y no cuenta; vuelve mañana."
-          : "Ya jugaste este reto. Esta es una partida normal."
+          ? "practiceDaily"
+          : "alreadyPlayedChallenge"
         : error?.hint === "rate_limited"
-          ? "Has empezado muchas partidas seguidas. Esta no contará para el ranking."
-          : "No hemos podido conectar. Esta partida no contará para el ranking.",
+          ? "rateLimited"
+          : "offline",
   };
 }
 
@@ -97,12 +99,13 @@ export function Game2048({
   /** Salir de un reto (de un amigo o el diario) a una partida normal. */
   onExit: () => void;
 }) {
+  const m = useMessages();
   const signedIn = viewerId !== null;
   const challengeId = challenge?.id ?? null;
   const [state, setState] = useState<Game2048State | null>(null);
   const [storedBest, setStoredBest] = useState(0);
   const [save, setSave] = useState<Save | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<RunNotice | null>(null);
   // Partida de un reto (de un amigo o el diario) con un solo intento.
   const [special, setSpecial] = useState(false);
   const [savedRunId, setSavedRunId] = useState<string | null>(null);
@@ -221,10 +224,10 @@ export function Game2048({
         } else if (response.status === 422) {
           setSave({ status: "rejected" });
         } else {
-          setSave({ status: "error", message: body.error ?? "No se pudo guardar la partida." });
+          setSave({ status: "error", message: body.error ?? m.run.saveError });
         }
       })
-      .catch(() => setSave({ status: "error", message: "Sin conexión: la partida no se ha guardado." }));
+      .catch(() => setSave({ status: "error", message: m.run.offlineSave }));
   }, [over, state, onSaved]);
 
   const challengeLive = special && challenge !== null;
@@ -237,32 +240,33 @@ export function Game2048({
         <div className="flex items-center gap-3 rounded-2xl bg-surface p-3 shadow-soft">
           <Avatar seed={challenge.challenger.avatar_seed} parts={challenge.challenger.avatar_parts} size={40} />
           <p className="text-sm">
-            <span className="font-semibold">Reto de {challenge.challenger.username}.</span> Misma partida que jugó: supera
-            sus <span className="tabular font-semibold">{formatNumber(challenge.targetScore)}</span> puntos. Solo tienes un
-            intento.
+            <span className="font-semibold">{m.game2048.challengeFrom(challenge.challenger.username)}</span>
+            {m.game2048.challengeBefore}
+            <span className="tabular font-semibold">{m.format.number(challenge.targetScore)}</span>
+            {m.game2048.challengeAfter}
           </p>
         </div>
       )}
       {dailyLive && (
         <p className="rounded-2xl bg-surface p-3 text-sm shadow-soft">
-          <span className="font-semibold">La misma partida para todos.</span> Solo tienes un intento: si la dejas a medias,
-          cuenta como jugada.
+          <span className="font-semibold">{m.run.dailyOneTry}</span>
+          {m.run.dailyOneTryRest}
         </p>
       )}
 
       <div className="flex items-end justify-between gap-4">
         <div className="flex gap-6">
-          <Stat label="Puntos" value={state?.score ?? 0} />
-          {challengeLive ? <Stat label="Objetivo" value={challenge.targetScore} /> : <Stat label="Tu récord" value={best} />}
+          <Stat label={m.run.points} value={state?.score ?? 0} />
+          {challengeLive ? <Stat label={m.game2048.target} value={challenge.targetScore} /> : <Stat label={m.run.yourRecord} value={best} />}
         </div>
         {confirmingExit ? (
           <span className="flex items-center gap-3 text-sm">
-            ¿Abandonar el reto? Lo perderás.
+            {m.game2048.abandon}
             <button type="button" onClick={onExit} className="font-medium text-danger">
-              Sí
+              {m.run.yes}
             </button>
             <button type="button" onClick={() => setConfirmingExit(false)} className="text-muted hover:text-ink">
-              No
+              {m.run.no}
             </button>
           </span>
         ) : (
@@ -271,7 +275,7 @@ export function Game2048({
             onClick={() => (midAttempt ? setConfirmingExit(true) : restart())}
             className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium shadow-soft transition-colors hover:border-muted"
           >
-            Nueva partida
+            {m.run.newGame}
           </button>
         )}
       </div>
@@ -296,23 +300,24 @@ export function Game2048({
       )}
 
       <p aria-live="polite" className="sr-only">
-        {state?.over ? `Partida terminada con ${state.score} puntos` : ""}
+        {state?.over ? m.game2048.overAria(state.score) : ""}
       </p>
 
-      {notice && <p className="text-sm text-muted">{notice}</p>}
+      {notice && <p className="text-sm text-muted">{m.run[notice]}</p>}
 
       {!signedIn && <GuestNotice next="/2048" />}
 
-      <p className="hidden text-sm text-muted sm:block">Usa las flechas o W A S D. En el móvil, desliza.</p>
+      <p className="hidden text-sm text-muted sm:block">{m.game2048.controls}</p>
     </section>
   );
 }
 
 function Stat({ label, value }: { label: string; value: number }) {
+  const m = useMessages();
   return (
     <div className="flex flex-col">
       <span className="text-xs text-muted">{label}</span>
-      <span className="tabular display text-4xl font-bold">{formatNumber(value)}</span>
+      <span className="tabular display text-4xl font-bold">{m.format.number(value)}</span>
     </div>
   );
 }
@@ -334,17 +339,18 @@ function GameOver({
   onRestart: () => void;
   onChallengeFriends?: () => void;
 }) {
+  const m: Messages = useMessages();
   const beatChallenge = challenge !== null && state.score > challenge.targetScore;
   const message = !signedIn
-    ? "Sin cuenta, esta partida no se guarda. Crea una gratis aquí abajo."
+    ? m.run.guest
     : save?.status === "saving"
-      ? "Guardando…"
+      ? m.common.saving
       : save?.status === "saved"
         ? daily
-          ? "Guardada. Mañana hay otra."
-          : "Guardada en el ranking."
+          ? m.run.savedDaily
+          : m.run.saved
         : save?.status === "rejected"
-          ? "No hemos podido validar esta partida, así que no cuenta."
+          ? m.run.rejected
           : save?.status === "error"
             ? save.message
             : null;
@@ -356,24 +362,24 @@ function GameOver({
         {challenge ? (
           <p className="display text-2xl font-bold text-balance">
             {beatChallenge
-              ? `¡Has superado a ${challenge.challenger.username}!`
+              ? m.game2048.beat(challenge.challenger.username)
               : challenge.targetScore === state.score
-                ? "Empate: había que superarle"
-                : `Te han faltado ${formatNumber(challenge.targetScore - state.score + 1)} puntos`}
+                ? m.game2048.tie
+                : m.game2048.short(m.format.number(challenge.targetScore - state.score + 1))}
           </p>
         ) : daily ? (
-          <p className="display text-2xl font-bold">Reto de hoy terminado</p>
+          <p className="display text-2xl font-bold">{m.run.dailyDone}</p>
         ) : (
-          <p className="display text-2xl font-bold">Tablero lleno: no quedan jugadas</p>
+          <p className="display text-2xl font-bold">{m.game2048.boardFull}</p>
         )}
         <p className="text-sm text-muted">
-          <span className="tabular">{formatNumber(state.score)}</span> puntos, ficha más alta {maxTile(state)}
+          {m.game2048.summary(m.format.number(state.score), maxTile(state))}
         </p>
         {message && <p className="text-sm">{message}</p>}
       </div>
       <div className="flex flex-wrap items-center gap-3">
           <button type="button" onClick={onRestart} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-            Otra partida
+            {m.run.playAgain}
           </button>
           {onChallengeFriends && (
             <button
@@ -381,7 +387,7 @@ function GameOver({
               onClick={onChallengeFriends}
               className="rounded-full border border-line bg-surface px-5 py-2.5 font-semibold"
             >
-              Retar a un amigo
+              {m.run.challengeFriend}
             </button>
           )}
       </div>

@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState, type MouseEvent, type PointerEvent } from "react";
 import { randomSeed } from "@repo/games";
 import { DIFFICULTIES, GAME_IDS, chord, encodeOpened, newGame, reveal, type Difficulty, type MinesweeperState } from "@repo/games/minesweeper";
-import { startRun } from "@/lib/start-run";
+import { startRun, type RunNotice } from "@/lib/start-run";
 import { createClient } from "@/lib/supabase/client";
-import { formatTime } from "@/lib/format";
 import { GuestNotice } from "@/components/guest-notice";
+import { useMessages } from "@/lib/i18n/client";
 
 /** Cuánto hay que mantener pulsado para poner una bandera en el móvil. */
 const LONG_PRESS_MS = 380;
@@ -35,13 +35,14 @@ export function MinesweeperGame({
   /** Día del reto diario (AAAA-MM-DD) si se juega el reto. */
   daily?: string | null;
 }) {
+  const m = useMessages();
   const signedIn = viewerId !== null;
   const { columns, rows, mines } = DIFFICULTIES[difficulty];
   const [state, setState] = useState<MinesweeperState | null>(null);
   const [flags, setFlags] = useState<Set<number>>(new Set());
   const [flagMode, setFlagMode] = useState(false);
   const [starting, setStarting] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<RunNotice | null>(null);
   const [save, setSave] = useState<Save | null>(null);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [now, setNow] = useState(0);
@@ -118,10 +119,10 @@ export function MinesweeperGame({
         } else if (response.status === 422) {
           setSave({ status: "rejected" });
         } else {
-          setSave({ status: "error", message: body.error ?? "No se pudo guardar la partida." });
+          setSave({ status: "error", message: body.error ?? m.run.saveError });
         }
       })
-      .catch(() => setSave({ status: "error", message: "Sin conexión: la partida no se ha guardado." }));
+      .catch(() => setSave({ status: "error", message: m.run.offlineSave }));
   }
 
   function toggleFlag(cell: number) {
@@ -177,8 +178,8 @@ export function MinesweeperGame({
     <section className="flex w-full max-w-[30rem] flex-col gap-4">
       <div className="flex items-end justify-between gap-4">
         <div className="flex gap-6">
-          <Stat label="Minas" value={String(mines - flags.size)} />
-          <Stat label="Tiempo" value={formatTime(Math.max(0, elapsed))} />
+          <Stat label={m.minesweeper.mines} value={String(mines - flags.size)} />
+          <Stat label={m.minesweeper.time} value={m.format.time(Math.max(0, elapsed))} />
         </div>
         <button
           type="button"
@@ -188,13 +189,13 @@ export function MinesweeperGame({
             flagMode ? "bg-ink text-bg" : "border border-line bg-surface hover:border-muted"
           }`}
         >
-          <FlagIcon /> {flagMode ? "Poniendo banderas" : "Modo bandera"}
+          <FlagIcon /> {flagMode ? m.minesweeper.flagging : m.minesweeper.flagMode}
         </button>
       </div>
 
       <div
         role="grid"
-        aria-label={`Buscaminas de ${columns} × ${rows} con ${mines} minas`}
+        aria-label={m.minesweeper.boardAria(columns, rows, mines)}
         className="grid touch-manipulation gap-[2px] rounded-[18px] p-1.5 select-none"
         style={{ background: "var(--board)", gridTemplateColumns: `repeat(${columns}, 1fr)` }}
       >
@@ -204,13 +205,13 @@ export function MinesweeperGame({
           const count = state?.counts[cell] ?? 0;
           const flagged = flags.has(cell);
           const exploded = state?.exploded === cell;
-          const label = revealed ? (count ? `${count} minas alrededor` : "vacía") : flagged ? "con bandera" : "sin abrir";
+          const label = revealed ? (count ? m.minesweeper.around(count) : m.minesweeper.empty) : flagged ? m.minesweeper.flagged : m.minesweeper.closed;
           return (
             <button
               key={cell}
               type="button"
               role="gridcell"
-              aria-label={`Fila ${Math.floor(cell / columns) + 1}, columna ${(cell % columns) + 1}: ${label}`}
+              aria-label={`${m.lightsOut.cellAria(Math.floor(cell / columns) + 1, (cell % columns) + 1)}: ${label}`}
               disabled={starting || (status !== "playing" && !showMines)}
               onClick={() => onClick(cell)}
               onContextMenu={(event) => onContextMenu(event, cell)}
@@ -233,47 +234,47 @@ export function MinesweeperGame({
       {status !== "playing" && state && (
         <div className="flex items-center justify-between gap-4 rounded-2xl bg-surface p-4 shadow-soft">
           <div className="flex min-w-0 flex-col gap-1">
-            <p className="display text-2xl font-bold">{status === "won" ? "¡Despejado!" : "Has pisado una mina"}</p>
+            <p className="display text-2xl font-bold">{status === "won" ? m.minesweeper.won : m.minesweeper.lost}</p>
             <p className="text-sm">
               {status === "won"
                 ? !signedIn
-                  ? "Sin cuenta, esta partida no se guarda. Crea una gratis aquí abajo."
+                  ? m.run.guest
                   : save?.status === "saving"
-                    ? "Guardando…"
+                    ? m.common.saving
                     : save?.status === "saved"
-                      ? `Tiempo oficial: ${formatTime(save.time)}. Guardado en el ranking.`
+                      ? m.minesweeper.officialTime(m.format.time(save.time))
                       : save?.status === "rejected"
-                        ? "No hemos podido validar esta partida, así que no cuenta."
+                        ? m.run.rejected
                         : save?.status === "error"
                           ? save.message
                           : null
                 : daily === null
-                  ? "Las minas quedan a la vista. ¿Otra?"
-                  : "Las minas quedan a la vista. Mañana hay otro reto."}
+                  ? m.minesweeper.minesShown
+                  : m.minesweeper.minesShownDaily}
             </p>
           </div>
           {/* En el reto diario hay un solo intento. */}
           {daily === null && (
             <button type="button" onClick={restart} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-              Otra partida
+              {m.run.playAgain}
             </button>
           )}
         </div>
       )}
 
-      {notice && <p className="text-sm text-muted">{notice}</p>}
+      {notice && <p className="text-sm text-muted">{m.run[notice]}</p>}
 
       {!signedIn && <GuestNotice next="/buscaminas" />}
 
       <p className="text-sm text-muted">
-        La primera casilla nunca es mina. Bandera: clic derecho, mantener pulsado o el modo bandera. Pulsa un número con todas
-        sus banderas puestas para abrir las de alrededor.
+        {m.minesweeper.hint}
       </p>
     </section>
   );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
+  const m = useMessages();
   return (
     <div className="flex flex-col">
       <span className="text-xs text-muted">{label}</span>

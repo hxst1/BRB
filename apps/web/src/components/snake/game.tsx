@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { randomSeed } from "@repo/games";
 import { GRID, canTurn, newGame, step, tickMs, type Direction, type SnakeState } from "@repo/games/snake";
-import { formatNumber } from "@/lib/format";
-import { startRun } from "@/lib/start-run";
+import { startRun, type RunNotice } from "@/lib/start-run";
 import { GuestNotice } from "@/components/guest-notice";
+import { useMessages } from "@/lib/i18n/client";
 
 const KEYS: Record<string, Direction> = {
   ArrowUp: "up",
@@ -31,7 +31,7 @@ type Save =
   | { status: "rejected" }
   | { status: "error"; message: string };
 
-type Prepared = { game: SnakeState; runId: string | null; notice: string | null };
+type Prepared = { game: SnakeState; runId: string | null; notice: RunNotice | null };
 
 /**
  * Con sesión, el servidor da la semilla y la partida cuenta (también la del
@@ -69,12 +69,13 @@ export function SnakeGame({
   /** Día del reto diario (AAAA-MM-DD) si se juega el reto. */
   daily?: string | null;
 }) {
+  const m = useMessages();
   const signedIn = viewerId !== null;
   const [state, setState] = useState<SnakeState | null>(null);
   const [running, setRunning] = useState(false);
   const [storedBest, setStoredBest] = useState(0);
   const [save, setSave] = useState<Save | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<RunNotice | null>(null);
   const runId = useRef<string | null>(null);
   const game = useRef<SnakeState | null>(null);
   const queue = useRef<Direction[]>([]);
@@ -213,18 +214,18 @@ export function SnakeGame({
         } else if (response.status === 422) {
           setSave({ status: "rejected" });
         } else {
-          setSave({ status: "error", message: body.error ?? "No se pudo guardar la partida." });
+          setSave({ status: "error", message: body.error ?? m.run.saveError });
         }
       })
-      .catch(() => setSave({ status: "error", message: "Sin conexión: la partida no se ha guardado." }));
+      .catch(() => setSave({ status: "error", message: m.run.offlineSave }));
   }, [over, state, onSaved]);
 
   return (
     <section className="flex w-full max-w-[30rem] flex-col gap-4">
       <div className="flex items-end justify-between gap-4">
         <div className="flex gap-6">
-          <Stat label="Puntos" value={state?.score ?? 0} />
-          <Stat label="Tu récord" value={best} />
+          <Stat label={m.run.points} value={state?.score ?? 0} />
+          <Stat label={m.run.yourRecord} value={best} />
         </div>
         {/* En el reto diario hay un solo intento. */}
         {daily === null && (
@@ -233,7 +234,7 @@ export function SnakeGame({
             onClick={() => void restart()}
             className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium shadow-soft transition-colors hover:border-muted"
           >
-            Nueva partida
+            {m.run.newGame}
           </button>
         )}
       </div>
@@ -250,7 +251,7 @@ export function SnakeGame({
           {!running && !state.over && (
             <div className="absolute inset-x-0 bottom-6 flex justify-center">
               <p className="rounded-full bg-bg/85 px-4 py-2 text-sm font-medium backdrop-blur-sm">
-                Pulsa una flecha o desliza para empezar
+                {m.snake.start}
               </p>
             </div>
           )}
@@ -262,10 +263,10 @@ export function SnakeGame({
       {state?.over && <GameOver state={state} save={save} signedIn={signedIn} onRestart={daily === null ? () => void restart() : undefined} />}
 
       <p aria-live="polite" className="sr-only">
-        {state?.over ? `Partida terminada con ${state.score} puntos` : ""}
+        {state?.over ? m.game2048.overAria(state.score) : ""}
       </p>
 
-      {notice && <p className="text-sm text-muted">{notice}</p>}
+      {notice && <p className="text-sm text-muted">{m.run[notice]}</p>}
 
       {!signedIn && <GuestNotice next="/snake" />}
 
@@ -303,11 +304,12 @@ function SnakeCanvas({
     return () => cancelAnimationFrame(frame);
   }, [game, queue, progress]);
 
+  const m = useMessages();
   return (
     <canvas
       ref={canvas}
       role="img"
-      aria-label={`Serpiente de ${length} casillas`}
+      aria-label={m.snake.aria(length)}
       className="block aspect-square w-full rounded-[22px]"
       style={{ background: "var(--board)" }}
     />
@@ -385,10 +387,11 @@ function drawSnake(canvas: HTMLCanvasElement, state: SnakeState, turn: Direction
 }
 
 function Stat({ label, value }: { label: string; value: number }) {
+  const m = useMessages();
   return (
     <div className="flex flex-col">
       <span className="text-xs text-muted">{label}</span>
-      <span className="tabular display text-4xl font-bold">{formatNumber(value)}</span>
+      <span className="tabular display text-4xl font-bold">{m.format.number(value)}</span>
     </div>
   );
 }
@@ -405,14 +408,15 @@ function GameOver({
   /** Sin él (reto diario), no hay "Otra partida". */
   onRestart?: () => void;
 }) {
+  const m = useMessages();
   const message = !signedIn
-    ? "Sin cuenta, esta partida no se guarda. Crea una gratis aquí abajo."
+    ? m.run.guest
     : save?.status === "saving"
-      ? "Guardando…"
+      ? m.common.saving
       : save?.status === "saved"
-        ? "Guardada en el ranking."
+        ? m.run.saved
         : save?.status === "rejected"
-          ? "No hemos podido validar esta partida, así que no cuenta."
+          ? m.run.rejected
           : save?.status === "error"
             ? save.message
             : null;
@@ -421,16 +425,15 @@ function GameOver({
     // Debajo del tablero, sin taparlo: así se ve dónde se ha chocado.
     <div className="flex items-center justify-between gap-4 rounded-2xl bg-surface p-4 shadow-soft">
       <div className="flex min-w-0 flex-col gap-1">
-        <p className="display text-2xl font-bold">{state.food === null ? "¡Has llenado el tablero!" : "Te has chocado"}</p>
+        <p className="display text-2xl font-bold">{state.food === null ? m.snake.filled : m.snake.crashed}</p>
         <p className="text-sm text-muted">
-          <span className="tabular">{formatNumber(state.score)}</span> puntos,{" "}
-          {state.apples === 1 ? "1 manzana" : `${state.apples} manzanas`}
+          {m.snake.summary(m.format.number(state.score), state.apples)}
         </p>
         {message && <p className="text-sm">{message}</p>}
       </div>
       {onRestart && (
         <button type="button" onClick={onRestart} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-          Otra partida
+          {m.run.playAgain}
         </button>
       )}
     </div>

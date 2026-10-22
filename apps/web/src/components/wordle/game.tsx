@@ -6,6 +6,7 @@ import type { Json } from "@repo/db";
 import { MAX_GUESSES, WORD_LENGTH, letterHints, shareGrid, type Mark } from "@repo/games/wordle";
 import { Avatar } from "@repo/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
+import { useMessages } from "@/lib/i18n/client";
 
 export type WordleState = {
   guesses: string[];
@@ -50,6 +51,7 @@ export function WordleGame({
   initial: WordleState;
   initialFriends: FriendResult[];
 }) {
+  const m = useMessages();
   const [game, setGame] = useState(initial);
   const [current, setCurrent] = useState("");
   const [busy, setBusy] = useState(false);
@@ -72,7 +74,7 @@ export function WordleGame({
 
   const submit = useCallback(async () => {
     if (busy || game.finished) return;
-    if (current.length < WORD_LENGTH) return reject("Faltan letras");
+    if (current.length < WORD_LENGTH) return reject(m.wordle.tooShort);
     setBusy(true);
     try {
       const response = await fetch("/api/wordle/guess", {
@@ -81,7 +83,7 @@ export function WordleGame({
         body: JSON.stringify({ day, guess: current }),
       });
       const body = await response.json().catch(() => ({}));
-      if (!response.ok) return reject(body.error ?? "No se ha podido comprobar la palabra");
+      if (!response.ok) return reject(body.error ?? m.wordle.checkError);
 
       setCurrent("");
       setGame((previous) => ({
@@ -96,11 +98,11 @@ export function WordleGame({
         setFriends(data ?? []);
       }
     } catch {
-      reject("Sin conexión: inténtalo otra vez");
+      reject(m.wordle.offline);
     } finally {
       setBusy(false);
     }
-  }, [busy, current, day, game.finished, reject]);
+  }, [busy, current, day, game.finished, reject, m]);
 
   const type = useCallback(
     (key: string) => {
@@ -151,7 +153,7 @@ export function WordleGame({
   return (
     <section className="flex w-full max-w-[30rem] flex-col gap-5">
       <div className="relative">
-        <div role="grid" aria-label="Intentos" className="mx-auto grid w-full max-w-[22rem] gap-1.5">
+        <div role="grid" aria-label={m.wordle.attempts} className="mx-auto grid w-full max-w-[22rem] gap-1.5">
           {rows.map((row, r) => (
             <div
               key={r}
@@ -165,7 +167,7 @@ export function WordleGame({
                   <div
                     key={i}
                     role="gridcell"
-                    aria-label={letter ? `${letter.toUpperCase()}${mark ? `, ${MARK_LABEL[mark]}` : ""}` : "vacía"}
+                    aria-label={letter ? `${letter.toUpperCase()}${mark ? `, ${m.wordle.marks[mark]}` : ""}` : m.minesweeper.empty}
                     className="display grid aspect-square place-items-center rounded-xl border-2 text-3xl font-bold uppercase transition-colors duration-300"
                     style={
                       mark
@@ -183,7 +185,7 @@ export function WordleGame({
         {(toast || copied) && (
           <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center">
             <p role="status" className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-bg shadow-lift">
-              {copied ? "Resultado copiado" : toast}
+              {copied ? m.wordle.copied : toast}
             </p>
           </div>
         )}
@@ -195,14 +197,14 @@ export function WordleGame({
             <p className="display text-2xl font-bold">
               {game.solved
                 ? game.guesses.length === 1
-                  ? "¡A la primera!"
-                  : `¡Acertada en ${game.guesses.length}!`
-                : `Era ${game.answer?.toUpperCase() ?? "otra palabra"}`}
+                  ? m.wordle.firstTry
+                  : m.wordle.solvedIn(game.guesses.length)
+                : m.wordle.itWas(game.answer?.toUpperCase() ?? null)}
             </p>
-            <p className="text-sm text-muted">Mañana hay otra palabra.</p>
+            <p className="text-sm text-muted">{m.wordle.tomorrow}</p>
           </div>
           <button type="button" onClick={() => void share()} className="self-start rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-            Compartir resultado
+            {m.wordle.share}
           </button>
         </div>
       ) : (
@@ -214,16 +216,15 @@ export function WordleGame({
   );
 }
 
-const MARK_LABEL: Record<Mark, string> = { g: "en su sitio", y: "en otro sitio", b: "no está" };
-
 function Keyboard({ hints, onKey, disabled }: { hints: Map<string, Mark>; onKey: (key: string) => void; disabled: boolean }) {
+  const m = useMessages();
   return (
-    <div aria-label="Teclado" className="flex flex-col gap-1.5 select-none">
+    <div aria-label={m.wordle.keyboard} className="flex flex-col gap-1.5 select-none">
       {ROWS.map((row, r) => (
         <div key={row} className="flex justify-center gap-1">
           {r === 2 && (
-            <Key label="Enviar" wide onClick={() => onKey("enter")} disabled={disabled}>
-              Enviar
+            <Key label={m.wordle.enter} wide onClick={() => onKey("enter")} disabled={disabled}>
+              {m.wordle.enter}
             </Key>
           )}
           {[...row].map((letter) => {
@@ -235,7 +236,7 @@ function Keyboard({ hints, onKey, disabled }: { hints: Map<string, Mark>; onKey:
             );
           })}
           {r === 2 && (
-            <Key label="Borrar" wide onClick={() => onKey("back")}>
+            <Key label={m.sudoku.erase} wide onClick={() => onKey("back")}>
               ⌫
             </Key>
           )}
@@ -277,13 +278,14 @@ function Key({
 }
 
 function Friends({ friends }: { friends: FriendResult[] }) {
+  const m = useMessages();
   if (friends.length <= 1) {
-    return <p className="text-sm text-muted">Cuando tus amigos la terminen, verás aquí cómo les ha ido.</p>;
+    return <p className="text-sm text-muted">{m.wordle.friendsEmpty}</p>;
   }
   return (
     <section aria-labelledby="wordle-friends" className="flex flex-col gap-3">
       <h2 id="wordle-friends" className="text-xl font-semibold">
-        Tus amigos hoy
+        {m.wordle.friendsToday}
       </h2>
       <ul className="flex flex-col">
         {friends.map((friend) => (

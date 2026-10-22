@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { randomSeed } from "@repo/games";
 import { budgetForLevel, newGame, press, type LightsOutState } from "@repo/games/lightsout";
-import { formatNumber } from "@/lib/format";
-import { startRun } from "@/lib/start-run";
+import { startRun, type RunNotice } from "@/lib/start-run";
 import { GuestNotice } from "@/components/guest-notice";
+import { useMessages } from "@/lib/i18n/client";
 
 const BEST_KEY = "lightsout:best";
 /** Cuánto se ve el aviso de nivel superado. */
@@ -17,7 +17,7 @@ type Save =
   | { status: "rejected" }
   | { status: "error"; message: string };
 
-type Prepared = { game: LightsOutState; runId: string | null; notice: string | null };
+type Prepared = { game: LightsOutState; runId: string | null; notice: RunNotice | null };
 
 /**
  * Con sesión, el servidor da la semilla y la partida cuenta (también la del
@@ -55,6 +55,7 @@ export function LightsOutGame({
   /** Día del reto diario (AAAA-MM-DD) si se juega el reto. */
   daily?: string | null;
 }) {
+  const m = useMessages();
   const signedIn = viewerId !== null;
   const [state, setState] = useState<LightsOutState | null>(null);
   /** Se ha plantado: la partida acaba aunque le queden pulsaciones. */
@@ -62,7 +63,7 @@ export function LightsOutGame({
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [storedBest, setStoredBest] = useState(0);
   const [save, setSave] = useState<Save | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<RunNotice | null>(null);
   const runId = useRef<string | null>(null);
 
   const apply = useCallback((next: Prepared) => {
@@ -136,10 +137,10 @@ export function LightsOutGame({
         } else if (response.status === 422) {
           setSave({ status: "rejected" });
         } else {
-          setSave({ status: "error", message: body.error ?? "No se pudo guardar la partida." });
+          setSave({ status: "error", message: body.error ?? m.run.saveError });
         }
       })
-      .catch(() => setSave({ status: "error", message: "Sin conexión: la partida no se ha guardado." }));
+      .catch(() => setSave({ status: "error", message: m.run.offlineSave }));
   }, [ended, state, onSaved]);
 
   const left = state?.pressesLeft ?? 0;
@@ -149,9 +150,9 @@ export function LightsOutGame({
     <section className="flex w-full max-w-[30rem] flex-col gap-4">
       <div className="flex items-end justify-between gap-4">
         <div className="flex gap-6">
-          <Stat label="Nivel" value={state?.level ?? 1} />
-          <Stat label="Pulsaciones" value={left} warn={!ended && left <= 2} />
-          <Stat label="Tu récord" value={best} />
+          <Stat label={m.lightsOut.level} value={state?.level ?? 1} />
+          <Stat label={m.lightsOut.presses} value={left} warn={!ended && left <= 2} />
+          <Stat label={m.run.yourRecord} value={best} />
         </div>
         {state && !ended && state.presses.length > 0 ? (
           <button
@@ -159,7 +160,7 @@ export function LightsOutGame({
             onClick={() => setStopped(true)}
             className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium shadow-soft transition-colors hover:border-muted"
           >
-            Plantarse
+            {m.lightsOut.stop}
           </button>
         ) : daily === null ? (
           // En el reto diario hay un solo intento.
@@ -168,7 +169,7 @@ export function LightsOutGame({
             onClick={() => void restart()}
             className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium shadow-soft transition-colors hover:border-muted"
           >
-            Nueva partida
+            {m.run.newGame}
           </button>
         ) : null}
       </div>
@@ -177,7 +178,7 @@ export function LightsOutGame({
         <div className="relative">
           <div
             role="group"
-            aria-label={`Nivel ${state.level}: ${lit} ${lit === 1 ? "luz encendida" : "luces encendidas"}`}
+            aria-label={m.lightsOut.boardAria(state.level, lit)}
             className="grid aspect-square w-full rounded-[22px] p-[3%]"
             style={{ background: "var(--board)", gridTemplateColumns: `repeat(${state.size}, 1fr)`, gap: `${12 / state.size}%` }}
           >
@@ -186,7 +187,7 @@ export function LightsOutGame({
                 key={`${state.level}:${cell}`}
                 type="button"
                 aria-pressed={on}
-                aria-label={`Fila ${Math.floor(cell / state.size) + 1}, columna ${(cell % state.size) + 1}`}
+                aria-label={m.lightsOut.cellAria(Math.floor(cell / state.size) + 1, (cell % state.size) + 1)}
                 disabled={ended}
                 onClick={() => tap(cell)}
                 className="rounded-[22%] transition-[background-color,box-shadow,transform] duration-150 active:scale-95 disabled:active:scale-100"
@@ -200,7 +201,7 @@ export function LightsOutGame({
           {levelUp !== null && !ended && (
             <div className="pointer-events-none absolute inset-x-0 top-6 flex justify-center">
               <p className="rounded-full bg-bg/85 px-4 py-2 text-sm font-semibold backdrop-blur-sm">
-                ¡Nivel {levelUp} superado!
+                {m.lightsOut.levelUp(levelUp)}
               </p>
             </div>
           )}
@@ -214,26 +215,26 @@ export function LightsOutGame({
       )}
 
       <p aria-live="polite" className="sr-only">
-        {ended ? `Partida terminada: ${state?.completed} niveles` : levelUp !== null ? `Nivel ${levelUp} superado` : ""}
+        {ended ? m.lightsOut.overAria(state?.completed ?? 0) : levelUp !== null ? m.lightsOut.levelUp(levelUp) : ""}
       </p>
 
-      {notice && <p className="text-sm text-muted">{notice}</p>}
+      {notice && <p className="text-sm text-muted">{m.run[notice]}</p>}
 
       {!signedIn && <GuestNotice next="/lights-out" />}
 
       <p className="text-sm text-muted">
-        Cada casilla cambia ella y sus vecinas. Apágalo todo con {state ? budgetForLevel(state.level) : "las"} pulsaciones
-        como mucho.
+        {m.lightsOut.hint(state ? budgetForLevel(state.level) : null)}
       </p>
     </section>
   );
 }
 
 function Stat({ label, value, warn = false }: { label: string; value: number; warn?: boolean }) {
+  const m = useMessages();
   return (
     <div className="flex flex-col">
       <span className="text-xs text-muted">{label}</span>
-      <span className={`tabular display text-4xl font-bold ${warn ? "text-danger" : ""}`}>{formatNumber(value)}</span>
+      <span className={`tabular display text-4xl font-bold ${warn ? "text-danger" : ""}`}>{m.format.number(value)}</span>
     </div>
   );
 }
@@ -252,14 +253,15 @@ function GameOver({
   /** Sin él (reto diario), no hay "Otra partida". */
   onRestart?: () => void;
 }) {
+  const m = useMessages();
   const message = !signedIn
-    ? "Sin cuenta, esta partida no se guarda. Crea una gratis aquí abajo."
+    ? m.run.guest
     : save?.status === "saving"
-      ? "Guardando…"
+      ? m.common.saving
       : save?.status === "saved"
-        ? "Guardada en el ranking."
+        ? m.run.saved
         : save?.status === "rejected"
-          ? "No hemos podido validar esta partida, así que no cuenta."
+          ? m.run.rejected
           : save?.status === "error"
             ? save.message
             : null;
@@ -271,17 +273,16 @@ function GameOver({
     <div className="flex items-center justify-between gap-4 rounded-2xl bg-surface p-4 shadow-soft">
       <div className="flex min-w-0 flex-col">
         <p className="text-sm text-muted">
-          {stopped ? "Te has plantado" : `Sin pulsaciones: ${lit === 1 ? "quedaba 1 luz" : `quedaban ${lit} luces`}`}
+          {stopped ? m.lightsOut.stopped : m.lightsOut.outOfPresses(lit)}
         </p>
         <p className="display text-2xl font-bold">
-          <span className="tabular">{formatNumber(state.completed)}</span>{" "}
-          {state.completed === 1 ? "nivel superado" : "niveles superados"}
+          <span className="tabular">{m.format.number(state.completed)}</span> {m.lightsOut.cleared(state.completed)}
         </p>
         {message && <p className="text-sm">{message}</p>}
       </div>
       {onRestart && (
         <button type="button" onClick={onRestart} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-          Otra partida
+          {m.run.playAgain}
         </button>
       )}
     </div>

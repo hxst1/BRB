@@ -6,17 +6,19 @@ import { GameGuideSection } from "@/components/seo/game-guide";
 import { SignInPrompt } from "@/components/seo/sign-in-prompt";
 import { gameMetadata } from "@/lib/seo";
 import { HowToPlayButton } from "@/components/how-to-play";
+import { getMessages } from "@/lib/i18n/server";
 
 export const metadata: Metadata = gameMetadata("pong");
 
-export default function PongPage() {
+export default async function PongPage() {
+  const m = await getMessages();
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pt-4 pb-16 sm:px-6">
       <div className="mb-1 flex items-center justify-between gap-3">
-        <h1 className="display text-6xl font-bold sm:text-7xl">Pong</h1>
-        <HowToPlayButton game="pong" name="Pong" />
+        <h1 className="display text-6xl font-bold sm:text-7xl">{m.gameCards["pong"].title}</h1>
+        <HowToPlayButton game="pong" name={m.gameCards["pong"].title} />
       </div>
-      <p className="mb-8 text-muted">En directo, a 5 puntos. Reta a un amigo y entrad los dos a la partida.</p>
+      <p className="mb-8 text-muted">{m.gamePages["pong"]}</p>
       <Suspense fallback={<div className="h-40 max-w-xl animate-pulse rounded-3xl bg-line/40" />}>
         <ListForViewer />
       </Suspense>

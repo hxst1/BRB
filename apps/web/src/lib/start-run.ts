@@ -2,24 +2,25 @@ import { createClient } from "@/lib/supabase/client";
 
 export type StartedRun = { id: string; seed: number };
 
+/** Por qué una partida no cuenta (el texto está en m.run). */
+export type RunNotice = "dayChanged" | "alreadyPlayedDaily" | "offlineDaily" | "rateLimited" | "offline" | "practiceDaily" | "alreadyPlayedChallenge";
+
 /**
  * Pide al servidor una partida de `game`: normal, o la del reto diario si se
  * pasa `daily`. Si no se puede, `run` es null y `notice` explica por qué (la
  * partida se juega igual, pero no cuenta).
  */
-export async function startRun(game: string, daily = false): Promise<{ run: StartedRun | null; notice: string | null }> {
+export async function startRun(game: string, daily = false): Promise<{ run: StartedRun | null; notice: RunNotice | null }> {
   const supabase = createClient();
   if (daily) {
     const { data, error } = await supabase.rpc("start_daily_run");
     const run = data?.[0];
     if (run && run.game === game) return { run: { id: run.id, seed: run.seed }, notice: null };
-    if (run) return { run: null, notice: "El reto ha cambiado: ya es otro día. Recarga la página para jugar el de hoy." };
+    if (run) return { run: null, notice: "dayChanged" };
     return {
       run: null,
       notice:
-        error?.hint === "already_played"
-          ? "Ya has jugado el reto de hoy. Esta partida no contará."
-          : "No hemos podido conectar. Esta partida no contará para el reto.",
+        error?.hint === "already_played" ? "alreadyPlayedDaily" : "offlineDaily",
     };
   }
 
@@ -29,8 +30,6 @@ export async function startRun(game: string, daily = false): Promise<{ run: Star
   return {
     run: null,
     notice:
-      error?.hint === "rate_limited"
-        ? "Has empezado muchas partidas seguidas. Esta no contará para el ranking."
-        : "No hemos podido conectar. Esta partida no contará para el ranking.",
+      error?.hint === "rate_limited" ? "rateLimited" : "offline",
   };
 }

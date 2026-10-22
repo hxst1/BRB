@@ -1,12 +1,12 @@
 "use client";
 
-import { startRun } from "@/lib/start-run";
+import { startRun, type RunNotice } from "@/lib/start-run";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { randomSeed } from "@repo/games";
 import { GAME_IDS, PEERS, box, col, conflicts, encodeGrid, generate, isSolved, row, type Difficulty } from "@repo/games/sudoku";
-import { formatTime } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
 import { GuestNotice } from "@/components/guest-notice";
+import { useMessages } from "@/lib/i18n/client";
 
 /** Hora actual (fuera del componente: solo se llama desde eventos y efectos). */
 const clock = () => Date.now();
@@ -46,7 +46,7 @@ function writeStored(difficulty: Difficulty, daily: string | null, stored: Store
  * Retoma la partida guardada si sigue abierta en el servidor; si no, empieza
  * otra (con sesión, el servidor da la semilla y empieza a contar el tiempo).
  */
-async function prepare(difficulty: Difficulty, signedIn: boolean, daily: string | null): Promise<{ stored: Stored; notice: string | null }> {
+async function prepare(difficulty: Difficulty, signedIn: boolean, daily: string | null): Promise<{ stored: Stored; notice: RunNotice | null }> {
   const saved = readStored(difficulty, daily);
   if (saved) {
     if (!saved.runId && !signedIn) return { stored: saved, notice: null };
@@ -78,6 +78,7 @@ export function SudokuGame({
   /** Día del reto diario (AAAA-MM-DD) si se juega el reto: un solo intento, sin "Nuevo sudoku". */
   daily?: string | null;
 }) {
+  const m = useMessages();
   const signedIn = viewerId !== null;
   const [game, setGame] = useState<Stored | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
@@ -86,11 +87,11 @@ export function SudokuGame({
   const [focusDigit, setFocusDigit] = useState(0);
   /** Estados anteriores, para deshacer (solo en esta pantalla). */
   const [history, setHistory] = useState<Pick<Stored, "values" | "notes">[]>([]);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<RunNotice | null>(null);
   const [save, setSave] = useState<Save | null>(null);
   const [confirmingNew, setConfirmingNew] = useState(false);
   const [now, setNow] = useState(0);
-  const loading = useRef<Promise<{ stored: Stored; notice: string | null }> | null>(null);
+  const loading = useRef<Promise<{ stored: Stored; notice: RunNotice | null }> | null>(null);
 
   const seed = game?.seed;
   // El sudoku sale de la semilla: se genera una vez por partida.
@@ -162,10 +163,10 @@ export function SudokuGame({
           } else if (response.status === 422) {
             setSave({ status: "rejected" });
           } else {
-            setSave({ status: "error", message: body.error ?? "No se pudo guardar la partida." });
+            setSave({ status: "error", message: body.error ?? m.run.saveError });
           }
         })
-        .catch(() => setSave({ status: "error", message: "Sin conexión: la partida no se ha guardado." }));
+        .catch(() => setSave({ status: "error", message: m.run.offlineSave }));
     },
     [difficulty, daily, puzzle, onSaved],
   );
@@ -234,17 +235,17 @@ export function SudokuGame({
     <section className="flex w-full max-w-[30rem] flex-col gap-4">
       <div className="flex items-end justify-between gap-4">
         <div className="flex flex-col">
-          <span className="text-xs text-muted">Tiempo</span>
-          <span className="tabular display text-4xl font-bold">{formatTime(elapsed)}</span>
+          <span className="text-xs text-muted">{m.minesweeper.time}</span>
+          <span className="tabular display text-4xl font-bold">{m.format.time(elapsed)}</span>
         </div>
         {daily ? null : confirmingNew ? (
           <span className="flex items-center gap-3 text-sm">
-            ¿Empezar otro? Este se pierde.
+            {m.sudoku.abandon}
             <button type="button" onClick={() => void load(true)} className="font-medium text-danger">
-              Sí
+              {m.run.yes}
             </button>
             <button type="button" onClick={() => setConfirmingNew(false)} className="text-muted hover:text-ink">
-              No
+              {m.run.no}
             </button>
           </span>
         ) : (
@@ -253,7 +254,7 @@ export function SudokuGame({
             onClick={() => (filledByPlayer && !solved ? setConfirmingNew(true) : void load(true))}
             className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium shadow-soft transition-colors hover:border-muted"
           >
-            Nuevo sudoku
+            {m.sudoku.newSudoku}
           </button>
         )}
       </div>
@@ -275,7 +276,7 @@ export function SudokuGame({
                   key={cell}
                   type="button"
                   role="gridcell"
-                  aria-label={`Fila ${row(cell) + 1}, columna ${col(cell) + 1}: ${value || "vacía"}${given ? " (pista)" : ""}`}
+                  aria-label={`${m.lightsOut.cellAria(row(cell) + 1, col(cell) + 1)}: ${value || m.minesweeper.empty}${given ? m.sudoku.given : ""}`}
                   aria-selected={isSelected}
                   onClick={() => setSelected(cell)}
                   className={`sudoku-cell ${isSelected ? "sudoku-selected" : sameDigit ? "sudoku-same" : related ? "sudoku-related" : ""} ${
@@ -307,16 +308,16 @@ export function SudokuGame({
       {solved ? (
         <div className="flex items-center justify-between gap-4 rounded-2xl bg-surface p-4 shadow-soft">
           <div className="flex min-w-0 flex-col gap-1">
-            <p className="display text-2xl font-bold">¡Resuelto!</p>
+            <p className="display text-2xl font-bold">{m.sudoku.solved}</p>
             <p className="text-sm">
               {!game.runId
-                ? "Esta partida no entra en el ranking."
+                ? m.sudoku.notRanked
                 : save?.status === "saving"
-                  ? "Guardando…"
+                  ? m.common.saving
                   : save?.status === "saved"
-                    ? `Tiempo oficial: ${formatTime(save.time)}. Guardado en el ranking.`
+                    ? m.minesweeper.officialTime(m.format.time(save.time))
                     : save?.status === "rejected"
-                      ? "No hemos podido validar esta partida, así que no cuenta."
+                      ? m.run.rejected
                       : save?.status === "error"
                         ? save.message
                         : null}
@@ -324,7 +325,7 @@ export function SudokuGame({
           </div>
           {!daily && (
             <button type="button" onClick={() => void load(true)} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-              Otro
+              {m.sudoku.another}
             </button>
           )}
         </div>
@@ -361,14 +362,14 @@ export function SudokuGame({
                 notesMode ? "bg-ink text-bg" : "border border-line bg-surface hover:border-muted"
               }`}
             >
-              {notesMode ? "Notas: sí" : "Notas: no"}
+              {notesMode ? m.sudoku.notesOn : m.sudoku.notesOff}
             </button>
             <button
               type="button"
               onClick={() => input(0)}
               className="flex-1 rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium shadow-soft transition-colors hover:border-muted"
             >
-              Borrar
+              {m.sudoku.erase}
             </button>
             <button
               type="button"
@@ -376,17 +377,17 @@ export function SudokuGame({
               disabled={history.length === 0}
               className="flex-1 rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium shadow-soft transition-colors hover:border-muted disabled:opacity-40"
             >
-              Deshacer
+              {m.sudoku.undo}
             </button>
           </div>
         </div>
       )}
 
-      {notice && <p className="text-sm text-muted">{notice}</p>}
+      {notice && <p className="text-sm text-muted">{m.run[notice]}</p>}
 
       {!signedIn && <GuestNotice next="/sudoku" />}
 
-      <p className="hidden text-sm text-muted sm:block">Teclado: números para escribir, 0 o retroceso para borrar, flechas para moverte, N para las notas y Z para deshacer.</p>
+      <p className="hidden text-sm text-muted sm:block">{m.sudoku.keyboard}</p>
     </section>
   );
 }

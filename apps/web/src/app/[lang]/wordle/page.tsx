@@ -8,21 +8,20 @@ import { wordleToday } from "@/lib/wordle/server";
 import { GameGuideSection } from "@/components/seo/game-guide";
 import { gameMetadata } from "@/lib/seo";
 import { HowToPlayButton } from "@/components/how-to-play";
+import { getLocale, getMessages } from "@/lib/i18n/server";
 
 export const metadata: Metadata = gameMetadata("wordle");
 
-export default function WordlePage() {
+export default async function WordlePage() {
+  const m = await getMessages();
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pt-4 pb-16 sm:px-6">
       <div className="mx-auto max-w-[30rem]">
         <div className="mb-1 flex items-center justify-between gap-3">
-          <h1 className="display text-6xl font-bold sm:text-7xl">Wordle</h1>
-          <HowToPlayButton game="wordle" name="Wordle" />
+          <h1 className="display text-6xl font-bold sm:text-7xl">{m.gameCards["wordle"].title}</h1>
+          <HowToPlayButton game="wordle" name={m.gameCards["wordle"].title} />
         </div>
-        <p className="mb-8 text-muted">
-          La palabra del día, igual para todos. Tienes 6 intentos: verde si la letra está en su sitio, amarillo si está
-          en otro.
-        </p>
+        <p className="mb-8 text-muted">{m.gamePages["wordle"]}</p>
         <Suspense fallback={<div className="mx-auto aspect-[5/6] max-w-[22rem] animate-pulse rounded-3xl bg-line/40" />}>
           <WordleForViewer />
         </Suspense>
@@ -33,14 +32,14 @@ export default function WordlePage() {
 }
 
 async function WordleForViewer() {
-  const viewerId = await getViewerId();
+  const [viewerId, m, locale] = await Promise.all([getViewerId(), getMessages(), getLocale()]);
   if (!viewerId) {
     return (
       <p>
         <Link href="/entrar?next=/wordle" className="font-medium underline underline-offset-4">
-          Entra
+          {m.daily.signIn}
         </Link>{" "}
-        para jugar la palabra de hoy y comparar tu resultado con tus amigos.
+        {m.gamePages.wordleSignIn}
       </p>
     );
   }
@@ -60,7 +59,7 @@ async function WordleForViewer() {
   return (
     <WordleGame
       day={today.day}
-      dayLabel={new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "numeric", timeZone: "UTC" }).format(new Date(`${today.day}T00:00:00Z`))}
+      dayLabel={new Intl.DateTimeFormat(locale, { day: "numeric", month: "numeric", timeZone: "UTC" }).format(new Date(`${today.day}T00:00:00Z`))}
       initial={{
         guesses: game?.guesses ?? [],
         patterns: game?.patterns ?? [],
