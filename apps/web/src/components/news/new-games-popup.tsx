@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { GAME_GUIDES, type GameGuide } from "@/lib/seo";
+import { useLocale, useMessages } from "@/lib/i18n/client";
+import { guidesFor, type GameGuide } from "@/lib/seo";
 import { createClient } from "@/lib/supabase/client";
 
 /** Solo se anuncian los juegos de los últimos 90 días (más viejos ya no son novedad). */
@@ -18,10 +19,12 @@ const DELAY_MS = 1200;
 export function NewGamesPopup({ viewerId }: { viewerId: string }) {
   const [games, setGames] = useState<GameGuide[]>([]);
   const closeButton = useRef<HTMLButtonElement>(null);
+  const locale = useLocale();
+  const m = useMessages();
 
   useEffect(() => {
     const since = Date.now() - WINDOW_MS;
-    const candidates = GAME_GUIDES.filter((game) => Date.parse(game.addedAt) > since);
+    const candidates = guidesFor(locale).filter((game) => Date.parse(game.addedAt) > since);
     if (candidates.length === 0) return;
 
     let cancelled = false;
@@ -46,7 +49,7 @@ export function NewGamesPopup({ viewerId }: { viewerId: string }) {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [viewerId]);
+  }, [viewerId, locale]);
 
   useEffect(() => {
     if (games.length === 0) return;
@@ -81,7 +84,7 @@ export function NewGamesPopup({ viewerId }: { viewerId: string }) {
           ref={closeButton}
           type="button"
           onClick={() => dismiss(games)}
-          aria-label="Cerrar"
+          aria-label={m.common.close}
           className="absolute top-3 right-3 grid size-9 place-items-center rounded-full text-muted hover:bg-line/60 hover:text-ink"
         >
           <svg viewBox="0 0 16 16" className="size-4" aria-hidden>
@@ -90,9 +93,9 @@ export function NewGamesPopup({ viewerId }: { viewerId: string }) {
         </button>
 
         <div className="pr-8">
-          <p className="text-sm text-muted">Desde tu última visita</p>
+          <p className="text-sm text-muted">{m.news.sinceLastVisit}</p>
           <h2 id="news-title" className="display text-3xl leading-tight font-bold">
-            {single ? "¡Juego nuevo!" : `${games.length} juegos nuevos`}
+            {single ? m.news.newGame : m.news.newGames(games.length)}
           </h2>
         </div>
 
@@ -103,21 +106,21 @@ export function NewGamesPopup({ viewerId }: { viewerId: string }) {
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="display text-2xl leading-tight font-bold">{game.name}</span>
                 <span className="text-sm text-muted">{game.tagline}</span>
-                <span className="text-xs text-muted">{game.mode === "solo" ? "En solitario" : "Contra tus amigos"}</span>
+                <span className="text-xs text-muted">{game.mode === "solo" ? m.news.solo : m.news.withFriends}</span>
               </span>
               <Link
                 href={game.path}
                 onClick={() => dismiss(games)}
                 className="shrink-0 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-bg"
               >
-                Jugar
+                {m.common.play}
               </Link>
             </li>
           ))}
         </ul>
 
         <button type="button" onClick={() => dismiss(games)} className="self-center text-sm text-muted hover:text-ink">
-          Luego
+          {m.common.later}
         </button>
       </div>
     </div>

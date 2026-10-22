@@ -1,20 +1,23 @@
 import { brand } from "@repo/brand";
 import { absoluteUrl, gameGuide } from "@/lib/seo";
 import { JsonLd } from "./json-ld";
+import { getLocale, getMessages } from "@/lib/i18n/server";
 
 /**
  * "Cómo se juega" debajo de cada juego: reglas y preguntas frecuentes, a la
  * vista y como datos estructurados (VideoGame + FAQPage).
  */
-export function GameGuideSection({ id }: { id: string }) {
-  const game = gameGuide(id);
+export async function GameGuideSection({ id }: { id: string }) {
+  const locale = await getLocale();
+  const m = await getMessages();
+  const game = gameGuide(id, locale);
   const url = absoluteUrl(game.path);
 
   return (
     <section aria-labelledby="guide-title" className="mt-16 flex max-w-2xl flex-col gap-6 border-t border-line pt-8">
       <div className="flex flex-col gap-3">
         <h2 id="guide-title" className="text-xl font-semibold">
-          Cómo se juega al {game.name}
+          {m.howTo.howToPlayGame(game.name)}
         </h2>
         <ol className="flex list-decimal flex-col gap-2 pl-5 text-muted marker:text-ink">
           {game.howTo.map((step) => (
@@ -24,7 +27,7 @@ export function GameGuideSection({ id }: { id: string }) {
       </div>
 
       <div className="flex flex-col gap-1">
-        <h2 className="mb-2 text-xl font-semibold">Preguntas frecuentes</h2>
+        <h2 className="mb-2 text-xl font-semibold">{m.howTo.faq}</h2>
         {game.faq.map(({ q, a }) => (
           <details key={q} className="group border-b border-line py-3">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium">
@@ -49,11 +52,11 @@ export function GameGuideSection({ id }: { id: string }) {
               description: game.description,
               url,
               image: absoluteUrl(`${game.path}/opengraph-image`),
-              inLanguage: "es",
+              inLanguage: locale,
               genre: game.genre,
-              gamePlatform: ["Navegador web", "Android", "iOS"],
+              gamePlatform: [m.howTo.webBrowser, "Android", "iOS"],
               applicationCategory: "GameApplication",
-              operatingSystem: "Cualquiera con navegador",
+              operatingSystem: m.howTo.anyOs,
               playMode: game.mode === "solo" ? "SinglePlayer" : "MultiPlayer",
               numberOfPlayers: game.mode === "solo" ? 1 : 2,
               isAccessibleForFree: true,

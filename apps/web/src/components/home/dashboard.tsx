@@ -6,8 +6,9 @@ import { Avatar } from "@repo/ui/avatar";
 import { DailyCard } from "@/components/daily/daily-summary";
 import { LevelBar } from "@/components/level-bar";
 import { battleshipMyTurn } from "@/components/tictactoe/data";
-import { formatAgo, formatNumber, formatTime, formatTimeLeft } from "@/lib/format";
-import { CHALLENGE_EXPIRY_MS, matchGame, matchHref } from "@/lib/games";
+import { CHALLENGE_EXPIRY_MS, matchGame, matchGameKey, matchHref } from "@/lib/games";
+import { getMessages } from "@/lib/i18n/server";
+import type { Messages } from "@/lib/i18n";
 import { MATCH_WITH_PLAYERS, PLAYER_COLUMNS } from "@/lib/queries";
 import type { Viewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -30,6 +31,8 @@ function myTurnIn(match: Match, viewerId: string, waiting: ReadonlySet<string>):
 
 export async function Dashboard({ viewer }: { viewer: Viewer }) {
   const supabase = await createClient();
+  const m = await getMessages();
+  const { ago, number, time, timeLeft } = m.format;
   const [
     { data: matches },
     { data: requests },
@@ -103,7 +106,8 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
   };
   for (const match of matches ?? []) {
     const rival = match.player_x === viewer.id ? match.o : match.x;
-    const { name, icon } = matchGame(match.game);
+    const { icon } = matchGame(match.game);
+    const name = m.matchGames[matchGameKey(match.game)];
     const counts = tally[match.game === "rpsls" ? "rps" : (match.game as keyof typeof tally)] ?? tally.rps;
     if (match.status === "pending") {
       if (match.created_by !== viewer.id) {
@@ -115,8 +119,8 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
           href: matchHref(match),
           person: rival,
           icon,
-          title: `${rival.username} te reta: ${name.toLowerCase()}`,
-          detail: `${capitalize(formatAgo(match.created_at))}. Caduca en ${formatTimeLeft(expiresAt(match))}.`,
+          title: m.home.challengesYou(rival.username, name),
+          detail: m.home.inviteDetail(capitalize(ago(match.created_at)), timeLeft(expiresAt(match))),
         });
       } else {
         counts.waiting++;
@@ -125,8 +129,8 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
           href: matchHref(match),
           person: rival,
           icon,
-          title: `${rival.username}: ${name.toLowerCase()}`,
-          detail: `caduca en ${formatTimeLeft(expiresAt(match))}`,
+          title: m.home.waitingTitle(rival.username, name),
+          detail: m.home.expiresIn(timeLeft(expiresAt(match))),
         });
       }
     } else if (myTurnIn(match, viewer.id, chosen)) {
@@ -138,8 +142,8 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
         href: matchHref(match),
         person: rival,
         icon,
-        title: match.game === "pong" || match.game === "tron" ? `${name} contra ${rival.username}` : `Te toca contra ${rival.username}`,
-        detail: match.game === "pong" || match.game === "tron" ? "En directo: entrad los dos" : `${name}, ${formatAgo(match.updated_at)}`,
+        title: match.game === "pong" || match.game === "tron" ? m.home.liveAgainst(name, rival.username) : m.home.yourTurnAgainst(rival.username),
+        detail: match.game === "pong" || match.game === "tron" ? m.home.liveJoin : `${name}, ${ago(match.updated_at)}`,
       });
     } else counts.waiting++;
   }
@@ -158,8 +162,8 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
         avatar_parts: challenge.other_avatar_parts,
       },
       icon: "🟧",
-      title: `${challenge.other_username} te reta al 2048`,
-      detail: `Supera ${formatNumber(challenge.target_score)} puntos. ${capitalize(formatAgo(challenge.created_at))}.`,
+      title: m.home.challenge2048(challenge.other_username),
+      detail: m.home.challenge2048Detail(number(challenge.target_score), capitalize(ago(challenge.created_at))),
     });
   }
   for (const request of requests ?? []) {
@@ -170,8 +174,8 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
       href: "/amigos",
       person: request.requester,
       icon: "👋",
-      title: `${request.requester.username} quiere ser tu amigo`,
-      detail: capitalize(formatAgo(request.created_at)),
+      title: m.home.wantsToBeFriends(request.requester.username),
+      detail: capitalize(ago(request.created_at)),
     });
   }
 
@@ -179,13 +183,13 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     <>
       <section className="flex flex-wrap items-center gap-6">
         <Link href="/perfil" className="grid size-28 shrink-0 place-items-center rounded-[1.75rem] bg-surface shadow-soft">
-          <Avatar seed={viewer.avatar_seed} parts={viewer.avatar_parts} size={96} label="Tu monster" />
+          <Avatar seed={viewer.avatar_seed} parts={viewer.avatar_parts} size={96} label={m.home.yourMonster} />
         </Link>
         <div className="flex min-w-60 flex-1 flex-col gap-4">
           <h1 className="display text-5xl font-bold sm:text-6xl">
-            Hola, {viewer.username}
+            {m.home.hello(viewer.username)}
             {viewer.supporter_tier && (
-              <span title="Apoya el proyecto" className="ml-2 align-top text-2xl" style={{ color: "var(--t256)" }}>
+              <span title={m.common.supporter} className="ml-2 align-top text-2xl" style={{ color: "var(--t256)" }}>
                 ✦
               </span>
             )}
@@ -209,26 +213,26 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
         <GameCards
           pinned={(pins ?? []).map((pin) => pin.game)}
           stats={{
-            "2048": <SoloStats standing={standing} />,
-            snake: <SoloStats standing={snake} />,
-            "lights-out": <SoloStats standing={lightsOut} unit={(n) => (n === 1 ? "nivel" : "niveles")} />,
-            minesweeper: <SoloStats standing={minesweeper} format={(ms) => `${formatTime(ms)} en medio`} />,
-            sudoku: <SoloStats standing={sudoku} format={(ms) => `${formatTime(ms)} en medio`} />,
+            "2048": <SoloStats m={m} standing={standing} />,
+            snake: <SoloStats m={m} standing={snake} />,
+            "lights-out": <SoloStats m={m} standing={lightsOut} unit={m.home.levels} />,
+            minesweeper: <SoloStats m={m} standing={minesweeper} format={(ms) => m.home.onMedium(time(ms))} />,
+            sudoku: <SoloStats m={m} standing={sudoku} format={(ms) => m.home.onMedium(time(ms))} />,
             wordle: wordleToday?.finished_at ? (
               <span>
-                Hoy: <strong className="tabular">{wordleToday.solved ? wordleToday.guesses.length : "X"}/6</strong>
+                {m.home.today} <strong className="tabular">{wordleToday.solved ? wordleToday.guesses.length : "X"}/6</strong>
               </span>
             ) : wordleToday ? (
-              <strong>La tienes a medias</strong>
+              <strong>{m.home.wordleHalfway}</strong>
             ) : (
-              <span className="text-muted">Aún no has jugado la de hoy.</span>
+              <span className="text-muted">{m.home.wordleNotYet}</span>
             ),
-            tictactoe: <MatchStats counts={tally.tictactoe} />,
-            connect4: <MatchStats counts={tally.connect4} />,
-            battleship: <MatchStats counts={tally.battleship} />,
-            tron: <MatchStats counts={tally.tron} />,
-            rps: <MatchStats counts={tally.rps} />,
-            pong: <MatchStats counts={tally.pong} />,
+            tictactoe: <MatchStats m={m} counts={tally.tictactoe} />,
+            connect4: <MatchStats m={m} counts={tally.connect4} />,
+            battleship: <MatchStats m={m} counts={tally.battleship} />,
+            tron: <MatchStats m={m} counts={tally.tron} />,
+            rps: <MatchStats m={m} counts={tally.rps} />,
+            pong: <MatchStats m={m} counts={tally.pong} />,
           }}
         />
       </div>
@@ -240,44 +244,36 @@ const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1
 
 /** Récord y puesto en un juego en solitario. */
 function SoloStats({
+  m,
   standing,
   unit,
-  format = formatNumber,
+  format = m.format.number,
 }: {
+  m: Messages;
   standing: Functions<"get_my_standing">["Returns"][number] | null;
   /** Unidad tras el récord (p. ej. niveles); sin ella, solo el número. */
   unit?: (score: number) => string;
   /** Si el récord es un tiempo, cómo mostrarlo. */
   format?: (score: number) => string;
 }) {
-  if (standing?.best_score == null) return <span className="text-muted">Aún no tienes puntuación. Juega una partida.</span>;
+  if (standing?.best_score == null) return <span className="text-muted">{m.home.noScore}</span>;
   return (
     <span className="flex flex-col gap-0.5">
       <span>
-        Tu récord: <strong className="tabular">{format(standing.best_score)}</strong>
+        {m.home.yourRecord} <strong className="tabular">{format(standing.best_score)}</strong>
         {unit && ` ${unit(standing.best_score)}`}
       </span>
       <span className="text-muted">
-        {standing.global_rank}º de {standing.global_players} en el mundo
-        {standing.friends_players > 1 && `, ${standing.friends_rank}º entre tus amigos`}
+        {m.home.worldRank(standing.global_rank, standing.global_players)}
+        {standing.friends_players > 1 && m.home.friendsRank(standing.friends_rank)}
       </span>
     </span>
   );
 }
 
-function MatchStats({ counts }: { counts: GameTally }) {
-  if (counts.myTurn > 0) {
-    return <strong>{counts.myTurn === 1 ? "Te toca en 1 partida" : `Te toca en ${counts.myTurn} partidas`}</strong>;
-  }
-  if (counts.invites > 0) {
-    return <strong>{counts.invites === 1 ? "Tienes 1 reto sin responder" : `Tienes ${counts.invites} retos sin responder`}</strong>;
-  }
-  if (counts.waiting > 0) {
-    return (
-      <span className="text-muted">
-        {counts.waiting === 1 ? "1 partida esperando al rival" : `${counts.waiting} partidas esperando al rival`}
-      </span>
-    );
-  }
-  return <span className="text-muted">Ninguna partida en juego. Reta a alguien.</span>;
+function MatchStats({ m, counts }: { m: Messages; counts: GameTally }) {
+  if (counts.myTurn > 0) return <strong>{m.home.yourTurnIn(counts.myTurn)}</strong>;
+  if (counts.invites > 0) return <strong>{m.home.unansweredInvites(counts.invites)}</strong>;
+  if (counts.waiting > 0) return <span className="text-muted">{m.home.waitingRival(counts.waiting)}</span>;
+  return <span className="text-muted">{m.home.noMatches}</span>;
 }

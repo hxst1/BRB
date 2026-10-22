@@ -18,6 +18,11 @@ export function matchGame(game: string) {
   return MATCH_GAMES[game as MatchGame] ?? MATCH_GAMES.tictactoe;
 }
 
+/** Clave del juego para m.matchGames (los nombres traducidos). */
+export function matchGameKey(game: string): MatchGame {
+  return game in MATCH_GAMES ? (game as MatchGame) : "tictactoe";
+}
+
 export function matchHref(match: { id: string; game: string }): string {
   return `${matchGame(match.game).path}/${match.id}`;
 }

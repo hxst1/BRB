@@ -16,6 +16,7 @@ import type { NavCounts } from "@/components/nav/nav-items";
 import { TabBar } from "@/components/nav/tab-bar";
 import { getViewer, getViewerId } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { getMessages } from "@/lib/i18n/server";
 
 /** Avisos de cada sección: lo pendiente en Inicio, los mensajes en Chat y las solicitudes en Amigos. */
 async function getNavCounts(): Promise<NavCounts> {
@@ -53,10 +54,11 @@ async function Navigation() {
   const [viewer, counts] = (await getViewerId()) ? await Promise.all([getViewer(), getNavCounts()]) : [null, null];
 
   if (!viewer || !counts) {
+    const m = await getMessages();
     return (
       <>
         <Link href="/entrar" className="rounded-full bg-ink px-4 py-1.5 text-sm font-medium text-bg">
-          Entrar
+          {m.common.signIn}
         </Link>
         <GuestBar />
       </>

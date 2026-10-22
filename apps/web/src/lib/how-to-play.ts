@@ -3,9 +3,11 @@
  * cortas, un dibujito por paso y el objetivo primero. Las reglas completas
  * están en lib/seo.ts (sección "Cómo se juega" de cada página).
  */
+import type { Locale } from "@/lib/i18n/locales";
+
 export type HowToPlay = { goal: string; steps: { icon: string; text: string }[] };
 
-export const HOW_TO_PLAY: Record<string, HowToPlay> = {
+const HOW_TO_PLAY_ES: Record<string, HowToPlay> = {
   "2048": {
     goal: "Junta fichas iguales para hacer números cada vez más grandes. ¡Intenta llegar a 2048!",
     steps: [
@@ -115,3 +117,116 @@ export const HOW_TO_PLAY: Record<string, HowToPlay> = {
     ],
   },
 };
+
+const HOW_TO_PLAY_EN: Record<string, HowToPlay> = {
+  "2048": {
+    goal: "Merge matching tiles to make bigger and bigger numbers. Try to reach 2048!",
+    steps: [
+      { icon: "👆", text: "Swipe (or use the arrow keys) and every tile slides that way." },
+      { icon: "➕", text: "When two tiles with the same number bump into each other, they merge: 2 and 2 make 4." },
+      { icon: "🆕", text: "Every time you move, a new tile appears." },
+      { icon: "🛑", text: "It's over when the board is full and nothing can move." },
+    ],
+  },
+  snake: {
+    goal: "Eat apples to make your snake really long, without crashing!",
+    steps: [
+      { icon: "🐍", text: "Your snake never stops moving. You choose where it turns." },
+      { icon: "👆", text: "Swipe or use the arrow keys to turn." },
+      { icon: "🍎", text: "Every apple you eat makes you longer and gives you 10 points." },
+      { icon: "💥", text: "If you hit the wall or your own tail, the game is over." },
+    ],
+  },
+  "lights-out": {
+    goal: "Switch off every light on the board.",
+    steps: [
+      { icon: "💡", text: "Tapping a square toggles it and the ones above, below, left and right." },
+      { icon: "🔁", text: "The ones that were on go off, and the ones that were off come on." },
+      { icon: "✋", text: "You only have a few taps: think before you tap." },
+      { icon: "⬆️", text: "Switch them all off and you level up, and the board grows." },
+    ],
+  },
+  minesweeper: {
+    goal: "Reveal every square that doesn't have a mine. Without stepping on one!",
+    steps: [
+      { icon: "👆", text: "Tap a square to reveal it. The first one never has a mine." },
+      { icon: "🔢", text: "A number tells you how many mines touch that square (diagonals too)." },
+      { icon: "🚩", text: "If you know where a mine is, flag it (press and hold, or use flag mode)." },
+      { icon: "⏱️", text: "You win when every square without a mine is revealed. The faster, the better." },
+    ],
+  },
+  sudoku: {
+    goal: "Fill the board with numbers from 1 to 9.",
+    steps: [
+      { icon: "➡️", text: "No number can repeat in a row." },
+      { icon: "⬇️", text: "Or in a column." },
+      { icon: "🟦", text: "Or in each 3 × 3 square." },
+      { icon: "✏️", text: "If you're not sure, use notes to jot down the numbers that could go in a square." },
+    ],
+  },
+  wordle: {
+    goal: "Guess the secret word of the day. It's a 5-letter Spanish word and you have 6 tries.",
+    steps: [
+      { icon: "⌨️", text: "Type a 5-letter word and send it." },
+      { icon: "🟩", text: "Green: that letter is in the word and in the right spot." },
+      { icon: "🟨", text: "Yellow: the letter is in the word, but somewhere else." },
+      { icon: "⬛", text: "Grey: that letter isn't in the word. Use the clues for your next try." },
+    ],
+  },
+  tictactoe: {
+    goal: "Get three of your marks in a row before your friend does.",
+    steps: [
+      { icon: "👋", text: "Challenge a friend. One plays × and the other ○." },
+      { icon: "🔁", text: "Taking turns, each of you puts a mark in an empty square." },
+      { icon: "📏", text: "Three in a row wins: across, down or diagonally." },
+      { icon: "🤝", text: "If the board fills up without three in a row, it's a draw." },
+    ],
+  },
+  connect4: {
+    goal: "Line up four pieces of your colour before your friend does.",
+    steps: [
+      { icon: "👋", text: "Challenge a friend. Taking turns, each of you picks a column." },
+      { icon: "⬇️", text: "Your piece falls to the lowest empty space in that column." },
+      { icon: "📏", text: "Four in a row wins: across, down or diagonally." },
+      { icon: "🧠", text: "Keep an eye on your friend's pieces too, to block their way." },
+    ],
+  },
+  battleship: {
+    goal: "Sink all of your friend's ships before they sink yours.",
+    steps: [
+      { icon: "🚢", text: "Place your ships on your board. Your friend can't see them." },
+      { icon: "🎯", text: "Taking turns, each of you fires at a square on the other's board." },
+      { icon: "💧", text: "Miss: no ship there. Hit: you got a ship. Sunk: the whole ship!" },
+      { icon: "🏆", text: "The first to sink every ship of the other wins." },
+    ],
+  },
+  rps: {
+    goal: "Pick better than your friend. The first to win 2 rounds wins.",
+    steps: [
+      { icon: "🤫", text: "You both pick at the same time, in secret." },
+      { icon: "🪨", text: "Rock breaks scissors." },
+      { icon: "✂️", text: "Scissors cut paper." },
+      { icon: "📄", text: "Paper wraps rock. With lizard and Spock there are two more options." },
+    ],
+  },
+  pong: {
+    goal: "Return the ball so your friend can't. The first to 5 points wins.",
+    steps: [
+      { icon: "👋", text: "Challenge a friend and both join at the same time." },
+      { icon: "🏓", text: "Move your paddle so the ball bounces off it." },
+      { icon: "⚡", text: "Every time it's hit, the ball goes a little faster." },
+      { icon: "🥅", text: "If the ball gets past you, your friend gets the point." },
+    ],
+  },
+  tron: {
+    goal: "Trap your friend with your trail, without crashing yourself!",
+    steps: [
+      { icon: "🏍️", text: "Your bike never stops and leaves a trail behind it." },
+      { icon: "👆", text: "Swipe or use the arrow keys to turn." },
+      { icon: "💥", text: "Whoever hits a wall or a trail loses the round." },
+      { icon: "🏆", text: "The first to win 3 rounds wins." },
+    ],
+  },
+};
+
+export const HOW_TO_PLAY: Record<Locale, Record<string, HowToPlay>> = { es: HOW_TO_PLAY_ES, en: HOW_TO_PLAY_EN };

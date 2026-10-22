@@ -8,6 +8,7 @@ import { signOut } from "@/app/[lang]/entrar/actions";
 import { Avatar } from "@repo/ui/avatar";
 import { showFeedback } from "@/components/feedback/feedback-dialog";
 import { LevelBar } from "@/components/level-bar";
+import { useMessages } from "@/lib/i18n/client";
 
 /**
  * Menú de la cuenta en escritorio. "Salir" vive aquí dentro, separado del
@@ -27,6 +28,7 @@ export function AccountMenu({
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  const m = useMessages();
 
   // Se cierra al navegar, al pulsar fuera o con Escape.
   const [lastPath, setLastPath] = useState(pathname);
@@ -76,8 +78,8 @@ export function AccountMenu({
               <LevelBar xp={xp} compact />
             </div>
           </div>
-          <MenuLink href="/perfil">Tu perfil y tu monster</MenuLink>
-          <MenuLink href="/amigos">Amigos y código de invitación</MenuLink>
+          <MenuLink href="/perfil">{m.nav.profileAndMonster}</MenuLink>
+          <MenuLink href="/amigos">{m.nav.friendsAndCode}</MenuLink>
           <button
             type="button"
             role="menuitem"
@@ -87,12 +89,12 @@ export function AccountMenu({
             }}
             className="w-full rounded-2xl px-3 py-2 text-left text-sm hover:bg-bg"
           >
-            Reportar un problema o sugerir algo
+            {m.nav.feedback}
           </button>
           <div className="my-1.5 border-t border-line" />
           <form action={signOut}>
             <button type="submit" role="menuitem" className="w-full rounded-2xl px-3 py-2 text-left text-sm text-danger hover:bg-bg">
-              Cerrar sesión
+              {m.nav.signOut}
             </button>
           </form>
         </div>

@@ -1,0 +1,198 @@
+import type { GAMES_ES, GameTexts } from "./games-es";
+
+const NO_DOWNLOAD = "No. You play in the browser, on your phone or computer. If you like, you can add it to your home screen like an app.";
+
+export const GAMES_EN: Record<keyof typeof GAMES_ES, GameTexts> = {
+  "2048": {
+    name: "2048",
+    title: "2048 online for free",
+    description: "Play 2048 for free in your browser: swipe, merge matching tiles until you reach 2048 and compete in the ranking and the daily challenge.",
+    tagline: "Merge tiles all the way to 2048",
+    genre: "Puzzle",
+    howTo: [
+      "Swipe (or use the arrow keys) to move every tile to one side.",
+      "Two tiles with the same number merge into one with their sum: 2 and 2 make 4, 4 and 4 make 8…",
+      "A new tile appears after every move. The game ends when you can't move.",
+      "Your score is the sum of every tile you've merged. Try to reach 2048 and keep going.",
+    ],
+    faq: [
+      { q: "Is there a daily 2048?", a: "Yes. On Mondays the daily challenge is 2048: everyone plays the same game, with a single attempt and its own ranking. Other days it's another game." },
+      { q: "Can I challenge a friend?", a: "Yes. When a game ends you can challenge a friend to beat your score." },
+      { q: "Do I need to download anything?", a: NO_DOWNLOAD },
+    ],
+  },
+  snake: {
+    name: "Snake",
+    title: "Snake online for free",
+    description: "Play classic Snake for free in your browser: eat apples, grow without crashing and climb the ranking. Works on phones and computers.",
+    tagline: "Eat without crashing, faster and faster",
+    genre: "Arcade",
+    howTo: [
+      "Move the snake with the arrow keys, with WASD or by swiping.",
+      "Each apple is worth 10 points and makes you longer.",
+      "You lose if you hit a wall or your own body.",
+    ],
+    faq: [
+      { q: "How do I play on my phone?", a: "Swipe towards where you want to turn." },
+      { q: "Do I need to download anything?", a: NO_DOWNLOAD },
+    ],
+  },
+  "lights-out": {
+    name: "Lights Out",
+    title: "Lights Out online for free",
+    description: "Play Lights Out for free: tap the lights to switch them all off, level by level, with a limited number of taps. A logic puzzle.",
+    tagline: "Switch it all off, level by level",
+    genre: "Logic puzzle",
+    howTo: [
+      "Tapping a light toggles it and its neighbours above, below, left and right.",
+      "Switch off every light to move on to the next level.",
+      "Each level has a tap limit, and the board grows every two levels.",
+      "Your score is the number of levels you clear in one game.",
+    ],
+    faq: [
+      { q: "Can every level be solved?", a: "Yes. Each level is generated from a board with every light off, so it can always be solved within the limit." },
+      { q: "Do I need to download anything?", a: NO_DOWNLOAD },
+    ],
+  },
+  minesweeper: {
+    name: "Minesweeper",
+    title: "Minesweeper online for free",
+    description: "Play classic Minesweeper for free in your browser, on easy, medium or hard. Clear the board without stepping on a mine and race for the best time.",
+    tagline: "Clear the board against the clock",
+    genre: "Logic puzzle",
+    howTo: [
+      "Reveal squares: each number tells you how many mines are around it.",
+      "Flag the squares where you know there's a mine (right click, or long press on your phone).",
+      "You win by revealing every square without a mine. The first square is never a mine.",
+      "Easy: 9 × 9 with 10 mines. Medium: 16 × 16 with 40. Hard: 16 × 30 with 99. The fastest time wins.",
+    ],
+    faq: [
+      { q: "How do I place a flag on my phone?", a: "Press and hold the square, or turn on flag mode." },
+      { q: "Do I need to download anything?", a: NO_DOWNLOAD },
+    ],
+  },
+  sudoku: {
+    name: "Sudoku",
+    title: "Sudoku online for free",
+    description: "Play Sudoku for free in your browser, on easy, medium or hard, with notes and saved progress. Every sudoku has exactly one solution.",
+    tagline: "No repeats, against the clock",
+    genre: "Logic puzzle",
+    howTo: [
+      "Fill the 9 × 9 board with numbers from 1 to 9.",
+      "No number can repeat in the same row, column or 3 × 3 box.",
+      "Use notes to jot down the possible numbers for each square.",
+      "Easy starts with 40 numbers, medium with 32 and hard with 26. The fastest time wins.",
+    ],
+    faq: [
+      { q: "Is my game saved if I close the page?", a: "Yes. You can pick up the sudoku where you left it." },
+      { q: "Do the sudokus have a single solution?", a: "Yes. Every one is checked to have exactly one solution." },
+      { q: "Do I need to download anything?", a: NO_DOWNLOAD },
+    ],
+  },
+  wordle: {
+    name: "Wordle",
+    title: "Wordle in Spanish: the word of the day",
+    description: "Play Wordle in Spanish for free: guess the 5-letter word of the day in 6 tries and compare your result with your friends.",
+    tagline: "The word of the day in 6 tries",
+    genre: "Word game",
+    howTo: [
+      "Type a 5-letter Spanish word and press enter.",
+      "Green: the letter is in the right spot. Yellow: it's in the word, but somewhere else. Grey: it's not in the word.",
+      "You have 6 tries. The word changes every day and it's the same for everyone.",
+    ],
+    faq: [
+      { q: "How often does the word change?", a: "Once a day. Everyone gets the same word." },
+      { q: "Can I see how my friends did?", a: "Yes. When you finish you'll see your friends' results for that day." },
+      { q: "Do I need to download anything?", a: NO_DOWNLOAD },
+    ],
+  },
+  tictactoe: {
+    name: "Tic-tac-toe",
+    title: "Tic-tac-toe online with your friends",
+    description: "Play tic-tac-toe online with your friends, turn by turn and at your own pace. Free, in your browser, with a notification when it's your turn.",
+    tagline: "Turn by turn, whenever you can",
+    genre: "Board game",
+    howTo: [
+      "Challenge a friend. One plays × and the other ○.",
+      "Taking turns, each of you marks a square on the 3 × 3 board.",
+      "The first to get three in a row wins: across, down or diagonally.",
+    ],
+    faq: [
+      { q: "Do we have to be online at the same time?", a: "No. It's turn-based: each of you plays when you can and we let you know when it's your turn." },
+      { q: "Do I need to download anything?", a: NO_DOWNLOAD },
+    ],
+  },
+  connect4: {
+    name: "Connect 4",
+    title: "Connect 4 online with your friends",
+    description: "Play Connect 4 online with your friends, turn by turn. Drop your pieces and line up four before your opponent does. Free.",
+    tagline: "Drop pieces and line up four",
+    genre: "Board game",
+    howTo: [
+      "Challenge a friend. Taking turns, each of you drops a piece into a column.",
+      "The piece falls to the lowest empty space.",
+      "The first to line up four pieces wins: across, down or diagonally.",
+    ],
+    faq: [
+      { q: "Is it the same as Connect Four?", a: "Yes, the rules are the same." },
+      { q: "Do we have to be online at the same time?", a: "No. It's turn-based and we let you know when it's your turn." },
+    ],
+  },
+  battleship: {
+    name: "Battleship",
+    title: "Battleship online with your friends",
+    description: "Play Battleship online with your friends: place your ships in secret and take turns firing until you sink theirs. Free, in your browser.",
+    tagline: "Miss, hit and sunk",
+    genre: "Strategy game",
+    howTo: [
+      "Challenge a friend and place your fleet on a 10 × 10 board: carrier (5), battleship (4), cruiser (3), submarine (3) and destroyer (2).",
+      "Taking turns, fire at a square on the other board: miss, hit or sunk.",
+      "The first to sink the whole enemy fleet wins. Neither of you can see the other's ships.",
+    ],
+    faq: [
+      { q: "Can my opponent see where my ships are?", a: "No. Fleets are stored on the server and only each shot is revealed." },
+      { q: "Do we have to be online at the same time?", a: "No. It's turn-based and we let you know when it's your turn to fire." },
+    ],
+  },
+  rps: {
+    name: "Rock paper scissors",
+    title: "Rock paper scissors online (plus lizard, Spock)",
+    description: "Play rock paper scissors online with your friends, best of 3, or the version with lizard and Spock. Free, in your browser.",
+    tagline: "Best of 3, with lizard and Spock",
+    genre: "Hand game",
+    howTo: [
+      "Challenge a friend. Each of you picks in secret and both are revealed at once.",
+      "Rock beats scissors, scissors beats paper and paper beats rock.",
+      "With lizard and Spock there are two more options, and each one beats two others.",
+      "The first to win 2 rounds wins.",
+    ],
+    faq: [{ q: "Can the other player see my pick before choosing?", a: "No. Both picks are revealed at the same time." }],
+  },
+  pong: {
+    name: "Pong",
+    title: "Pong online live with your friends",
+    description: "Play Pong online live against a friend, both at once from your phone or computer. The first to 5 points wins. Free.",
+    tagline: "Live, both at once",
+    genre: "Arcade",
+    howTo: [
+      "Challenge a friend and both join the game.",
+      "Move your paddle to return the ball. Every hit speeds it up a little.",
+      "The first to 5 points wins.",
+    ],
+    faq: [{ q: "Do we have to be online at the same time?", a: "Yes. Pong is played live." }],
+  },
+  tron: {
+    name: "Tron",
+    title: "Tron online live with your friends",
+    description: "Play Tron online live against a friend: steer your bike, trap your opponent with your trail and don't crash. Best of 3 rounds, free, in your browser.",
+    tagline: "Live: trap your opponent",
+    genre: "Arcade",
+    howTo: [
+      "Challenge a friend and both join the game.",
+      "Your bike leaves a trail that fades after a while. Turn with the arrow keys or by swiping.",
+      "Whoever hits a wall or a trail loses the round.",
+      "The first to win 3 rounds wins.",
+    ],
+    faq: [{ q: "Do we have to be online at the same time?", a: "Yes. Tron is played live." }],
+  },
+};

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { DragScrollList } from "@/components/drag-scroll";
 import { PinButton } from "./pin-button";
+import { getMessages } from "@/lib/i18n/server";
 
 /** Tablero en miniatura para la tarjeta del 2048 (decorativo). */
 const PREVIEW_2048 = [2, 0, 8, 0, 0, 16, 64, 4, 0, 4, 128, 32, 2, 8, 512, 2048];
@@ -41,15 +42,13 @@ export type GameId =
   | "pong"
   | "tron";
 
-type Game = { id: GameId; group: "solo" | "friends"; href: string; title: string; subtitle: string; preview: ReactNode };
+type Game = { id: GameId; group: "solo" | "friends"; href: string; preview: ReactNode };
 
 const GAMES: Game[] = [
   {
     id: "2048",
     group: "solo",
     href: "/2048",
-    title: "2048",
-    subtitle: "Tú solo contra el ranking",
     preview: (
         <div aria-hidden className="grid grid-cols-4 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
           {PREVIEW_2048.map((value, i) => (
@@ -71,8 +70,6 @@ const GAMES: Game[] = [
     id: "snake",
     group: "solo",
     href: "/snake",
-    title: "Snake",
-    subtitle: "Come sin chocar, cada vez más rápido",
     preview: (
         <div aria-hidden className="grid grid-cols-5 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
           {Array.from({ length: 25 }, (_, i) => {
@@ -99,8 +96,6 @@ const GAMES: Game[] = [
     id: "lights-out",
     group: "solo",
     href: "/lights-out",
-    title: "Lights Out",
-    subtitle: "Apágalo todo, nivel a nivel",
     preview: (
         <div aria-hidden className="grid grid-cols-4 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
           {PREVIEW_LIGHTS.map((on, i) => (
@@ -117,8 +112,6 @@ const GAMES: Game[] = [
     id: "minesweeper",
     group: "solo",
     href: "/buscaminas",
-    title: "Buscaminas",
-    subtitle: "Despeja el tablero contra el reloj",
     preview: (
         <div aria-hidden className="grid grid-cols-5 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
           {PREVIEW_MINES.flatMap((row, r) =>
@@ -143,8 +136,6 @@ const GAMES: Game[] = [
     id: "sudoku",
     group: "solo",
     href: "/sudoku",
-    title: "Sudoku",
-    subtitle: "Sin repetir, y contra el reloj",
     preview: (
         <div aria-hidden className="grid grid-cols-3 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
           {PREVIEW_SUDOKU.map(([digit, kind], i) => (
@@ -167,8 +158,6 @@ const GAMES: Game[] = [
     id: "wordle",
     group: "solo",
     href: "/wordle",
-    title: "Wordle",
-    subtitle: "La palabra del día en 6 intentos",
     preview: (
         <div aria-hidden className="grid aspect-square grid-cols-5 content-center gap-1 rounded-xl p-1.5 sm:gap-1.5 sm:rounded-2xl sm:p-2.5" style={{ background: "var(--board)" }}>
           {PREVIEW_WORDLE.flatMap((row, r) =>
@@ -190,8 +179,6 @@ const GAMES: Game[] = [
     id: "tictactoe",
     group: "friends",
     href: "/3-en-raya",
-    title: "3 en raya",
-    subtitle: "Por turnos, cada uno cuando puede",
     preview: (
         <div aria-hidden className="grid grid-cols-3 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
           {PREVIEW_TTT.map((mark, i) => (
@@ -214,8 +201,6 @@ const GAMES: Game[] = [
     id: "connect4",
     group: "friends",
     href: "/4-en-raya",
-    title: "4 en raya",
-    subtitle: "Deja caer fichas y junta cuatro",
     preview: (
         <div aria-hidden className="grid aspect-square grid-cols-5 content-end gap-1 rounded-xl p-1.5 sm:gap-1.5 sm:rounded-2xl sm:p-2.5" style={{ background: "var(--board)" }}>
           {PREVIEW_C4.flatMap((row, r) =>
@@ -237,8 +222,6 @@ const GAMES: Game[] = [
     id: "battleship",
     group: "friends",
     href: "/hundir-la-flota",
-    title: "Hundir la flota",
-    subtitle: "Agua, tocado y hundido",
     preview: (
         <div aria-hidden className="grid aspect-square grid-cols-5 gap-1 rounded-xl p-1.5 sm:gap-1.5 sm:rounded-2xl sm:p-2.5" style={{ background: "var(--board)" }}>
           {PREVIEW_SEA.flatMap((row, r) =>
@@ -262,8 +245,6 @@ const GAMES: Game[] = [
     id: "rps",
     group: "friends",
     href: "/piedra-papel-tijera",
-    title: "Piedra, papel o tijera",
-    subtitle: "Al mejor de 3, con lagarto y Spock",
     preview: (
         <div aria-hidden className="grid aspect-[4/3] grid-cols-3 place-items-center gap-1 rounded-xl p-1 sm:aspect-square sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
           {["🪨", "📄", "✂️", "🦎", "🖖", "🪨"].map((emoji, i) => (
@@ -282,8 +263,6 @@ const GAMES: Game[] = [
     id: "pong",
     group: "friends",
     href: "/pong",
-    title: "Pong",
-    subtitle: "En directo, los dos a la vez",
     preview: (
         <div aria-hidden className="relative aspect-square overflow-hidden rounded-xl sm:rounded-2xl" style={{ background: "var(--board)" }}>
           <span className="absolute top-[12%] left-[38%] h-[5%] w-[30%] rounded-full" style={{ background: "var(--mark-o)" }} />
@@ -297,8 +276,6 @@ const GAMES: Game[] = [
     id: "tron",
     group: "friends",
     href: "/tron",
-    title: "Tron",
-    subtitle: "En directo: encierra a tu rival",
     preview: (
         <div aria-hidden className="relative aspect-square overflow-hidden rounded-xl sm:rounded-2xl" style={{ background: "var(--board)" }}>
           <svg viewBox="0 0 100 100" className="absolute inset-0 size-full">
@@ -322,29 +299,30 @@ const GAMES: Game[] = [
  * móvil cada grupo va en fila con scroll horizontal (asoma la siguiente para
  * que se vea que hay más); desde `sm`, en cuadrícula.
  */
-export function GameCards({ stats = {}, pinned }: { stats?: Partial<Record<GameId, ReactNode>>; pinned?: readonly string[] }) {
+export async function GameCards({ stats = {}, pinned }: { stats?: Partial<Record<GameId, ReactNode>>; pinned?: readonly string[] }) {
+  const m = await getMessages();
   const favourites = (pinned ?? []).flatMap((id) => GAMES.find((game) => game.id === id) ?? []);
   const rest = GAMES.filter((game) => !favourites.includes(game));
   const card = (game: Game) => (
     <li key={game.id} className={ITEM}>
-      <GameCard game={game} stats={stats[game.id]} pinned={pinned ? favourites.includes(game) : undefined} />
+      <GameCard game={game} texts={m.gameCards[game.id]} stats={stats[game.id]} pinned={pinned ? favourites.includes(game) : undefined} />
     </li>
   );
 
   return (
     <div className="flex flex-col gap-10">
       {favourites.length > 0 && (
-        <GameSection title="Tus juegos" description="Los que has fijado. Quítalos con la chincheta.">
+        <GameSection title={m.gameCards.pinnedTitle} description={m.gameCards.pinnedHint}>
           {favourites.map(card)}
         </GameSection>
       )}
       {rest.some((game) => game.group === "solo") && (
-        <GameSection title="En solitario" description="Cuando quieras, contra el ranking.">
+        <GameSection title={m.gameCards.soloTitle} description={m.gameCards.soloHint}>
           {rest.filter((game) => game.group === "solo").map(card)}
         </GameSection>
       )}
       {rest.some((game) => game.group === "friends") && (
-        <GameSection title="Contra tus amigos" description="Rétalos y jugad a vuestro ritmo.">
+        <GameSection title={m.gameCards.friendsTitle} description={m.gameCards.friendsHint}>
           {rest.filter((game) => game.group === "friends").map(card)}
         </GameSection>
       )}
@@ -368,18 +346,18 @@ function GameSection({ title, description, children }: { title: string; descript
  * `pinned` undefined: sin chincheta (sin sesión). El enlace cubre toda la
  * tarjeta (con ::after) y la chincheta queda por encima, junto al título.
  */
-function GameCard({ game, stats, pinned }: { game: Game; stats?: ReactNode; pinned?: boolean }) {
+function GameCard({ game, texts, stats, pinned }: { game: Game; texts: { title: string; subtitle: string }; stats?: ReactNode; pinned?: boolean }) {
   return (
     <div className="group relative flex h-full flex-col gap-3 rounded-3xl bg-surface p-3.5 shadow-soft transition-shadow hover:shadow-lift sm:gap-5 sm:p-5">
       {game.preview}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <Link href={game.href} className="display block text-2xl font-bold after:absolute after:inset-0 after:rounded-3xl sm:text-3xl">
-            {game.title}
+            {texts.title}
           </Link>
-          <p className="text-xs text-muted sm:text-sm">{game.subtitle}</p>
+          <p className="text-xs text-muted sm:text-sm">{texts.subtitle}</p>
         </div>
-        {pinned !== undefined && <PinButton game={game.id} title={game.title} pinned={pinned} />}
+        {pinned !== undefined && <PinButton game={game.id} title={texts.title} pinned={pinned} />}
       </div>
       {stats && <div className="mt-auto border-t border-line pt-2.5 text-xs sm:pt-3 sm:text-sm">{stats}</div>}
     </div>

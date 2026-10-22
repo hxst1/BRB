@@ -5,10 +5,12 @@ import { useEffect, useRef, useState } from "react";
 import { brand } from "@repo/brand";
 import { SupportOptions } from "./support-options";
 import { WhereItGoes } from "./where-it-goes";
+import { useMessages } from "@/lib/i18n/client";
 
 /** Corazón discreto junto al nombre de la app: abre el panel para apoyar el proyecto. */
 export function SupportButton() {
   const [open, setOpen] = useState(false);
+  const m = useMessages();
   const closeButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -27,7 +29,7 @@ export function SupportButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label={`Apoyar ${brand.name}`}
+        aria-label={m.support.supportApp(brand.name)}
         aria-haspopup="dialog"
         className="support-sticker flex -rotate-6 items-center gap-1 rounded-full px-3 py-1 text-sm font-bold whitespace-nowrap text-white shadow-soft transition-transform hover:-rotate-2 hover:scale-105 active:scale-95"
         style={{ background: "var(--t64)" }}
@@ -35,7 +37,7 @@ export function SupportButton() {
         <svg viewBox="0 0 24 24" className="size-4" aria-hidden fill="currentColor">
           <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
         </svg>
-        ¡Apóyanos!
+        {m.support.sticker}
       </button>
 
       {open && (
@@ -51,7 +53,7 @@ export function SupportButton() {
               ref={closeButton}
               type="button"
               onClick={() => setOpen(false)}
-              aria-label="Cerrar"
+              aria-label={m.common.close}
               className="absolute top-3 right-3 grid size-9 place-items-center rounded-full text-muted hover:bg-line/60 hover:text-ink"
             >
               <svg viewBox="0 0 16 16" className="size-4" aria-hidden>
@@ -60,11 +62,10 @@ export function SupportButton() {
             </button>
             <div className="pr-8">
               <h2 id="support-title" className="display text-2xl leading-tight font-bold">
-                Apoya {brand.name}
+                {m.support.title(brand.name)}
               </h2>
               <p className="text-sm text-muted">
-                Es gratis y sin anuncios. Si te entretiene, puedes ayudar a mantenerlo. A cambio, tu monster estrena ropa:
-                solo cosméticos, nunca ventajas en las partidas.
+                {m.support.intro}
               </p>
             </div>
             <SupportOptions />
@@ -72,7 +73,7 @@ export function SupportButton() {
               <WhereItGoes compact />
             </div>
             <Link href="/apoyar" onClick={() => setOpen(false)} className="self-center text-sm text-muted underline-offset-4 hover:text-ink hover:underline">
-              Ver qué incluye y a dónde va
+              {m.support.seeMore}
             </Link>
           </div>
         </div>

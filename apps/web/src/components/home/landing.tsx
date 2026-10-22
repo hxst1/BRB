@@ -1,16 +1,19 @@
 import { brand } from "@repo/brand";
 import { JsonLd } from "@/components/seo/json-ld";
-import { absoluteUrl, GAME_GUIDES, HOME_FAQ } from "@/lib/seo";
+import { getLocale, getMessages } from "@/lib/i18n/server";
+import { absoluteUrl, guidesFor, homeFaq } from "@/lib/seo";
 import { GameCards } from "./game-cards";
 import { SignupButtons, SignupPerks } from "./signup-pitch";
 
-export function Landing() {
+export async function Landing() {
+  const locale = await getLocale();
+  const m = await getMessages();
+  const faq = homeFaq(locale);
   return (
     <>
-      <h1 className="display max-w-xl text-6xl font-bold text-balance sm:text-8xl">{brand.tagline}</h1>
+      <h1 className="display max-w-xl text-6xl font-bold text-balance sm:text-8xl">{m.landing.tagline}</h1>
       <p className="mt-5 max-w-md text-lg text-muted">
-        Minijuegos online gratis para cuando necesitas desconectar cinco minutos: 2048, Sudoku, Wordle en español,
-        Buscaminas y Snake, y partidas contra tus amigos. Sin descargar nada.
+        {m.landing.intro}
       </p>
       <SignupButtons />
       <div className="mt-16">
@@ -23,9 +26,9 @@ export function Landing() {
 
       <section aria-labelledby="faq-title" className="mt-20 flex max-w-2xl flex-col gap-1">
         <h2 id="faq-title" className="mb-2 text-xl font-semibold">
-          Preguntas frecuentes
+          {m.howTo.faq}
         </h2>
-        {HOME_FAQ.map(({ q, a }) => (
+        {faq.map(({ q, a }) => (
           <details key={q} className="group border-b border-line py-3">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium">
               {q}
@@ -48,13 +51,13 @@ export function Landing() {
               name: brand.name,
               alternateName: brand.expansion,
               url: absoluteUrl("/"),
-              description: brand.description,
-              inLanguage: "es",
+              description: m.landing.description,
+              inLanguage: locale,
             },
             {
               "@type": "ItemList",
-              name: `Juegos de ${brand.name}`,
-              itemListElement: GAME_GUIDES.map((game, i) => ({
+              name: m.landing.gamesOf(brand.name),
+              itemListElement: guidesFor(locale).map((game, i) => ({
                 "@type": "ListItem",
                 position: i + 1,
                 url: absoluteUrl(game.path),
@@ -63,7 +66,7 @@ export function Landing() {
             },
             {
               "@type": "FAQPage",
-              mainEntity: HOME_FAQ.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+              mainEntity: faq.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
             },
           ],
         }}

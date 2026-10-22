@@ -8,7 +8,7 @@ import { MinesweeperGame } from "@/components/minesweeper/game";
 import { SnakeGame } from "@/components/snake/game";
 import { SudokuGame } from "@/components/sudoku/game";
 import { DAILY_GAMES } from "@/lib/daily";
-import { formatNumber, formatTime } from "@/lib/format";
+import { useMessages } from "@/lib/i18n/client";
 
 /**
  * El juego del reto de hoy (salvo el 2048, que tiene su propia pantalla) con
@@ -45,13 +45,14 @@ export function DailyGame({ game, day, viewerId }: { game: string; day: string; 
 
 /** Ranking del reto de hoy, con el formato de su juego (tiempo o puntos). */
 export function DailyLeaderboard({ game, viewerId, refreshKey = 0 }: { game: string; viewerId: string | null; refreshKey?: number }) {
+  const m = useMessages();
   return (
     <Leaderboard
       game={game}
       daily
       viewerId={viewerId}
       refreshKey={refreshKey}
-      formatScore={DAILY_GAMES[game]?.time ? formatTime : formatNumber}
+      formatScore={DAILY_GAMES[game]?.time ? m.format.time : m.format.number}
     />
   );
 }

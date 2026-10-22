@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { LeaderboardEntry } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
-import { formatNumber } from "@/lib/format";
+import { useMessages } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 
 type Scope = "global" | "friends";
@@ -12,7 +12,7 @@ type Period = "all" | "week";
 export function Leaderboard({
   game,
   daily = false,
-  formatScore = formatNumber,
+  formatScore,
   viewerId,
   refreshKey,
 }: {
@@ -24,6 +24,8 @@ export function Leaderboard({
   viewerId: string | null;
   refreshKey: number;
 }) {
+  const m = useMessages();
+  const format = formatScore ?? m.format.number;
   const [scope, setScope] = useState<Scope>("global");
   const [period, setPeriod] = useState<Period>("all");
   const [result, setResult] = useState<{ key: string; rows: LeaderboardEntry[] | null }>({ key: "", rows: null });
@@ -49,16 +51,16 @@ export function Leaderboard({
     <section aria-labelledby="ranking-title" className="flex w-full max-w-[30rem] flex-col gap-4 lg:max-w-none">
       <div className="flex items-center justify-between gap-3">
         <h2 id="ranking-title" className="display text-3xl font-bold">
-          {daily ? "Ranking de hoy" : "Ranking"}
+          {daily ? m.ranking.today : m.ranking.title}
         </h2>
         {!daily && (
           <Toggle
-            label="Periodo"
+            label={m.ranking.period}
             value={period}
             onChange={setPeriod}
             options={[
-              { value: "all", label: "Siempre" },
-              { value: "week", label: "Semana" },
+              { value: "all", label: m.ranking.allTime },
+              { value: "week", label: m.ranking.week },
             ]}
           />
         )}
@@ -66,12 +68,12 @@ export function Leaderboard({
 
       {viewerId && (
         <Toggle
-          label="Jugadores"
+          label={m.ranking.players}
           value={scope}
           onChange={setScope}
           options={[
-            { value: "global", label: "Todo el mundo" },
-            { value: "friends", label: "Amigos" },
+            { value: "global", label: m.ranking.everyone },
+            { value: "friends", label: m.ranking.friends },
           ]}
         />
       )}
@@ -82,11 +84,7 @@ export function Leaderboard({
 
         {rows?.length === 0 && (
           <li className="py-6 text-sm text-muted">
-            {scope === "friends"
-              ? "Ni tú ni tus amigos tenéis partidas aquí todavía. Juega una y estrénalo."
-              : daily
-                ? "Nadie ha jugado el reto de hoy todavía. La primera posición está libre."
-                : "Nadie ha puntuado todavía. La primera posición está libre."}
+            {scope === "friends" ? m.ranking.emptyFriends : daily ? m.ranking.emptyDaily : m.ranking.empty}
           </li>
         )}
 
@@ -101,9 +99,9 @@ export function Leaderboard({
               <Avatar seed={row.avatar_seed} parts={row.avatar_parts} size={30} />
               <span className="min-w-0 flex-1 truncate">
                 {row.username}
-                {isViewer && <span className="ml-2 text-xs font-normal text-muted">tú</span>}
+                {isViewer && <span className="ml-2 text-xs font-normal text-muted">{m.common.you}</span>}
               </span>
-              <span className="tabular font-semibold">{formatScore(row.score)}</span>
+              <span className="tabular font-semibold">{format(row.score)}</span>
             </li>
           );
         })}

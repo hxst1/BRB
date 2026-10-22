@@ -1,39 +1,36 @@
 import Link from "next/link";
 import { signupHref } from "@/lib/signup";
+import { getMessages } from "@/lib/i18n/server";
 
-const PERKS = [
-  { icon: "🏆", title: "Tus récords, guardados", detail: "Y tu puesto en el ranking mundial y entre tus amigos." },
-  { icon: "👋", title: "Juega con tus amigos", detail: "Rétalos a 3 en raya, Hundir la flota, Pong o Tron, y chatea." },
-  { icon: "🔥", title: "Reto diario y rachas", detail: "Un juego distinto cada día, la misma partida para todos." },
-  { icon: "🎨", title: "Tu propio monster", detail: "Personalízalo y gana ropa nueva con los logros." },
-];
 
 /** Botones para crear cuenta o entrar, para el principio de la portada sin sesión. */
-export function SignupButtons() {
+export async function SignupButtons() {
+  const m = await getMessages();
   return (
     <div className="mt-8 flex flex-wrap items-center gap-3">
       <Link href={signupHref("/")} className="rounded-full bg-ink px-6 py-3 font-semibold text-bg transition-transform active:scale-[0.98]">
-        Crear cuenta gratis
+        {m.common.signUpFree}
       </Link>
       <Link href="/entrar" className="rounded-full border border-line bg-surface px-6 py-3 font-semibold shadow-soft hover:border-muted">
-        Ya tengo cuenta
+        {m.signup.haveAccount}
       </Link>
     </div>
   );
 }
 
 /** Qué ganas con una cuenta, con otra llamada a crearla. */
-export function SignupPerks() {
+export async function SignupPerks() {
+  const m = await getMessages();
   return (
     <section aria-labelledby="perks-title" className="flex flex-col gap-5 rounded-3xl bg-surface p-5 shadow-soft sm:p-8">
       <div>
         <h2 id="perks-title" className="display text-3xl font-bold sm:text-4xl">
-          Con una cuenta gratis
+          {m.signup.perksTitle}
         </h2>
-        <p className="text-muted">Se crea en un minuto, sin datos de pago. Solo un email y un nombre.</p>
+        <p className="text-muted">{m.signup.perksIntro}</p>
       </div>
       <ul className="grid gap-4 sm:grid-cols-2">
-        {PERKS.map((perk) => (
+        {m.signup.perks.map((perk) => (
           <li key={perk.title} className="flex gap-3">
             <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-2xl text-xl" style={{ background: "var(--cell)" }}>
               {perk.icon}
@@ -46,7 +43,7 @@ export function SignupPerks() {
         ))}
       </ul>
       <Link href={signupHref("/")} className="self-start rounded-full bg-ink px-6 py-3 font-semibold text-bg transition-transform active:scale-[0.98]">
-        Crear mi cuenta
+        {m.signup.createMine}
       </Link>
     </section>
   );

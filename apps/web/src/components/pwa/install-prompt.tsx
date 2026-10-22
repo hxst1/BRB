@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { brand } from "@repo/brand";
+import { Rich } from "@/components/rich";
+import { useMessages } from "@/lib/i18n/client";
 import { canInstall, promptInstall, subscribeInstall } from "./install-store";
 
 const DISMISSED_KEY = "install-prompt:dismissed";
@@ -50,6 +52,7 @@ export function InstallPrompt() {
   const [platform, setPlatform] = useState<Platform | null>(null);
   const installable = useSyncExternalStore(subscribeInstall, canInstall, () => false);
   const closeButton = useRef<HTMLButtonElement>(null);
+  const m = useMessages();
 
   useEffect(() => {
     // Si ya hay otro aviso abierto (p. ej. el de juegos nuevos), se deja para otra visita.
@@ -103,7 +106,7 @@ export function InstallPrompt() {
           ref={closeButton}
           type="button"
           onClick={dismiss}
-          aria-label="Cerrar"
+          aria-label={m.common.close}
           className="absolute top-3 right-3 grid size-9 place-items-center rounded-full text-muted hover:bg-line/60 hover:text-ink"
         >
           <svg viewBox="0 0 16 16" className="size-4" aria-hidden>
@@ -116,55 +119,53 @@ export function InstallPrompt() {
           <img src="/icons/icon-192.png" alt="" className="size-12 rounded-xl" />
           <div>
             <h2 id="install-title" className="display text-2xl leading-tight font-bold">
-              Ten {brand.name} a mano
+              {m.install.title(brand.name)}
             </h2>
-            <p className="text-sm text-muted">Añádela a la pantalla de inicio: se abre como una app y te avisa cuando te retan.</p>
+            <p className="text-sm text-muted">{m.install.intro}</p>
           </div>
         </div>
 
         {platform === "ios" ? (
           <ol className="flex flex-col gap-3">
             <Step number={1} icon={<ShareIcon />}>
-              Toca <strong>Compartir</strong> en la barra de Safari (abajo, o arriba en el iPad).
+              <Rich text={m.install.ios[0]} />
             </Step>
             <Step number={2} icon={<AddIcon />}>
-              Baja y toca <strong>Añadir a pantalla de inicio</strong>.
+              <Rich text={m.install.ios[1]} />
             </Step>
             <Step number={3} icon={<span className="text-sm font-bold">OK</span>}>
-              Toca <strong>Añadir</strong> arriba a la derecha. Ya la tienes con las demás apps.
+              <Rich text={m.install.ios[2]} />
             </Step>
           </ol>
         ) : installable ? (
           <button type="button" onClick={() => void install()} className="rounded-full bg-ink px-5 py-3 font-semibold text-bg">
-            Instalar la app
+            {m.install.install}
           </button>
         ) : platform === "desktop" ? (
           <ol className="flex flex-col gap-3">
             <Step number={1} icon={<AddIcon />}>
-              En Chrome o Edge, pulsa el icono de <strong>instalar</strong> que aparece a la derecha de la barra de direcciones.
+              <Rich text={m.install.desktop[0]} />
             </Step>
             <Step number={2} icon={<span className="text-sm font-bold">OK</span>}>
-              Confirma con <strong>Instalar</strong>. En Safari del Mac: menú <strong>Archivo</strong> y{" "}
-              <strong>Añadir al Dock</strong>.
+              <Rich text={m.install.desktop[1]} />
             </Step>
           </ol>
         ) : (
           <ol className="flex flex-col gap-3">
             <Step number={1} icon={<MenuIcon />}>
-              Abre el menú del navegador: <strong>⋮</strong> en Chrome y Firefox, <strong>≡</strong> en Samsung Internet.
+              <Rich text={m.install.android[0]} />
             </Step>
             <Step number={2} icon={<AddIcon />}>
-              Toca <strong>Instalar aplicación</strong> o <strong>Añadir a pantalla de inicio</strong> (en Samsung Internet,{" "}
-              <strong>Añadir página a</strong> y luego <strong>Pantalla de inicio</strong>).
+              <Rich text={m.install.android[1]} />
             </Step>
             <Step number={3} icon={<span className="text-sm font-bold">OK</span>}>
-              Confirma con <strong>Instalar</strong> o <strong>Añadir</strong>.
+              <Rich text={m.install.android[2]} />
             </Step>
           </ol>
         )}
 
         <button type="button" onClick={dismiss} className="self-center text-sm text-muted hover:text-ink">
-          Ahora no
+          {m.install.notNow}
         </button>
       </div>
     </div>

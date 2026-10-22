@@ -3,6 +3,8 @@
  * (private.achievement_progress) y la ropa que da cada uno en packages/avatars
  * (`achievement`); achievements.test.ts comprueba que los tres coinciden.
  */
+import type { Locale } from "@/lib/i18n/locales";
+
 export type Achievement = {
   id: string;
   name: string;
@@ -105,6 +107,32 @@ export const ACHIEVEMENTS: Achievement[] = [
   },
 ];
 
-export function achievementById(id: string): Achievement | undefined {
-  return ACHIEVEMENTS.find((achievement) => achievement.id === id);
+/** En inglés: nombre, descripción y nombre del premio de cada logro. */
+const EN: Record<string, { name: string; description: string; reward: string }> = {
+  "first-run": { name: "First game", description: "Finish a solo game.", reward: "Cap" },
+  "friends-3": { name: "In good company", description: "Have 3 friends.", reward: "Headphones" },
+  "streak-7": { name: "Steady", description: "Play 7 days in a row.", reward: "Flower" },
+  "streak-30": { name: "Unstoppable", description: "Play 30 days in a row.", reward: "Ember colour" },
+  "tile-2048": { name: "2048", description: "Get the 2048 tile.", reward: "2048 colour" },
+  "snake-30": { name: "Long snake", description: "Eat 30 apples in one game of Snake.", reward: "Jungle colour" },
+  "lightsout-10": { name: "Blackout", description: "Clear 10 levels of Lights Out in one game.", reward: "Halo" },
+  "minesweeper-hard": { name: "Bomb squad", description: "Win a hard minesweeper.", reward: "Ice colour" },
+  "sudoku-hard": { name: "Brainiac", description: "Solve a hard sudoku.", reward: "Wizard hat" },
+  "wordle-3": { name: "Third time lucky", description: "Guess the Wordle in 3 tries or fewer.", reward: "Bow" },
+  "winner-5": { name: "One to beat", description: "Beat 5 different people in games against friends.", reward: "Party hat" },
+  contributor: { name: "Contributor", description: "Open an issue or make a pull request on GitHub with your friend code.", reward: "Terminal colour" },
+  "referrals-5": { name: "Ambassador", description: "Invite 5 friends with your link: they have to sign up and play at least one game.", reward: "Neon colour" },
+};
+
+/** Los logros con sus textos en un idioma. */
+export function achievementsFor(locale: Locale): Achievement[] {
+  if (locale === "es") return ACHIEVEMENTS;
+  return ACHIEVEMENTS.map((achievement) => {
+    const texts = EN[achievement.id];
+    return { ...achievement, name: texts.name, description: texts.description, reward: { ...achievement.reward, label: texts.reward } };
+  });
+}
+
+export function achievementById(id: string, locale: Locale = "es"): Achievement | undefined {
+  return achievementsFor(locale).find((achievement) => achievement.id === id);
 }

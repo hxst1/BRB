@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { partAchievement, PART_OPTIONS } from "@repo/avatars";
-import { ACHIEVEMENTS } from "./achievements";
+import { ACHIEVEMENTS, achievementsFor } from "./achievements";
 
 const dir = new URL("../../../../supabase/migrations/", import.meta.url);
 /** Texto de la última migración que define esa función (las posteriores la reemplazan). */
@@ -13,6 +13,10 @@ function latest(fn: string): string {
 }
 
 describe("logros", () => {
+  it("todos tienen sus textos en inglés", () => {
+    for (const achievement of achievementsFor("en")) expect(achievement.name && achievement.description && achievement.reward.label).toBeTruthy();
+  });
+
   it("son los mismos que comprueba la base de datos", () => {
     const body = latest("private.achievement_progress");
     const inDb = [...body.matchAll(/select '([a-z0-9-]+)',/g)].map((m) => m[1]);

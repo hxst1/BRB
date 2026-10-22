@@ -1,19 +1,22 @@
 import type { Json } from "@repo/db";
 import { sanitizeParts } from "@repo/avatars";
 import { Avatar } from "@repo/ui/avatar";
-import { ACHIEVEMENTS } from "@/lib/achievements";
+import { achievementsFor } from "@/lib/achievements";
+import { getLocale, getMessages } from "@/lib/i18n/server";
 
 export type AchievementStatus = { achievement: string; progress: number; goal: number; unlocked_at: string | null };
-
-const dateFormat = new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short", year: "numeric" });
 
 /**
  * Logros del perfil: los conseguidos primero y luego los más avanzados. Cada
  * uno enseña tu monstruo con la ropa que da (en gris si aún no la tienes).
  */
-export function Achievements({ statuses, avatarSeed, avatarParts }: { statuses: AchievementStatus[]; avatarSeed: number; avatarParts: Json }) {
+export async function Achievements({ statuses, avatarSeed, avatarParts }: { statuses: AchievementStatus[]; avatarSeed: number; avatarParts: Json }) {
+  const locale = await getLocale();
+  const m = await getMessages();
+  const dateFormat = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" });
+  const catalog = achievementsFor(locale);
   const byId = new Map(statuses.map((status) => [status.achievement, status]));
-  const items = ACHIEVEMENTS.map((achievement) => ({
+  const items = catalog.map((achievement) => ({
     achievement,
     status: byId.get(achievement.id) ?? { achievement: achievement.id, progress: 0, goal: 1, unlocked_at: null },
   })).sort((a, b) => {
@@ -28,10 +31,10 @@ export function Achievements({ statuses, avatarSeed, avatarParts }: { statuses: 
     <section id="logros" aria-labelledby="achievements-title" className="flex scroll-mt-24 flex-col gap-4">
       <div>
         <h2 id="achievements-title" className="text-xl font-semibold">
-          Logros
+          {m.achievements.title}
         </h2>
         <p className="text-sm text-muted">
-          {unlocked} de {ACHIEVEMENTS.length}. Cada uno desbloquea ropa nueva para tu monster.
+          {m.achievements.summary(unlocked, catalog.length)}
         </p>
       </div>
 
@@ -57,7 +60,7 @@ export function Achievements({ statuses, avatarSeed, avatarParts }: { statuses: 
                 {done ? (
                   <span className="text-xs">
                     <strong>{achievement.reward.label}</strong>
-                    <span className="text-muted">, desde el {dateFormat.format(new Date(status.unlocked_at!))}</span>
+                    <span className="text-muted">{m.achievements.since(dateFormat.format(new Date(status.unlocked_at!)))}</span>
                   </span>
                 ) : (
                   <span className="flex items-center gap-2 text-xs text-muted">
@@ -65,7 +68,7 @@ export function Achievements({ statuses, avatarSeed, avatarParts }: { statuses: 
                       <>
                         <span
                           role="progressbar"
-                          aria-label={`Progreso de ${achievement.name}`}
+                          aria-label={m.achievements.progress(achievement.name)}
                           aria-valuemin={0}
                           aria-valuemax={status.goal}
                           aria-valuenow={status.progress}
@@ -79,7 +82,7 @@ export function Achievements({ statuses, avatarSeed, avatarParts }: { statuses: 
                         </span>
                       </>
                     )}
-                    {status.goal === 1 && <span>Premio: {achievement.reward.label}</span>}
+                    {status.goal === 1 && <span>{m.achievements.reward(achievement.reward.label)}</span>}
                   </span>
                 )}
               </span>

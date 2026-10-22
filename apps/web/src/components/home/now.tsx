@@ -7,6 +7,7 @@ import type { Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { usePushNotifications } from "@/components/pwa/push";
 import { createClient } from "@/lib/supabase/client";
+import { useMessages } from "@/lib/i18n/client";
 
 type Person = { id: string; username: string; avatar_seed: number; avatar_parts: Json };
 
@@ -29,16 +30,17 @@ export type NowItem = {
 export type WaitingItem = { key: string; href: string; person: Person; icon: string; title: string; detail: string };
 
 export function NowSection({ items, waiting }: { items: NowItem[]; waiting: WaitingItem[] }) {
+  const m = useMessages();
   return (
     <section aria-labelledby="now-title" className="flex flex-col gap-4">
       <h2 id="now-title" className="text-xl font-semibold">
-        Ahora
+        {m.now.title}
       </h2>
 
       <PushPrompt />
 
       {items.length === 0 ? (
-        <p className="text-muted">Nada pendiente. Buen momento para echar una partida o retar a alguien.</p>
+        <p className="text-muted">{m.now.empty}</p>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2">
           {items.map((item) => (
@@ -51,7 +53,7 @@ export function NowSection({ items, waiting }: { items: NowItem[]; waiting: Wait
 
       {waiting.length > 0 && (
         <div className="flex flex-col gap-1">
-          <h3 className="text-sm text-muted">Esperando a que te respondan</h3>
+          <h3 className="text-sm text-muted">{m.now.waiting}</h3>
           <ul className="flex flex-col">
             {waiting.map((item) => (
               <li key={item.key}>
@@ -76,6 +78,7 @@ export function NowSection({ items, waiting }: { items: NowItem[]; waiting: Wait
 
 function NowCard({ item }: { item: NowItem }) {
   const router = useRouter();
+  const m = useMessages();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
 
@@ -122,7 +125,7 @@ function NowCard({ item }: { item: NowItem }) {
       <div className="mt-auto flex flex-wrap items-center gap-2">
         {item.kind === "turn" && (
           <Link href={item.href} className="rounded-full bg-ink px-4 py-1.5 text-sm font-semibold text-bg">
-            Jugar
+            {m.common.play}
           </Link>
         )}
         {(item.kind === "invite" || item.kind === "friend") && (
@@ -133,24 +136,24 @@ function NowCard({ item }: { item: NowItem }) {
               onClick={() => void respond(true)}
               className="rounded-full bg-ink px-4 py-1.5 text-sm font-semibold text-bg disabled:opacity-50"
             >
-              Aceptar
+              {m.now.accept}
             </button>
             <button type="button" disabled={busy} onClick={() => void respond(false)} className="px-2 text-sm text-muted hover:text-ink disabled:opacity-50">
-              Rechazar
+              {m.now.decline}
             </button>
           </>
         )}
         {item.kind === "challenge" && (
           <>
             <Link href={item.href} className="rounded-full bg-ink px-4 py-1.5 text-sm font-semibold text-bg">
-              Jugar
+              {m.common.play}
             </Link>
             <button type="button" disabled={busy} onClick={() => void respond(false)} className="px-2 text-sm text-muted hover:text-ink disabled:opacity-50">
-              Rechazar
+              {m.now.decline}
             </button>
           </>
         )}
-        {error && <span className="text-xs text-danger">No se ha podido. Inténtalo otra vez.</span>}
+        {error && <span className="text-xs text-danger">{m.common.error}</span>}
       </div>
     </div>
   );
@@ -159,16 +162,15 @@ function NowCard({ item }: { item: NowItem }) {
 /** Invita a activar los avisos (sin ellos, los retos pasan desapercibidos). */
 function PushPrompt() {
   const { push, busy, error, enable } = usePushNotifications();
+  const m = useMessages();
   if (push !== "off" && push !== "ios-install") return null;
 
   return (
     <div className="flex flex-col gap-3 rounded-3xl p-4 sm:flex-row sm:items-center sm:justify-between" style={{ background: "var(--board)" }}>
       <div className="flex flex-col gap-0.5">
-        <p className="font-semibold">Activa los avisos</p>
+        <p className="font-semibold">{m.now.pushTitle}</p>
         <p className="text-sm text-muted">
-          {push === "ios-install"
-            ? "En iPhone, añade la app a la pantalla de inicio (Compartir y Añadir a pantalla de inicio) y actívalos desde ahí."
-            : "Para enterarte cuando te reten o te toque, aunque tengas la app cerrada."}
+          {push === "ios-install" ? m.now.pushIos : m.now.pushHint}
         </p>
         {error && <p className="text-sm text-danger">{error}</p>}
       </div>
@@ -179,7 +181,7 @@ function PushPrompt() {
           onClick={() => void enable()}
           className="shrink-0 self-start rounded-full bg-ink px-4 py-2 text-sm font-semibold text-bg disabled:opacity-50 sm:self-center"
         >
-          Activar avisos
+          {m.now.pushEnable}
         </button>
       )}
     </div>

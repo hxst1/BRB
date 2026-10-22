@@ -6,6 +6,7 @@ import { DailyResult, NextGame, StreakText, formatDay } from "@/components/daily
 import { Game2048Screen } from "@/components/game2048/screen";
 import { HowToPlayButton } from "@/components/how-to-play";
 import { DAILY_GAMES, dailyGameName } from "@/lib/daily";
+import { getLocale, getMessages } from "@/lib/i18n/server";
 import { getViewerId } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
@@ -26,22 +27,25 @@ export default function DailyPage() {
   );
 }
 
-function Heading({ game }: { game: string }) {
+async function Heading({ game }: { game: string }) {
+  const m = await getMessages();
   return (
     <div className="mx-auto max-w-[30rem] lg:mx-0 lg:max-w-none">
       <div className="mb-1 flex items-center justify-between gap-3">
-        <h1 className="display text-6xl font-bold sm:text-7xl">Reto diario</h1>
-        {DAILY_GAMES[game] && <HowToPlayButton game={DAILY_GAMES[game].guide} name={DAILY_GAMES[game].short} />}
+        <h1 className="display text-6xl font-bold sm:text-7xl">{m.daily.title}</h1>
+        {DAILY_GAMES[game] && <HowToPlayButton game={DAILY_GAMES[game].guide} name={dailyGameName(game, m, true)} />}
       </div>
       <p className="mb-8 text-muted">
-        Hoy toca <strong className="text-ink">{dailyGameName(game)}</strong>. La misma partida para todos, un solo intento.
+        {m.daily.todayIsBefore}
+        <strong className="text-ink">{dailyGameName(game, m)}</strong>
+        {m.daily.todayIsAfter}
       </p>
     </div>
   );
 }
 
 async function DailyForViewer() {
-  const viewerId = await getViewerId();
+  const [viewerId, m, locale] = await Promise.all([getViewerId(), getMessages(), getLocale()]);
   const supabase = await createClient();
 
   if (!viewerId) {
@@ -53,9 +57,9 @@ async function DailyForViewer() {
         <Layout aside={<DailyLeaderboard game={game} viewerId={null} />}>
           <p>
             <Link href="/entrar?next=/reto-diario" className="font-medium underline underline-offset-4">
-              Entra
+              {m.daily.signIn}
             </Link>{" "}
-            para jugar el reto de hoy y aparecer en el ranking.
+            {m.daily.signInRest}
           </p>
           {info && <NextGame summary={info} />}
         </Layout>
@@ -87,7 +91,7 @@ async function DailyForViewer() {
     <>
       <Heading game={game} />
       <Layout aside={<DailyLeaderboard game={game} viewerId={viewerId} />}>
-        <p className="text-sm text-muted first-letter:uppercase">{formatDay(summary.day)}</p>
+        <p className="text-sm text-muted first-letter:uppercase">{formatDay(summary.day, locale)}</p>
         <p className="display text-3xl font-bold text-balance">
           <DailyResult summary={summary} />
         </p>
@@ -96,7 +100,7 @@ async function DailyForViewer() {
         </p>
         <NextGame summary={summary} />
         <Link href={DAILY_GAMES[game]?.path ?? "/"} className="self-start rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-          Jugar una partida normal
+          {m.daily.playNormal}
         </Link>
       </Layout>
     </>

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useMessages } from "@/lib/i18n/client";
 
 export type FeedbackKind = "bug" | "idea" | "rating";
 
@@ -13,11 +14,7 @@ export function showFeedback(kind: FeedbackKind = "bug") {
   window.dispatchEvent(new CustomEvent<FeedbackKind>(SHOW_EVENT, { detail: kind }));
 }
 
-const KINDS: { value: FeedbackKind; label: string; placeholder: string }[] = [
-  { value: "bug", label: "Un problema", placeholder: "¿Qué ha pasado? Cuanto más concreto, antes lo arreglamos: en qué juego, qué hiciste…" },
-  { value: "idea", label: "Una idea", placeholder: "Un juego que te gustaría, algo que cambiarías…" },
-  { value: "rating", label: "Valorar", placeholder: "Si quieres, cuéntanos por qué (opcional)." },
-];
+const KINDS: FeedbackKind[] = ["bug", "idea", "rating"];
 
 /** Versión publicada (commit de Vercel), para saber en qué versión pasó un problema. */
 const APP_VERSION = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "dev";
@@ -29,6 +26,7 @@ const APP_VERSION = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?
  */
 export function FeedbackDialog() {
   const router = useRouter();
+  const m = useMessages();
   const [kind, setKind] = useState<FeedbackKind | null>(null);
   const [body, setBody] = useState("");
   const [rating, setRating] = useState(0);
@@ -76,7 +74,7 @@ export function FeedbackDialog() {
     });
     if (rpcError) {
       setState("idle");
-      setError(rpcError.hint === "rate_limited" ? "Has enviado varios mensajes seguidos. Prueba dentro de un rato." : "No se ha podido enviar. Inténtalo otra vez.");
+      setError(rpcError.hint === "rate_limited" ? m.feedback.rateLimited : m.feedback.sendError);
       return;
     }
     setState("sent");
@@ -86,7 +84,7 @@ export function FeedbackDialog() {
   }
 
   if (!kind) return null;
-  const current = KINDS.find((option) => option.value === kind)!;
+  const current = m.feedback.kinds[kind];
   const ready = kind === "rating" ? rating > 0 : body.trim().length >= 3;
 
   return (
@@ -101,7 +99,7 @@ export function FeedbackDialog() {
         <button
           type="button"
           onClick={close}
-          aria-label="Cerrar"
+          aria-label={m.common.close}
           className="absolute top-3 right-3 grid size-9 place-items-center rounded-full text-muted hover:bg-line/60 hover:text-ink"
         >
           <svg viewBox="0 0 16 16" className="size-4" aria-hidden>
@@ -112,36 +110,34 @@ export function FeedbackDialog() {
         {state === "sent" ? (
           <div className="flex flex-col items-start gap-3 py-2 pr-8">
             <h2 id="feedback-title" className="display text-2xl leading-tight font-bold">
-              ¡Gracias!
+              {m.feedback.thanks}
             </h2>
             <p className="text-sm text-muted">
-              {kind === "rating"
-                ? "Tu valoración nos ayuda a saber si vamos bien."
-                : "Lo leemos todo. Verás la respuesta y el estado en tu perfil, en Ajustes."}
+              {kind === "rating" ? m.feedback.thanksRating : m.feedback.thanksMessage}
             </p>
             <button type="button" onClick={close} className="rounded-full bg-ink px-5 py-2 text-sm font-semibold text-bg">
-              Cerrar
+              {m.common.close}
             </button>
           </div>
         ) : (
           <>
             <h2 id="feedback-title" className="display pr-8 text-2xl leading-tight font-bold">
-              ¿Qué nos quieres contar?
+              {m.feedback.title}
             </h2>
 
-            <div role="radiogroup" aria-label="Tipo de mensaje" className="grid grid-flow-col auto-cols-fr rounded-full bg-line/60 p-1">
+            <div role="radiogroup" aria-label={m.feedback.kindLabel} className="grid grid-flow-col auto-cols-fr rounded-full bg-line/60 p-1">
               {KINDS.map((option) => (
                 <button
-                  key={option.value}
+                  key={option}
                   type="button"
                   role="radio"
-                  aria-checked={kind === option.value}
-                  onClick={() => setKind(option.value)}
+                  aria-checked={kind === option}
+                  onClick={() => setKind(option)}
                   className={`rounded-full px-2 py-1.5 text-sm transition-colors ${
-                    kind === option.value ? "bg-surface font-medium shadow-soft" : "text-muted hover:text-ink"
+                    kind === option ? "bg-surface font-medium shadow-soft" : "text-muted hover:text-ink"
                   }`}
                 >
-                  {option.label}
+                  {m.feedback.kinds[option].label}
                 </button>
               ))}
             </div>
@@ -162,14 +158,14 @@ export function FeedbackDialog() {
             {error && <p className="text-sm text-danger">{error}</p>}
 
             <div className="flex items-center justify-between gap-3">
-              <p className="text-xs text-muted">{kind === "bug" ? "Se adjunta la pantalla y el navegador." : ""}</p>
+              <p className="text-xs text-muted">{kind === "bug" ? m.feedback.attached : ""}</p>
               <button
                 type="button"
                 disabled={!ready || state === "sending"}
                 onClick={() => void send()}
                 className="shrink-0 rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-bg disabled:opacity-40"
               >
-                {state === "sending" ? "Enviando…" : "Enviar"}
+                {state === "sending" ? m.feedback.sending : m.feedback.send}
               </button>
             </div>
           </>
@@ -179,21 +175,20 @@ export function FeedbackDialog() {
   );
 }
 
-const STAR_LABELS = ["", "Nada", "Poco", "Está bien", "Mucho", "Me encanta"];
-
 function Stars({ value, onChange }: { value: number; onChange: (value: number) => void }) {
   const [hover, setHover] = useState(0);
+  const m = useMessages();
   const shown = hover || value;
   return (
     <div className="flex flex-col items-center gap-1">
-      <div role="radiogroup" aria-label="¿Cuánto te gusta?" className="flex gap-1" onPointerLeave={() => setHover(0)}>
+      <div role="radiogroup" aria-label={m.feedback.howMuch} className="flex gap-1" onPointerLeave={() => setHover(0)}>
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
             type="button"
             role="radio"
             aria-checked={value === star}
-            aria-label={`${star} ${star === 1 ? "estrella" : "estrellas"}`}
+            aria-label={m.feedback.stars(star)}
             onClick={() => onChange(star)}
             onPointerEnter={() => setHover(star)}
             className="grid size-12 place-items-center rounded-full transition-transform active:scale-90"
@@ -211,7 +206,7 @@ function Stars({ value, onChange }: { value: number; onChange: (value: number) =
         ))}
       </div>
       <p aria-live="polite" className="h-5 text-sm text-muted">
-        {STAR_LABELS[shown]}
+        {m.feedback.starLabels[shown]}
       </p>
     </div>
   );

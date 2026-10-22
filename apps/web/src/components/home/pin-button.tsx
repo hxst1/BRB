@@ -3,9 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useOptimistic, useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useMessages } from "@/lib/i18n/client";
 
 /** Chincheta de una tarjeta de juego: lo fija arriba, en "Tus juegos", o lo quita. */
 export function PinButton({ game, title, pinned }: { game: string; title: string; pinned: boolean }) {
+  const m = useMessages();
   const router = useRouter();
   const [shown, setShown] = useOptimistic(pinned);
   const [, startTransition] = useTransition();
@@ -17,7 +19,7 @@ export function PinButton({ game, title, pinned }: { game: string; title: string
       setShown(!pinned);
       const { error: rpcError } = await createClient().rpc("toggle_pinned_game", { game });
       if (rpcError) {
-        setError(rpcError.code === "P0001" ? "Como mucho 6" : "No se ha podido");
+        setError(rpcError.code === "P0001" ? m.gameCards.pinLimit : m.gameCards.pinError);
         setTimeout(() => setError(null), 2500);
         return;
       }
@@ -31,8 +33,8 @@ export function PinButton({ game, title, pinned }: { game: string; title: string
         type="button"
         onClick={toggle}
         aria-pressed={shown}
-        aria-label={shown ? `Quitar ${title} de tus juegos` : `Fijar ${title} en tus juegos`}
-        title={shown ? "Quitar de tus juegos" : "Fijar en tus juegos"}
+        aria-label={shown ? m.gameCards.unpinGame(title) : m.gameCards.pinGame(title)}
+        title={shown ? m.gameCards.unpin : m.gameCards.pin}
         className={`grid size-9 place-items-center rounded-full transition-colors hover:bg-line/60 ${shown ? "text-ink" : "text-muted hover:text-ink"}`}
       >
         <svg viewBox="0 0 24 24" className="size-4" aria-hidden fill={shown ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round">
