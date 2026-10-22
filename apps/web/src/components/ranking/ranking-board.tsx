@@ -8,7 +8,9 @@ import { formatNumber, formatTime } from "@/lib/format";
 import { levelFromXp } from "@repo/games/level";
 import { createClient } from "@/lib/supabase/client";
 
-type Category = "level" | "2048" | "snake" | "lightsout" | "minesweeper-easy" | "minesweeper-medium" | "minesweeper-hard" | "sudoku-easy" | "sudoku-medium" | "sudoku-hard" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron";
+type GameId = "2048" | "snake" | "lightsout" | "minesweeper" | "sudoku" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron";
+type Category = "level" | GameId;
+type Difficulty = "easy" | "medium" | "hard";
 type Scope = "global" | "friends";
 type Period = "all" | "week";
 
@@ -25,22 +27,30 @@ type Row = {
   detail?: string;
 };
 
+const DIFFICULTIES: { value: Difficulty; label: string }[] = [
+  { value: "easy", label: "Fácil" },
+  { value: "medium", label: "Medio" },
+  { value: "hard", label: "Difícil" },
+];
+
 /**
  * Juegos con ranking. Para añadir uno nuevo basta una entrada aquí: `games`
  * son los valores de `matches.game` que suma (piedra, papel o tijera junta
  * sus dos variantes); sin `games`, es un juego en solitario con puntuación.
+ * `levels` da el id del ranking de cada dificultad (un ranking por cada una).
  */
-type GameId = Exclude<Category, "level">;
-
-const RANKED_GAMES: {
+type RankedGame = {
   id: GameId;
   label: string;
   icon: ReactNode;
   games?: string[];
+  levels?: Record<Difficulty, string>;
   unit?: string;
   /** Si la puntuación es un tiempo (gana el menor), cómo mostrarla. */
   format?: (score: number) => string;
-}[] = [
+};
+
+const RANKED_GAMES: RankedGame[] = [
   {
     id: "2048",
     label: "2048",
@@ -75,20 +85,20 @@ const RANKED_GAMES: {
       </span>
     ),
   },
-  ...(
-    [
-      ["minesweeper-easy", "Buscaminas fácil"],
-      ["minesweeper-medium", "Buscaminas medio"],
-      ["minesweeper-hard", "Buscaminas difícil"],
-    ] as const
-  ).map(([id, label]) => ({ id, label, icon: "💣", format: formatTime })),
-  ...(
-    [
-      ["sudoku-easy", "Sudoku fácil"],
-      ["sudoku-medium", "Sudoku medio"],
-      ["sudoku-hard", "Sudoku difícil"],
-    ] as const
-  ).map(([id, label]) => ({ id, label, icon: "🔢", format: formatTime })),
+  {
+    id: "minesweeper",
+    label: "Buscaminas",
+    icon: "💣",
+    levels: { easy: "minesweeper-easy", medium: "minesweeper-medium", hard: "minesweeper-hard" },
+    format: formatTime,
+  },
+  {
+    id: "sudoku",
+    label: "Sudoku",
+    icon: "🔢",
+    levels: { easy: "sudoku-easy", medium: "sudoku-medium", hard: "sudoku-hard" },
+    format: formatTime,
+  },
   {
     id: "tictactoe",
     label: "3 en raya",
@@ -120,7 +130,7 @@ const RANKED_GAMES: {
 
 const MAX_ROWS = 50;
 
-async function loadRows(category: Category, scope: Scope, period: Period): Promise<Row[]> {
+async function loadRows(category: Category, difficulty: Difficulty, scope: Scope, period: Period): Promise<Row[]> {
   const supabase = createClient();
 
   if (category === "level") {
@@ -139,7 +149,8 @@ async function loadRows(category: Category, scope: Scope, period: Period): Promi
 
   const ranked = RANKED_GAMES.find((g) => g.id === category);
   if (ranked && !ranked.games) {
-    const { data } = await supabase.rpc("get_leaderboard", { game: category, scope, period, max_rows: MAX_ROWS });
+    const game = ranked.levels ? ranked.levels[difficulty] : category;
+    const { data } = await supabase.rpc("get_leaderboard", { game, scope, period, max_rows: MAX_ROWS });
     return (data ?? []).map((r) => ({
       rank: r.rank,
       userId: r.user_id,
@@ -172,21 +183,24 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
   const [lastGame, setLastGame] = useState<GameId>("2048");
   const [scope, setScope] = useState<Scope>("global");
   const [period, setPeriod] = useState<Period>("all");
+  // Compartida por los juegos con dificultades (buscaminas y sudoku).
+  const [difficulty, setDifficulty] = useState<Difficulty>("medium");
   const [result, setResult] = useState<{ key: string; rows: Row[] } | null>(null);
 
   const hasPeriod = category !== "level";
   const effectivePeriod = hasPeriod ? period : "all";
-  const key = `${category}:${scope}:${effectivePeriod}`;
+  const hasLevels = RANKED_GAMES.some((game) => game.id === category && game.levels);
+  const key = `${category}:${hasLevels ? difficulty : ""}:${scope}:${effectivePeriod}`;
 
   useEffect(() => {
     let cancelled = false;
-    loadRows(category, scope, effectivePeriod).then((rows) => {
+    loadRows(category, difficulty, scope, effectivePeriod).then((rows) => {
       if (!cancelled) setResult({ key, rows });
     });
     return () => {
       cancelled = true;
     };
-  }, [category, scope, effectivePeriod, key]);
+  }, [category, difficulty, scope, effectivePeriod, key]);
 
   const rows = result?.key === key ? result.rows : null;
   // El usuario puede venir al final aunque no esté en el top.
@@ -216,6 +230,12 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
             setLastGame(id);
           }}
         />
+      )}
+
+      {hasLevels && (
+        <div className="-mt-2 flex justify-center">
+          <Toggle label="Dificultad" value={difficulty} onChange={setDifficulty} options={DIFFICULTIES} />
+        </div>
       )}
 
       {(viewerId || hasPeriod) && (
