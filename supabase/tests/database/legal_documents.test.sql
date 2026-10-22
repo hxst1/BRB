@@ -10,8 +10,9 @@ select throws_ok($$ select public.admin_update_legal_document(gen_random_uuid(),
   'ni usar la función del panel');
 reset role;
 
-select is(public.admin_update_legal_document(gen_random_uuid(), 'cookies', 'Política de cookies', 'Texto nuevo', 'prueba'), 2,
-  'el panel los cambia y sube la versión');
+select set_config('test.version', (select version::text from public.legal_documents where slug = 'cookies'), true);
+select is(public.admin_update_legal_document(gen_random_uuid(), 'cookies', 'Política de cookies', 'Texto nuevo', 'prueba'),
+  current_setting('test.version')::int + 1, 'el panel los cambia y sube la versión');
 
 select * from finish();
 rollback;
