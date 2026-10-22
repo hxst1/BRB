@@ -1,8 +1,11 @@
 begin;
 select plan(23);
 
--- Un día limpio: sin partidas del reto de hoy que hubiera en la base local.
+-- Un día limpio: sin partidas del reto de hoy que hubiera en la base local, y
+-- con el reto de hoy en 2048 (el juego cambia cada día; este test es de puntos).
 delete from public.game_runs where daily = private.game_day();
+insert into private.daily_seeds (day, game) values (private.game_day(), '2048')
+on conflict (day) do update set game = '2048';
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-d0000000000a', 'a@daily.local', '{"username": "d_ana"}'),

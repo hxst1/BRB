@@ -519,6 +519,16 @@ isOneToOne: false
               "count": number,"fingerprint": string,"first_seen": string,"last_seen": string,"last_version": string,"message": string,"paths": (string)[],"source": string,"status": string,"user_agents": (string)[],"users": number
             }[]
                            },
+"admin_get_github_contributions":
+{ Args: { "user_id": string }; Returns: {
+              "created_at": string,"github_login": string,"id": number,"kind": string,"url": string
+            }[]
+                           },
+"admin_get_referrals":
+{ Args: { "user_id": string }; Returns: {
+              "avatar_parts": Json,"avatar_seed": number,"created_at": string,"direction": string,"friend_code": string,"has_played": boolean,"user_id": string,"username": string
+            }[]
+                           },
 "admin_invalidate_run":
 { Args: { "admin_id": string,"reason": string,"run_id": string }; Returns: number
                            },
