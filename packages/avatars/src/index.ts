@@ -92,7 +92,11 @@ interface Palette {
   body: string;
   shade: string;
   accent: string;
-  /** Degradados que usa `body` (url(#...)). Los ids son fijos: el mismo degradado en todos los SVG. */
+  /**
+   * Degradados que usa `body` (url(#...)). Los ids son fijos: el mismo degradado
+   * en todos los SVG. En coordenadas del dibujo (userSpaceOnUse), para que un
+   * cuerpo hecho de varias formas (fluffy) lo comparta en vez de repetirlo en cada una.
+   */
   defs?: string;
   supporter?: boolean;
   /** Id del logro que la desbloquea. */
@@ -115,14 +119,14 @@ const PALETTES = {
     shade: "#845ef7",
     accent: "#ffffff",
     supporter: true,
-    defs: `<linearGradient id="brb-rainbow" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6b6b"/><stop offset=".25" stop-color="#ffd43b"/><stop offset=".5" stop-color="#8ce99a"/><stop offset=".75" stop-color="#3bc9db"/><stop offset="1" stop-color="#845ef7"/></linearGradient>`,
+    defs: `<linearGradient id="brb-rainbow" gradientUnits="userSpaceOnUse" x1="15" y1="15" x2="85" y2="95"><stop offset="0" stop-color="#ff6b6b"/><stop offset=".25" stop-color="#ffd43b"/><stop offset=".5" stop-color="#8ce99a"/><stop offset=".75" stop-color="#3bc9db"/><stop offset="1" stop-color="#845ef7"/></linearGradient>`,
   },
   galaxy: {
     body: "url(#brb-galaxy)",
     shade: "#2b1a5e",
     accent: "#ffd43b",
     supporter: true,
-    defs: `<radialGradient id="brb-galaxy" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#b197fc"/><stop offset=".45" stop-color="#5f3dc4"/><stop offset="1" stop-color="#1c1340"/></radialGradient>`,
+    defs: `<radialGradient id="brb-galaxy" gradientUnits="userSpaceOnUse" cx="38" cy="38" r="70"><stop offset="0" stop-color="#b197fc"/><stop offset=".45" stop-color="#5f3dc4"/><stop offset="1" stop-color="#1c1340"/></radialGradient>`,
   },
   ember: { body: "#ff7a45", shade: "#e8590c", accent: "#ffd43b", achievement: "streak-30" },
   ultra: { body: "#845ef7", shade: "#6741d9", accent: "#ffd43b", achievement: "tile-2048" },
@@ -174,7 +178,8 @@ const MOUTHS = {
 interface Top {
   /** back: detrás del cuerpo; front: encima del cuerpo; face: encima de la cara (gafas…). */
   layer: "back" | "front" | "face";
-  draw: (body: Body, palette: Palette) => string;
+  /** `eyes`: qué ojos lleva (las gafas se adaptan a uno, dos o tres). */
+  draw: (body: Body, palette: Palette, eyes: EyesId) => string;
   supporter?: boolean;
   /** Id del logro que la desbloquea. */
   achievement?: string;
@@ -236,14 +241,19 @@ const TOPS = {
   sunglasses: {
     layer: "face",
     supporter: true,
-    draw: (b) => {
+    draw: (b, _p, eyes) => {
       const { x, y } = b.eyes;
-      return (
-        `<path d="M${x - 25} ${y - 6}h50" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>` +
-        `<rect x="${x - 24}" y="${y - 8}" width="20" height="14" rx="6" fill="${INK}"/>` +
-        `<rect x="${x + 4}" y="${y - 8}" width="20" height="14" rx="6" fill="${INK}"/>` +
-        `<path d="M${x - 20} ${y - 4}l5 0M${x + 8} ${y - 4}l5 0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity=".7"/>`
-      );
+      const lens = (cx: number, cy: number, w: number, h: number) =>
+        `<rect x="${cx - w / 2}" y="${cy - h / 2}" width="${w}" height="${h}" rx="${Math.min(w, h) / 2.4}" fill="${INK}"/>` +
+        `<path d="M${cx - w / 2 + 3} ${cy - h / 2 + 3.5}l${Math.max(3, w / 4)} 0" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity=".7"/>`;
+      const bridge = (from: number, to: number, at: number) =>
+        `<path d="M${from} ${at}H${to}" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`;
+      // Un cristal por ojo, del tamaño de cada uno (ver EYES).
+      if (eyes === "cyclops") return bridge(x - 26, x + 26, y - 4) + lens(x, y - 2, 36, 31);
+      if (eyes === "three")
+        return bridge(x - 26, x + 26, y - 3) + lens(x - 16, y + 1, 16, 16) + lens(x, y - 8, 17, 17) + lens(x + 16, y + 1, 16, 16);
+      if (eyes === "odd") return bridge(x - 26, x + 24, y - 3) + lens(x - 12, y - 1, 26, 25) + lens(x + 14, y + 1, 18, 17);
+      return bridge(x - 25, x + 25, y - 4) + lens(x - 13, y, 22, 20) + lens(x + 13, y, 22, 20);
     },
   },
   cap: {
@@ -432,14 +442,14 @@ export function renderMonsterSvg(parts: MonsterParts, mood: Mood = "neutral"): s
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">` +
     (palette.defs ? `<defs>${palette.defs}</defs>` : "") +
-    (top.layer === "back" ? top.draw(body, palette) : "") +
+    (top.layer === "back" ? top.draw(body, palette, parts.eyes) : "") +
     body.shape(palette.body) +
-    (top.layer === "front" ? top.draw(body, palette) : "") +
+    (top.layer === "front" ? top.draw(body, palette, parts.eyes) : "") +
     cheeks +
     `<g class="monster-eyes" style="transform-origin:${x}px ${y}px">${eyes}</g>` +
     brows +
     mouth +
-    (top.layer === "face" ? top.draw(body, palette) : "") +
+    (top.layer === "face" ? top.draw(body, palette, parts.eyes) : "") +
     `</svg>`
   );
 }
@@ -510,12 +520,12 @@ export function renderStickerSvg(parts: MonsterParts, sticker: Sticker): string 
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">` +
     (palette.defs ? `<defs>${palette.defs}</defs>` : "") +
-    (top.layer === "back" ? top.draw(body, palette) : "") +
+    (top.layer === "back" ? top.draw(body, palette, parts.eyes) : "") +
     body.shape(palette.body) +
-    (top.layer === "front" ? top.draw(body, palette) : "") +
+    (top.layer === "front" ? top.draw(body, palette, parts.eyes) : "") +
     blush +
     STICKER_FACES[sticker](body.eyes, body.mouthY, parts) +
-    (top.layer === "face" ? top.draw(body, palette) : "") +
+    (top.layer === "face" ? top.draw(body, palette, parts.eyes) : "") +
     `</svg>`
   );
 }

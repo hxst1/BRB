@@ -182,7 +182,14 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
           <Avatar seed={viewer.avatar_seed} parts={viewer.avatar_parts} size={96} label="Tu bribón" />
         </Link>
         <div className="flex min-w-60 flex-1 flex-col gap-4">
-          <h1 className="display text-5xl font-bold sm:text-6xl">Hola, {viewer.username}</h1>
+          <h1 className="display text-5xl font-bold sm:text-6xl">
+            Hola, {viewer.username}
+            {viewer.supporter_tier && (
+              <span title="Apoya el proyecto" className="ml-2 align-top text-2xl" style={{ color: "var(--t256)" }}>
+                ✦
+              </span>
+            )}
+          </h1>
           <LevelBar xp={viewer.xp} className="max-w-sm" />
         </div>
       </section>

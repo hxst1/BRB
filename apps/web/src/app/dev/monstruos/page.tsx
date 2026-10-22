@@ -49,6 +49,29 @@ export default function MonstersPage() {
         <Avatar seed={2} parts={{ ...sample, body: "ghost", palette: "night", top: "crown", eyes: "cyclops" }} size={120} />
       </div>
 
+      <h2 className="mt-14 mb-4 text-xl font-semibold">Gafas con cada tipo de ojos</h2>
+      <div className="flex flex-wrap gap-4">
+        {PART_OPTIONS.eyes.map((eyes) =>
+          PART_OPTIONS.body.map((body) => (
+            <figure key={`${eyes}-${body}`} className="flex flex-col items-center gap-1">
+              <Avatar seed={4} parts={{ ...sample, body, eyes, top: "sunglasses" }} size={72} />
+              <figcaption className="text-xs text-muted">
+                {eyes}/{body}
+              </figcaption>
+            </figure>
+          )),
+        )}
+      </div>
+
+      <h2 className="mt-14 mb-4 text-xl font-semibold">Degradados con cada cuerpo</h2>
+      <div className="flex flex-wrap gap-4">
+        {(["rainbow", "galaxy"] as const).map((palette) =>
+          PART_OPTIONS.body.map((body) => (
+            <Avatar key={`${palette}-${body}`} seed={5} parts={{ ...sample, body, palette, top: "ears" }} size={88} label={`${palette}/${body}`} />
+          )),
+        )}
+      </div>
+
       <h2 className="mt-14 mb-4 text-xl font-semibold">Todas las partes</h2>
       {(["body", "eyes", "mouth", "top"] as const).map((slot) => (
         <div key={slot} className="mb-6">
