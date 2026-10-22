@@ -570,6 +570,9 @@ isOneToOne: false
 "decline_challenge":
 { Args: { "challenge_id": string }; Returns: undefined
                            },
+"delete_account":
+{ Args: { "target": string }; Returns: undefined
+                           },
 "delete_push_subscription":
 { Args: { "endpoint": string }; Returns: undefined
                            },

@@ -103,6 +103,13 @@ const INITIAL: PasswordChangeState = { error: null, done: false };
 
 function PasswordForm() {
   const [state, action, pending] = useActionState(changePassword, INITIAL);
+  // Controlados: si hay un error, lo escrito se conserva (React vacía los formularios tras cada acción).
+  const [fields, setFields] = useState({ current: "", password: "", password_confirm: "" });
+  const bind = (name: keyof typeof fields) => ({
+    name,
+    value: fields[name],
+    onChange: (event: { target: { value: string } }) => setFields((values) => ({ ...values, [name]: event.target.value })),
+  });
 
   return (
     <form action={action} className="flex flex-col gap-3">
@@ -113,15 +120,15 @@ function PasswordForm() {
         <>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-muted">Contraseña actual</span>
-            <PasswordInput name="current" autoComplete="current-password" required className="w-full rounded-2xl border border-line bg-bg px-4 py-2.5 outline-none focus:border-focus" />
+            <PasswordInput {...bind("current")} autoComplete="current-password" required className="w-full rounded-2xl border border-line bg-bg px-4 py-2.5 outline-none focus:border-focus" />
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-muted">Nueva contraseña (8 caracteres o más)</span>
-            <PasswordInput name="password" autoComplete="new-password" required minLength={8} className="w-full rounded-2xl border border-line bg-bg px-4 py-2.5 outline-none focus:border-focus" />
+            <PasswordInput {...bind("password")} autoComplete="new-password" required minLength={8} className="w-full rounded-2xl border border-line bg-bg px-4 py-2.5 outline-none focus:border-focus" />
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-muted">Repite la nueva</span>
-            <PasswordInput name="password_confirm" autoComplete="new-password" required minLength={8} className="w-full rounded-2xl border border-line bg-bg px-4 py-2.5 outline-none focus:border-focus" />
+            <PasswordInput {...bind("password_confirm")} autoComplete="new-password" required minLength={8} className="w-full rounded-2xl border border-line bg-bg px-4 py-2.5 outline-none focus:border-focus" />
           </label>
           {state.error && (
             <p role="alert" className="text-sm text-danger">

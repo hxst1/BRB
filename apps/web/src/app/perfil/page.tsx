@@ -6,6 +6,7 @@ import { signOut } from "@/app/entrar/actions";
 import { FeedbackSection } from "@/components/feedback/feedback-section";
 import { LevelBar } from "@/components/level-bar";
 import { AccountSettings } from "@/components/profile/account-settings";
+import { DeleteAccount } from "@/components/profile/delete-account";
 import { Achievements } from "@/components/profile/achievements";
 import { AvatarEditor } from "@/components/profile/avatar-editor";
 import { Records } from "@/components/profile/records";
@@ -144,6 +145,8 @@ async function SettingsSection({ viewer }: { viewer: Viewer }) {
           </button>
         </form>
       </section>
+
+      <DeleteAccount />
     </div>
   );
 }
