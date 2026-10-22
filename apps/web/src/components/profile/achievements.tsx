@@ -31,7 +31,7 @@ export function Achievements({ statuses, avatarSeed, avatarParts }: { statuses: 
           Logros
         </h2>
         <p className="text-sm text-muted">
-          {unlocked} de {ACHIEVEMENTS.length}. Cada uno desbloquea ropa nueva para tu bribón.
+          {unlocked} de {ACHIEVEMENTS.length}. Cada uno desbloquea ropa nueva para tu monster.
         </p>
       </div>
 

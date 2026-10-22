@@ -653,6 +653,9 @@ isOneToOne: false
 "mark_conversation_read":
 { Args: { "friend": string }; Returns: undefined
                            },
+"record_github_contribution":
+{ Args: { "github_login": string,"kind": string,"url": string,"user_id": string }; Returns: boolean
+                           },
 "reject_run":
 { Args: { "reason": string,"run_id": string }; Returns: undefined
                            },

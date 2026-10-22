@@ -80,7 +80,7 @@ export function AvatarEditor({
   return (
     <section aria-labelledby="avatar-title" className="flex flex-col gap-6">
       <h2 id="avatar-title" className="sr-only">
-        Tu bribón
+        Tu monster
       </h2>
 
       <div className="flex items-center gap-6">
@@ -106,7 +106,7 @@ export function AvatarEditor({
       </div>
 
       <div className="flex flex-col gap-3">
-        <div role="tablist" aria-label="Partes del bribón" className="flex gap-1 overflow-x-auto rounded-full bg-line/60 p-1">
+        <div role="tablist" aria-label="Partes del monster" className="flex gap-1 overflow-x-auto rounded-full bg-line/60 p-1">
           {SLOTS.map(({ slot, label }) => (
             <button
               key={slot}
@@ -225,7 +225,7 @@ function CheeringAvatar({ seed, parts, animate }: { seed: number; parts: Partial
 
   return (
     <span className={happy ? "monster-cheer" : undefined}>
-      <Avatar seed={seed} parts={parts} size={128} mood={happy ? "happy" : "neutral"} label="Tu bribón" />
+      <Avatar seed={seed} parts={parts} size={128} mood={happy ? "happy" : "neutral"} label="Tu monster" />
     </span>
   );
 }
@@ -320,7 +320,7 @@ function LockedPartDialog({
               Exclusivo para quien apoya ✦
             </h2>
             <p className="text-muted">
-              Si apoyas el proyecto, desbloqueas esta y otras partes exclusivas para tu bribón, la insignia ✦ y el color de la
+              Si apoyas el proyecto, desbloqueas esta y otras partes exclusivas para tu monster, la insignia ✦ y el color de la
               app. Solo cosméticos: nunca ventajas en las partidas.
             </p>
             <div className="flex flex-wrap justify-center gap-2">

@@ -89,6 +89,13 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "🏆",
     reward: { slot: "top", id: "party", label: "Gorro de fiesta" },
   },
+  {
+    id: "contributor",
+    name: "Colaborador",
+    description: "Abre una issue o haz un pull request en GitHub con tu código de amigo.",
+    icon: "💻",
+    reward: { slot: "palette", id: "terminal", label: "Color terminal" },
+  },
 ];
 
 export function achievementById(id: string): Achievement | undefined {

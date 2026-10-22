@@ -84,6 +84,24 @@ export function SupportOptions() {
           </button>
         </div>
       )}
+      <div className="flex flex-col gap-1 rounded-2xl border border-line p-3 text-sm">
+        <p className="font-semibold">💻 ¿Sabes programar? Apoya con código</p>
+        <p className="text-muted">
+          El código es abierto. Abre una issue (un fallo o una idea) o propón un cambio en{" "}
+          <a href={SUPPORT_LINKS.githubRepo} target="_blank" rel="noopener noreferrer" className="font-medium text-ink underline underline-offset-4">
+            GitHub
+          </a>
+          {code ? (
+            <>
+              {" "}
+              con tu código <strong className="tabular tracking-wider text-ink">{code}</strong>
+            </>
+          ) : (
+            " con tu código de amigo"
+          )}{" "}
+          en el texto, y ganas el logro «Colaborador» y un color exclusivo.
+        </p>
+      </div>
     </div>
   );
 }

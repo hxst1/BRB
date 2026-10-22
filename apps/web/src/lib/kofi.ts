@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import type { Json } from "@repo/db";
+import { codesIn } from "./friend-codes";
 
 /**
  * Webhooks de Ko-fi: llegan como formulario con un campo `data` que es un
@@ -24,12 +25,6 @@ export type KofiResult = { ok: true; payment: KofiPayment } | { ok: false; statu
 function sameToken(received: unknown, expected: string): boolean {
   if (typeof received !== "string" || !expected || received.length !== expected.length) return false;
   return timingSafeEqual(Buffer.from(received), Buffer.from(expected));
-}
-
-/** Palabras de 5 letras o cifras del mensaje: candidatas a código de amigo (se comprueban en la base de datos). */
-function codesIn(message: unknown): string[] {
-  if (typeof message !== "string") return [];
-  return [...new Set(message.toUpperCase().match(/(?<![0-9A-Z])[0-9A-Z]{5}(?![0-9A-Z])/g) ?? [])];
 }
 
 export function parseKofiWebhook(body: string, expectedToken: string): KofiResult {

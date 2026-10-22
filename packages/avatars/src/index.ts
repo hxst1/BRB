@@ -132,6 +132,7 @@ const PALETTES = {
   ultra: { body: "#845ef7", shade: "#6741d9", accent: "#ffd43b", achievement: "tile-2048" },
   ice: { body: "#a5e8f2", shade: "#66c5d9", accent: "#4c6ef5", achievement: "minesweeper-hard" },
   jungle: { body: "#40c057", shade: "#2b8a3e", accent: "#ffe066", achievement: "snake-30" },
+  terminal: { body: "#1f2a24", shade: "#69db7c", accent: "#69db7c", achievement: "contributor" },
 } satisfies Record<string, Palette>;
 
 type EyeDrawer = (at: Point) => string;

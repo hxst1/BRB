@@ -5,7 +5,7 @@ const PERKS = [
   { icon: "🏆", title: "Tus récords, guardados", detail: "Y tu puesto en el ranking mundial y entre tus amigos." },
   { icon: "👋", title: "Juega con tus amigos", detail: "Rétalos a 3 en raya, Hundir la flota, Pong o Tron, y chatea." },
   { icon: "🔥", title: "Reto diario y rachas", detail: "Un juego distinto cada día, la misma partida para todos." },
-  { icon: "🎨", title: "Tu propio bribón", detail: "Personalízalo y gana ropa nueva con los logros." },
+  { icon: "🎨", title: "Tu propio monster", detail: "Personalízalo y gana ropa nueva con los logros." },
 ];
 
 /** Botones para crear cuenta o entrar, para el principio de la portada sin sesión. */

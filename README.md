@@ -108,6 +108,16 @@ Si `pnpm dev` sirve estilos o componentes viejos (p. ej. un cambio en `globals.c
 aplica), la caché de Turbopack se ha quedado colgada: para el servidor, borra `apps/web/.next/dev`
 y vuelve a arrancarlo.
 
+## Colaborar
+
+¿Has encontrado un fallo o tienes una idea? Abre una issue. ¿Quieres arreglarlo tú? Haz un pull request.
+
+Si escribes tu **código de amigo** (lo tienes en la app, en Amigos) en el título o la descripción, al abrir
+la issue o al aceptarse tu pull request ganas el logro «Colaborador» y un color exclusivo para tu monster.
+
+Lo gestiona el webhook `/api/webhooks/github` (eventos "Issues" y "Pull requests", firmado con
+`GITHUB_WEBHOOK_SECRET`).
+
 ## SEO y asistentes de IA
 
 Todo sale de `apps/web/src/lib/seo.ts`: título, descripción, "Cómo se juega" y preguntas frecuentes
