@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useActionState, useState, type FormEvent } from "react";
-import { changePassword, type PasswordChangeState } from "@/app/perfil/actions";
+import { changePassword, type PasswordChangeState } from "@/app/[lang]/perfil/actions";
 import { PasswordInput } from "@/components/password-input";
 import { createClient } from "@/lib/supabase/client";
 

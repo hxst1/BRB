@@ -1,0 +1,43 @@
+import { makeFormat } from "@/lib/format";
+
+export const es = {
+  format: makeFormat("es"),
+  common: {
+    close: "Cerrar",
+    cancel: "Cancelar",
+    save: "Guardar",
+    saving: "Guardando…",
+    saved: "Guardado",
+    later: "Luego",
+    play: "Jugar",
+    signIn: "Entrar",
+    signUp: "Crear cuenta",
+    signUpFree: "Crear cuenta gratis",
+    back: "Volver",
+    backHome: "Volver al inicio",
+    you: "tú",
+    retry: "Inténtalo otra vez.",
+    error: "No se ha podido. Inténtalo otra vez.",
+    supporter: "Apoya el proyecto",
+  },
+  nav: {
+    home: "Inicio",
+    chat: "Chat",
+    ranking: "Ranking",
+    friends: "Amigos",
+    me: "Tú",
+    main: "Principal",
+    profileAndMonster: "Tu perfil y tu monster",
+    friendsAndCode: "Amigos y código de invitación",
+    feedback: "Reportar un problema o sugerir algo",
+    signOut: "Cerrar sesión",
+    pending: (n: number) => `${n} pendientes`,
+    unread: (n: number) => `${n} mensajes sin leer`,
+    requests: (n: number) => `${n} solicitudes de amistad`,
+  },
+  level: {
+    level: (n: number) => `Nivel ${n}`,
+    toNext: (into: number, total: number, next: number) => `${into} / ${total} XP para el ${next}`,
+    progress: (next: number) => `Progreso hacia el nivel ${next}`,
+  },
+};

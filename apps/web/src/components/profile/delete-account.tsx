@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { deleteAccount, type DeleteAccountState } from "@/app/perfil/actions";
+import { deleteAccount, type DeleteAccountState } from "@/app/[lang]/perfil/actions";
 import { PasswordInput } from "@/components/password-input";
 
 const FIELD = "w-full rounded-2xl border border-line bg-bg px-4 py-2.5 outline-none focus:border-focus";

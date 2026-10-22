@@ -1,17 +1,18 @@
 export type NavCounts = { home: number; chat: number; friends: number };
 
+/** `label` y `countLabel`: claves de m.nav (lib/i18n). */
 export type NavItem = {
   href: string;
-  label: string;
+  label: "home" | "chat" | "ranking" | "friends";
   count?: keyof NavCounts;
-  countLabel?: (n: number) => string;
+  countLabel?: "pending" | "unread" | "requests";
 };
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "Inicio", count: "home", countLabel: (n: number) => `${n} cosas pendientes` },
-  { href: "/chat", label: "Chat", count: "chat", countLabel: (n: number) => `${n} mensajes sin leer` },
-  { href: "/ranking", label: "Ranking" },
-  { href: "/amigos", label: "Amigos", count: "friends", countLabel: (n: number) => `${n} solicitudes de amistad` },
+  { href: "/", label: "home", count: "home", countLabel: "pending" },
+  { href: "/chat", label: "chat", count: "chat", countLabel: "unread" },
+  { href: "/ranking", label: "ranking" },
+  { href: "/amigos", label: "friends", count: "friends", countLabel: "requests" },
 ];
 
 /** La sección está activa en su ruta y en las que cuelgan de ella (salvo Inicio). */

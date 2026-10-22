@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { Json } from "@repo/db";
-import { signOut } from "@/app/entrar/actions";
+import { signOut } from "@/app/[lang]/entrar/actions";
 import { Avatar } from "@repo/ui/avatar";
 import { showFeedback } from "@/components/feedback/feedback-dialog";
 import { LevelBar } from "@/components/level-bar";
