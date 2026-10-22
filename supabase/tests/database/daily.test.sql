@@ -1,6 +1,9 @@
 begin;
 select plan(23);
 
+-- Un día limpio: sin partidas del reto de hoy que hubiera en la base local.
+delete from public.game_runs where daily = private.game_day();
+
 insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-d0000000000a', 'a@daily.local', '{"username": "d_ana"}'),
   ('00000000-0000-0000-0000-d0000000000b', 'b@daily.local', '{"username": "d_bob"}');
