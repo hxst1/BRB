@@ -25,6 +25,11 @@ export type GameGuide = {
   faq: { q: string; a: string }[];
   /** Color de la imagen al compartir (de la paleta de la app). */
   accent: string;
+  /**
+   * Cuándo se publicó. Al añadir un juego, pon la fecha del día: a quien ya
+   * tenía cuenta le saldrá el aviso de "juego nuevo" (components/news).
+   */
+  addedAt: string;
 };
 
 const NO_DOWNLOAD = "No. Se juega en el navegador, en el móvil o en el ordenador. Si quieres, puedes añadirla a la pantalla de inicio como una app.";
@@ -32,6 +37,7 @@ const NO_DOWNLOAD = "No. Se juega en el navegador, en el móvil o en el ordenado
 export const GAME_GUIDES: GameGuide[] = [
   {
     id: "2048",
+    addedAt: "2026-10-20T11:12:40+02:00",
     path: "/2048",
     name: "2048",
     title: "2048 online gratis",
@@ -54,6 +60,7 @@ export const GAME_GUIDES: GameGuide[] = [
   },
   {
     id: "snake",
+    addedAt: "2026-10-20T14:36:02+02:00",
     path: "/snake",
     name: "Snake",
     title: "Snake online gratis",
@@ -74,6 +81,7 @@ export const GAME_GUIDES: GameGuide[] = [
   },
   {
     id: "lights-out",
+    addedAt: "2026-10-20T17:44:48+02:00",
     path: "/lights-out",
     name: "Lights Out",
     title: "Lights Out online gratis",
@@ -95,6 +103,7 @@ export const GAME_GUIDES: GameGuide[] = [
   },
   {
     id: "minesweeper",
+    addedAt: "2026-10-22T08:11:02+02:00",
     path: "/buscaminas",
     name: "Buscaminas",
     title: "Buscaminas online gratis",
@@ -116,6 +125,7 @@ export const GAME_GUIDES: GameGuide[] = [
   },
   {
     id: "sudoku",
+    addedAt: "2026-10-22T08:23:27+02:00",
     path: "/sudoku",
     name: "Sudoku",
     title: "Sudoku online gratis",
@@ -138,6 +148,7 @@ export const GAME_GUIDES: GameGuide[] = [
   },
   {
     id: "wordle",
+    addedAt: "2026-10-20T18:34:41+02:00",
     path: "/wordle",
     name: "Wordle",
     title: "Wordle en español: la palabra del día",
@@ -159,6 +170,7 @@ export const GAME_GUIDES: GameGuide[] = [
   },
   {
     id: "tictactoe",
+    addedAt: "2026-10-20T11:27:56+02:00",
     path: "/3-en-raya",
     name: "3 en raya",
     title: "3 en raya online contra tus amigos",
@@ -179,6 +191,7 @@ export const GAME_GUIDES: GameGuide[] = [
   },
   {
     id: "connect4",
+    addedAt: "2026-10-21T09:56:59+02:00",
     path: "/4-en-raya",
     name: "4 en raya",
     title: "4 en raya online contra tus amigos",
@@ -199,6 +212,7 @@ export const GAME_GUIDES: GameGuide[] = [
   },
   {
     id: "battleship",
+    addedAt: "2026-10-21T10:31:14+02:00",
     path: "/hundir-la-flota",
     name: "Hundir la flota",
     title: "Hundir la flota online contra tus amigos",
@@ -219,6 +233,7 @@ export const GAME_GUIDES: GameGuide[] = [
   },
   {
     id: "rps",
+    addedAt: "2026-10-20T12:23:36+02:00",
     path: "/piedra-papel-tijera",
     name: "Piedra, papel o tijera",
     title: "Piedra, papel o tijera online (y lagarto, Spock)",
@@ -239,6 +254,7 @@ export const GAME_GUIDES: GameGuide[] = [
   },
   {
     id: "pong",
+    addedAt: "2026-10-20T12:58:27+02:00",
     path: "/pong",
     name: "Pong",
     title: "Pong online en directo contra tus amigos",
@@ -256,6 +272,7 @@ export const GAME_GUIDES: GameGuide[] = [
   },
   {
     id: "tron",
+    addedAt: "2026-10-21T23:43:17+02:00",
     path: "/tron",
     name: "Tron",
     title: "Tron online en directo contra tus amigos",

@@ -357,6 +357,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"seen_announcements": {
+                  Row: {
+                    "announcement": string,"seen_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "announcement": string,"seen_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "announcement"?: string,"seen_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "seen_announcements_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"supporter_events": {
                   Row: {
                     "active": boolean,"created_at": string,"event": string,"id": string,"payload": NonNullable<Json>,"provider": string,"provider_ref": string,"user_id": string | null
@@ -535,6 +555,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "attempts": number,"avatar_parts": Json,"avatar_seed": number,"patterns": (string)[],"solved": boolean,"user_id": string,"username": string
             }[]
+                           },
+"mark_announcements_seen":
+{ Args: { "ids": (string)[] }; Returns: undefined
                            },
 "mark_conversation_read":
 { Args: { "friend": string }; Returns: undefined

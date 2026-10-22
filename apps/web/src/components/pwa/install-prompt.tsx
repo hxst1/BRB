@@ -52,7 +52,10 @@ export function InstallPrompt() {
   const closeButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => setPlatform(detect()), DELAY_MS);
+    // Si ya hay otro aviso abierto (p. ej. el de juegos nuevos), se deja para otra visita.
+    const timer = setTimeout(() => {
+      if (!document.querySelector("[role=dialog][aria-modal=true]")) setPlatform(detect());
+    }, DELAY_MS);
     // Abierto a mano: se muestra siempre, aunque se cerrara hace poco.
     const show = () => setPlatform(platformOf());
     window.addEventListener(SHOW_EVENT, show);

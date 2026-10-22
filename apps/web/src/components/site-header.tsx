@@ -3,8 +3,10 @@ import { Suspense } from "react";
 import { brand } from "@repo/brand";
 import { AchievementToaster } from "@/components/achievements/achievement-toaster";
 import { FeedbackDialog } from "@/components/feedback/feedback-dialog";
+import { NewGamesPopup } from "@/components/news/new-games-popup";
 import { LiveRefresh } from "@/components/live-refresh";
 import { PresenceReporter } from "@/components/presence-reporter";
+import { PersonalIcons } from "@/components/pwa/personal-icons";
 import { SupportButton } from "@/components/support/support-button";
 import { AccountMenu } from "@/components/nav/account-menu";
 import { MainNav } from "@/components/nav/main-nav";
@@ -59,7 +61,9 @@ async function Navigation() {
     <>
       <LiveRefresh viewerId={viewer.id} />
       <PresenceReporter />
+      <PersonalIcons avatarSeed={viewer.avatar_seed} avatarParts={viewer.avatar_parts} />
       <FeedbackDialog />
+      <NewGamesPopup viewerId={viewer.id} />
       <AchievementToaster viewerId={viewer.id} avatarSeed={viewer.avatar_seed} avatarParts={viewer.avatar_parts} />
       <div className="flex items-center gap-3">
         <MainNav counts={counts} />

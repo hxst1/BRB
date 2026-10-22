@@ -8,9 +8,10 @@ const BACKGROUND = "#15171c";
 /**
  * Icono de la app en PNG. `maskable` deja más margen: Android puede recortar
  * el icono en círculo y el monstruo tiene que quedar dentro de la zona segura.
+ * Con `monster`, el de esa persona (icono personal); si no, la mascota.
  */
-export function appIcon(size: number, { maskable = false } = {}) {
-  const svg = renderMonsterSvg(MASCOT, "happy");
+export function appIcon(size: number, { maskable = false, monster: parts = MASCOT }: { maskable?: boolean; monster?: MonsterParts } = {}) {
+  const svg = renderMonsterSvg(parts, "happy");
   const src = `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
   const monster = Math.round(size * (maskable ? 0.58 : 0.74));
 
