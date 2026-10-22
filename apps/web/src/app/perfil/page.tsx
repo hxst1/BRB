@@ -5,8 +5,10 @@ import { Suspense } from "react";
 import { signOut } from "@/app/entrar/actions";
 import { LevelBar } from "@/components/level-bar";
 import { AppSettings } from "@/components/pwa/app-settings";
+import { Achievements } from "@/components/profile/achievements";
 import { AvatarEditor } from "@/components/profile/avatar-editor";
 import { getViewer } from "@/lib/session";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Tu perfil" };
 
@@ -23,6 +25,8 @@ export default function ProfilePage() {
 async function Profile() {
   const viewer = await getViewer();
   if (!viewer) redirect("/entrar?next=/perfil");
+  const { data: achievements } = await (await createClient()).rpc("get_my_achievements");
+  const unlocked = (achievements ?? []).filter((a) => a.unlocked_at).map((a) => a.achievement);
 
   return (
     <div className="flex max-w-xl flex-col gap-10">
@@ -39,11 +43,16 @@ async function Profile() {
       </div>
 
       <AvatarEditor
+        // Si el avatar cambia fuera del editor (p. ej. al estrenar un logro), empieza de nuevo con el guardado.
+        key={`${viewer.avatar_seed}:${JSON.stringify(viewer.avatar_parts)}`}
         userId={viewer.id}
         initialSeed={viewer.avatar_seed}
         initialParts={viewer.avatar_parts}
         isSupporter={viewer.supporter_tier !== null}
+        unlocked={unlocked}
       />
+
+      <Achievements statuses={achievements ?? []} avatarSeed={viewer.avatar_seed} avatarParts={viewer.avatar_parts} />
 
       <AppSettings />
 

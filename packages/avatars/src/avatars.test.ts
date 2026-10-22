@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   isSupporterPart,
   monsterFromSeed,
+  partAchievement,
   PART_OPTIONS,
   renderMonsterSvg,
   resolveMonster,
@@ -26,11 +27,13 @@ describe("monsterFromSeed", () => {
     expect(eyes.size).toBe(PART_OPTIONS.eyes.length);
   });
 
-  it("nunca regala partes de supporter", () => {
+  it("nunca regala partes de supporter ni de logro", () => {
     for (let seed = 0; seed < 2000; seed++) {
       const monster = monsterFromSeed(seed * 2654435761);
       expect(isSupporterPart("palette", monster.palette)).toBe(false);
       expect(isSupporterPart("top", monster.top)).toBe(false);
+      expect(partAchievement("palette", monster.palette)).toBeNull();
+      expect(partAchievement("top", monster.top)).toBeNull();
     }
   });
 });

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { brand } from "@repo/brand";
+import { AchievementToaster } from "@/components/achievements/achievement-toaster";
 import { LiveRefresh } from "@/components/live-refresh";
 import { PresenceReporter } from "@/components/presence-reporter";
 import { SupportButton } from "@/components/support/support-button";
@@ -57,6 +58,7 @@ async function Navigation() {
     <>
       <LiveRefresh viewerId={viewer.id} />
       <PresenceReporter />
+      <AchievementToaster viewerId={viewer.id} avatarSeed={viewer.avatar_seed} avatarParts={viewer.avatar_parts} />
       <div className="flex items-center gap-3">
         <MainNav counts={counts} />
         <AccountMenu

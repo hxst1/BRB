@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { isSupporterPart, PART_OPTIONS, resolveMonster, sanitizeParts, type MonsterParts } from "@repo/avatars";
+import { isSupporterPart, PART_OPTIONS, partAchievement, resolveMonster, sanitizeParts, type MonsterParts } from "@repo/avatars";
 import { randomSeed } from "@repo/games";
 import type { Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
+import { achievementById } from "@/lib/achievements";
 import { createClient } from "@/lib/supabase/client";
 
 type Slot = "body" | "palette" | "eyes" | "mouth" | "top";
@@ -26,11 +27,14 @@ export function AvatarEditor({
   initialSeed,
   initialParts,
   isSupporter,
+  unlocked,
 }: {
   userId: string;
   initialSeed: number;
   initialParts: Json;
   isSupporter: boolean;
+  /** Logros conseguidos: desbloquean su ropa. */
+  unlocked: readonly string[];
 }) {
   const router = useRouter();
   const [seed, setSeed] = useState(initialSeed);
@@ -57,7 +61,12 @@ export function AvatarEditor({
       setOverrides(previous.overrides);
       setStatus({
         kind: "error",
-        message: error.hint === "supporter_only" ? "Esa parte es exclusiva de supporters." : "No se ha podido guardar. Inténtalo otra vez.",
+        message:
+          error.hint === "supporter_only"
+            ? "Esa parte es exclusiva de supporters."
+            : error.hint === "achievement_only"
+              ? "Esa parte se desbloquea con un logro."
+              : "No se ha podido guardar. Inténtalo otra vez.",
       });
       return;
     }
@@ -115,7 +124,16 @@ export function AvatarEditor({
 
         <div id="slot-panel" role="tabpanel" aria-labelledby={`tab-${activeSlot}`} className="flex flex-wrap gap-2">
           {(PART_OPTIONS[activeSlot] as string[]).map((id) => {
-            const locked = (activeSlot === "palette" || activeSlot === "top") && isSupporterPart(activeSlot, id) && !isSupporter;
+            const lockable = activeSlot === "palette" || activeSlot === "top";
+            const needed = lockable ? partAchievement(activeSlot, id) : null;
+            const supporterOnly = lockable && isSupporterPart(activeSlot, id) && !isSupporter;
+            const achievementLocked = needed !== null && !unlocked.includes(needed);
+            const locked = supporterOnly || achievementLocked;
+            const lockReason = supporterOnly
+              ? "Exclusivo para supporters"
+              : achievementLocked
+                ? `Se desbloquea con el logro «${achievementById(needed)?.name ?? needed}»`
+                : undefined;
             const selected = monster[activeSlot] === id;
             return (
               <button
@@ -123,14 +141,19 @@ export function AvatarEditor({
                 type="button"
                 aria-pressed={selected}
                 disabled={locked}
-                title={locked ? "Exclusivo para supporters" : undefined}
+                title={lockReason}
                 onClick={() => void save(seed, { ...overrides, [activeSlot]: id })}
                 className={`relative grid size-16 place-items-center rounded-2xl bg-surface transition-shadow ${
                   selected ? "ring-2 ring-ink" : "shadow-soft hover:shadow-lift"
                 } disabled:opacity-40 disabled:hover:shadow-soft`}
               >
                 <Avatar seed={seed} parts={{ ...monster, [activeSlot]: id }} size={48} />
-                {locked && <span className="sr-only">Exclusivo para supporters</span>}
+                {locked && <span className="sr-only">{lockReason}</span>}
+                {achievementLocked && (
+                  <span aria-hidden className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full bg-ink text-[10px] text-bg">
+                    🔒
+                  </span>
+                )}
               </button>
             );
           })}
@@ -147,14 +170,23 @@ export function AvatarEditor({
         Coloretes
       </label>
 
-      {!isSupporter && (
-        <p className="text-sm text-muted">
-          Las partes en gris son para quien apoya el proyecto.{" "}
-          <Link href="/apoyar" className="font-medium text-ink underline underline-offset-4">
-            Cómo conseguirlas
-          </Link>
-        </p>
-      )}
+      <p className="text-sm text-muted">
+        Las partes con candado se desbloquean con los{" "}
+        <a href="#logros" className="font-medium text-ink underline underline-offset-4">
+          logros
+        </a>
+        .
+        {!isSupporter && (
+          <>
+            {" "}
+            Las demás en gris son para quien apoya el proyecto:{" "}
+            <Link href="/apoyar" className="font-medium text-ink underline underline-offset-4">
+              cómo conseguirlas
+            </Link>
+            .
+          </>
+        )}
+      </p>
     </section>
   );
 }

@@ -5,7 +5,8 @@ import { createRng, nextInt, nextFloat, type RngState } from "@repo/games";
  *
  * Cada monstruo es una combinación de partes identificadas por id. La semilla
  * del perfil elige las partes y `avatar_parts` (jsonb) guarda solo las que el
- * usuario ha cambiado a mano. Las partes `supporter` nunca salen al azar.
+ * usuario ha cambiado a mano. Las partes `supporter` y las de logro
+ * (`achievement`) nunca salen al azar.
  */
 
 const INK = "#1b1a22";
@@ -92,6 +93,8 @@ interface Palette {
   shade: string;
   accent: string;
   supporter?: boolean;
+  /** Id del logro que la desbloquea. */
+  achievement?: string;
 }
 
 const PALETTES = {
@@ -105,6 +108,10 @@ const PALETTES = {
   lime: { body: "#b8e05a", shade: "#8cb932", accent: "#7a5af8" },
   gold: { body: "#f5c84c", shade: "#c99a1c", accent: "#fff4c7", supporter: true },
   night: { body: "#434866", shade: "#2c3048", accent: "#ff7ab6", supporter: true },
+  ember: { body: "#ff7a45", shade: "#e8590c", accent: "#ffd43b", achievement: "streak-30" },
+  ultra: { body: "#845ef7", shade: "#6741d9", accent: "#ffd43b", achievement: "tile-2048" },
+  ice: { body: "#a5e8f2", shade: "#66c5d9", accent: "#4c6ef5", achievement: "minesweeper-hard" },
+  jungle: { body: "#40c057", shade: "#2b8a3e", accent: "#ffe066", achievement: "snake-30" },
 } satisfies Record<string, Palette>;
 
 type EyeDrawer = (at: Point) => string;
@@ -152,6 +159,8 @@ interface Top {
   layer: "back" | "front";
   draw: (body: Body, palette: Palette) => string;
   supporter?: boolean;
+  /** Id del logro que la desbloquea. */
+  achievement?: string;
 }
 
 function mirrored(body: Body, draw: (x: number, side: 1 | -1) => string): string {
@@ -207,6 +216,73 @@ const TOPS = {
       `<path d="M37 ${b.top + 4}l-2-14 8 7 7-10 7 10 8-7-2 14z" fill="#ffd43b" stroke="#e8a90c" stroke-width="2" stroke-linejoin="round"/>` +
       `<circle cx="50" cy="${b.top - 2}" r="2.3" fill="#ff6b8a"/>`,
   },
+  cap: {
+    layer: "front",
+    achievement: "first-run",
+    draw: (b) =>
+      `<path d="M31 ${b.top + 9}a19 16 0 0 1 38 0z" fill="#ff6b6b"/>` +
+      `<path d="M58 ${b.top + 5}h18a3 3 0 0 1 0 6h-18z" fill="#e03131"/>` +
+      `<circle cx="50" cy="${b.top - 7}" r="2.6" fill="#e03131"/>`,
+  },
+  headphones: {
+    layer: "front",
+    achievement: "friends-3",
+    draw: (b) => {
+      const r = b.spread + 12;
+      return (
+        `<path d="M${50 - r} ${b.top + 20}a${r} ${r} 0 0 1 ${2 * r} 0" stroke="${INK}" stroke-width="4" fill="none" stroke-linecap="round"/>` +
+        mirrored({ ...b, spread: r }, (x) => `<rect x="${x - 5.5}" y="${b.top + 13}" width="11" height="17" rx="5" fill="#3bc9db" stroke="${INK}" stroke-width="2.5"/>`)
+      );
+    },
+  },
+  flower: {
+    layer: "front",
+    achievement: "streak-7",
+    draw: (b) => {
+      const cx = 50 + b.spread * 0.8;
+      const cy = b.top + 3;
+      const petals = [0, 72, 144, 216, 288]
+        .map((deg) => {
+          const a = (deg * Math.PI) / 180;
+          return `<circle cx="${(cx + Math.cos(a) * 5).toFixed(1)}" cy="${(cy + Math.sin(a) * 5).toFixed(1)}" r="4.2"/>`;
+        })
+        .join("");
+      return `<g fill="#ff8fc0">${petals}</g><circle cx="${cx}" cy="${cy}" r="3.2" fill="#ffd43b"/>`;
+    },
+  },
+  bow: {
+    layer: "front",
+    achievement: "wordle-3",
+    draw: (b) => {
+      const cx = 50 - b.spread * 0.7;
+      const cy = b.top + 4;
+      return (
+        `<path d="M${cx} ${cy}l-10-6v12zM${cx} ${cy}l10-6v12z" fill="#ff6b8a" stroke="#e64980" stroke-width="2" stroke-linejoin="round"/>` +
+        `<circle cx="${cx}" cy="${cy}" r="3" fill="#e64980"/>`
+      );
+    },
+  },
+  halo: {
+    layer: "back",
+    achievement: "lightsout-10",
+    draw: (b) => `<ellipse cx="50" cy="${b.top - 7}" rx="16" ry="4.5" fill="none" stroke="#ffd43b" stroke-width="3.5"/>`,
+  },
+  wizard: {
+    layer: "front",
+    achievement: "sudoku-hard",
+    draw: (b) =>
+      `<path d="M35 ${b.top + 8}L53 ${b.top - 15}L65 ${b.top + 8}z" fill="#5f3dc4"/>` +
+      `<ellipse cx="50" cy="${b.top + 8}" rx="22" ry="4.5" fill="#4527a0"/>` +
+      `<path d="M51.5 ${b.top - 6}l1.6 3.2 3.5.5-2.5 2.5.6 3.5-3.2-1.7-3.2 1.7.6-3.5-2.5-2.5 3.5-.5z" fill="#ffd43b"/>`,
+  },
+  party: {
+    layer: "front",
+    achievement: "winner-5",
+    draw: (b) =>
+      `<path d="M40 ${b.top + 7}L50 ${b.top - 12}L60 ${b.top + 7}z" fill="#3bc9db"/>` +
+      `<circle cx="48" cy="${b.top - 1}" r="1.8" fill="#ff6b6b"/><circle cx="53" cy="${b.top + 3}" r="1.8" fill="#ffd43b"/>` +
+      `<circle cx="50" cy="${b.top - 13}" r="3.3" fill="#ff6b6b"/>`,
+  },
 } satisfies Record<string, Top>;
 
 export type BodyId = keyof typeof BODIES;
@@ -238,6 +314,12 @@ export function isSupporterPart(slot: "palette" | "top", id: string): boolean {
   return catalog[id]?.supporter === true;
 }
 
+/** Logro que desbloquea esa parte, o null si es libre (o de supporter). */
+export function partAchievement(slot: "palette" | "top", id: string): string | null {
+  const catalog = (slot === "palette" ? PALETTES : TOPS) as Record<string, { achievement?: string }>;
+  return catalog[id]?.achievement ?? null;
+}
+
 // ---------------------------------------------------------------------------
 // Generación
 // ---------------------------------------------------------------------------
@@ -247,8 +329,8 @@ function pick<T extends string>(rng: RngState, ids: T[]): [T, RngState] {
   return [ids[index]!, next];
 }
 
-const freePalettes = PART_OPTIONS.palette.filter((id) => !isSupporterPart("palette", id));
-const freeTops = PART_OPTIONS.top.filter((id) => !isSupporterPart("top", id));
+const freePalettes = PART_OPTIONS.palette.filter((id) => !isSupporterPart("palette", id) && !partAchievement("palette", id));
+const freeTops = PART_OPTIONS.top.filter((id) => !isSupporterPart("top", id) && !partAchievement("top", id));
 
 export function monsterFromSeed(seed: number): MonsterParts {
   let rng = createRng(seed);

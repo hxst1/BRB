@@ -383,6 +383,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"user_achievements": {
+                  Row: {
+                    "achievement": string,"unlocked_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "achievement": string,"unlocked_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "achievement"?: string,"unlocked_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "user_achievements_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"wordle_games": {
                   Row: {
                     "day": string,"finished_at": string | null,"guesses": (string)[],"patterns": (string)[],"solved": boolean,"user_id": string
@@ -461,6 +481,11 @@ isOneToOne: false
 "get_match_leaderboard":
 { Args: { "games": (string)[],"max_rows"?: number,"period"?: string,"scope"?: string }; Returns: {
               "avatar_parts": Json,"avatar_seed": number,"played": number,"rank": number,"supporter_tier": string,"user_id": string,"username": string,"wins": number
+            }[]
+                           },
+"get_my_achievements":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "achievement": string,"goal": number,"progress": number,"unlocked_at": string
             }[]
                            },
 "get_my_challenges":

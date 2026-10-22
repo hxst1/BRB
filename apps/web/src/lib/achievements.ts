@@ -1,0 +1,96 @@
+/**
+ * Textos de los logros. Las condiciones viven en la base de datos
+ * (private.achievement_progress) y la ropa que da cada uno en packages/avatars
+ * (`achievement`); achievements.test.ts comprueba que los tres coinciden.
+ */
+export type Achievement = {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  reward: { slot: "palette" | "top"; id: string; label: string };
+};
+
+export const ACHIEVEMENTS: Achievement[] = [
+  {
+    id: "first-run",
+    name: "Primera partida",
+    description: "Termina una partida en solitario.",
+    icon: "🎮",
+    reward: { slot: "top", id: "cap", label: "Gorra" },
+  },
+  {
+    id: "friends-3",
+    name: "En buena compañía",
+    description: "Ten 3 amigos.",
+    icon: "👋",
+    reward: { slot: "top", id: "headphones", label: "Cascos" },
+  },
+  {
+    id: "streak-7",
+    name: "Constante",
+    description: "Juega 7 días seguidos.",
+    icon: "🔥",
+    reward: { slot: "top", id: "flower", label: "Flor" },
+  },
+  {
+    id: "streak-30",
+    name: "Imparable",
+    description: "Juega 30 días seguidos.",
+    icon: "☄️",
+    reward: { slot: "palette", id: "ember", label: "Color brasa" },
+  },
+  {
+    id: "tile-2048",
+    name: "2048",
+    description: "Consigue la ficha 2048.",
+    icon: "🟪",
+    reward: { slot: "palette", id: "ultra", label: "Color 2048" },
+  },
+  {
+    id: "snake-30",
+    name: "Serpiente larga",
+    description: "Cómete 30 manzanas en una partida de Snake.",
+    icon: "🐍",
+    reward: { slot: "palette", id: "jungle", label: "Color selva" },
+  },
+  {
+    id: "lightsout-10",
+    name: "Apagón",
+    description: "Supera 10 niveles de Lights Out en una partida.",
+    icon: "💡",
+    reward: { slot: "top", id: "halo", label: "Aureola" },
+  },
+  {
+    id: "minesweeper-hard",
+    name: "Artificiero",
+    description: "Gana un buscaminas difícil.",
+    icon: "💣",
+    reward: { slot: "palette", id: "ice", label: "Color hielo" },
+  },
+  {
+    id: "sudoku-hard",
+    name: "Cerebrito",
+    description: "Resuelve un sudoku difícil.",
+    icon: "🧠",
+    reward: { slot: "top", id: "wizard", label: "Sombrero de mago" },
+  },
+  {
+    id: "wordle-3",
+    name: "A la tercera",
+    description: "Acierta el Wordle en 3 intentos o menos.",
+    icon: "🔤",
+    reward: { slot: "top", id: "bow", label: "Lazo" },
+  },
+  {
+    id: "winner-5",
+    name: "Rival a batir",
+    description: "Gana a 5 personas distintas en los juegos contra amigos.",
+    icon: "🏆",
+    reward: { slot: "top", id: "party", label: "Gorro de fiesta" },
+  },
+];
+
+export function achievementById(id: string): Achievement | undefined {
+  return ACHIEVEMENTS.find((achievement) => achievement.id === id);
+}
