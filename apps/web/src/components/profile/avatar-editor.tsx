@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { isSupporterPart, PART_OPTIONS, partAchievement, resolveMonster, sanitizeParts, type MonsterParts } from "@repo/avatars";
 import { randomSeed } from "@repo/games";
 import type { Json } from "@repo/db";
@@ -42,6 +42,8 @@ export function AvatarEditor({
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [cheer, setCheer] = useState(0);
   const [activeSlot, setActiveSlot] = useState<Slot>("body");
+  /** Parte bloqueada que se ha pulsado: se explica cómo conseguirla. */
+  const [lockedPart, setLockedPart] = useState<{ slot: "palette" | "top"; id: string; achievement: string | null } | null>(null);
   const monster = resolveMonster(seed, overrides);
 
   async function save(nextSeed: number, nextOverrides: Partial<MonsterParts>) {
@@ -141,18 +143,28 @@ export function AvatarEditor({
                 key={id}
                 type="button"
                 aria-pressed={selected}
-                disabled={locked}
+                aria-haspopup={locked ? "dialog" : undefined}
                 title={lockReason}
-                onClick={() => void save(seed, { ...overrides, [activeSlot]: id })}
+                onClick={() =>
+                  locked
+                    ? setLockedPart({ slot: activeSlot as "palette" | "top", id, achievement: achievementLocked ? needed : null })
+                    : void save(seed, { ...overrides, [activeSlot]: id })
+                }
                 className={`relative grid size-16 place-items-center rounded-2xl bg-surface transition-shadow ${
                   selected ? "ring-2 ring-ink" : "shadow-soft hover:shadow-lift"
-                } disabled:opacity-40 disabled:hover:shadow-soft`}
+                }`}
               >
-                <Avatar seed={seed} parts={{ ...monster, [activeSlot]: id }} size={48} />
+                <span className={locked ? "opacity-40" : undefined}>
+                  <Avatar seed={seed} parts={{ ...monster, [activeSlot]: id }} size={48} />
+                </span>
                 {locked && <span className="sr-only">{lockReason}</span>}
-                {achievementLocked && (
-                  <span aria-hidden className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full bg-ink text-[10px] text-bg">
-                    🔒
+                {locked && (
+                  <span
+                    aria-hidden
+                    className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full text-[10px]"
+                    style={{ background: supporterOnly ? "var(--t256)" : "var(--ink)", color: supporterOnly ? "#15171c" : "var(--bg)" }}
+                  >
+                    {supporterOnly ? "✦" : "🔒"}
                   </span>
                 )}
               </button>
@@ -171,6 +183,15 @@ export function AvatarEditor({
         Coloretes
       </label>
 
+      {lockedPart && (
+        <LockedPartDialog
+          part={lockedPart}
+          seed={seed}
+          monster={monster}
+          onClose={() => setLockedPart(null)}
+        />
+      )}
+
       <p className="text-sm text-muted">
         Las partes con candado se desbloquean con los{" "}
         <Link href="/perfil?seccion=logros" className="font-medium text-ink underline underline-offset-4">
@@ -180,7 +201,7 @@ export function AvatarEditor({
         {!isSupporter && (
           <>
             {" "}
-            Las demás en gris son para quien apoya el proyecto:{" "}
+            Las que llevan ✦ son para quien apoya el proyecto:{" "}
             <Link href="/apoyar" className="font-medium text-ink underline underline-offset-4">
               cómo conseguirlas
             </Link>
@@ -233,5 +254,86 @@ function InstalledIconNote() {
         ? "El icono de la app no cambia solo en iPhone: para verlo, vuelve a añadirla a la pantalla de inicio."
         : "El icono de la app se actualizará solo en un rato."}
     </p>
+  );
+}
+
+/** Por qué no se puede poner esa parte y cómo conseguirla: un logro o apoyar el proyecto. */
+function LockedPartDialog({
+  part,
+  seed,
+  monster,
+  onClose,
+}: {
+  part: { slot: "palette" | "top"; id: string; achievement: string | null };
+  seed: number;
+  monster: MonsterParts;
+  onClose: () => void;
+}) {
+  const achievement = part.achievement ? achievementById(part.achievement) : null;
+  const close = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    close.current?.focus();
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-3 backdrop-blur-[2px] sm:items-center" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="locked-title"
+        onClick={(event) => event.stopPropagation()}
+        className="install-sheet relative flex w-full max-w-sm flex-col items-center gap-4 rounded-[1.75rem] bg-surface p-6 text-center shadow-lift"
+      >
+        <span className="grid size-28 place-items-center rounded-[1.75rem]" style={{ background: "var(--cell)" }}>
+          <Avatar seed={seed} parts={{ ...monster, [part.slot]: part.id }} size={96} mood="happy" />
+        </span>
+        {achievement ? (
+          <>
+            <h2 id="locked-title" className="display text-2xl font-bold">
+              Se gana con un logro
+            </h2>
+            <p className="text-muted">
+              Consigue el logro{" "}
+              <strong className="text-ink">
+                {achievement.icon} {achievement.name}
+              </strong>
+              : {achievement.description.charAt(0).toLowerCase() + achievement.description.slice(1)}
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Link href="/perfil?seccion=logros" onClick={onClose} className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-bg">
+                Ver logros
+              </Link>
+              <button ref={close} type="button" onClick={onClose} className="rounded-full border border-line px-5 py-2.5 text-sm font-semibold hover:border-muted">
+                Cerrar
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <h2 id="locked-title" className="display text-2xl font-bold">
+              Exclusivo para quien apoya ✦
+            </h2>
+            <p className="text-muted">
+              Si apoyas el proyecto, desbloqueas esta y otras partes exclusivas para tu monstruo, la insignia ✦ y el color de la
+              app. Solo cosméticos: nunca ventajas en las partidas.
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Link href="/apoyar" onClick={onClose} className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-bg">
+                Cómo apoyar
+              </Link>
+              <button ref={close} type="button" onClick={onClose} className="rounded-full border border-line px-5 py-2.5 text-sm font-semibold hover:border-muted">
+                Cerrar
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
