@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { brand } from "@repo/brand";
 import { SupportOptions } from "./support-options";
+import { WhereItGoes } from "./where-it-goes";
 
 /** Corazón discreto junto al nombre de la app: abre el panel para apoyar el proyecto. */
 export function SupportButton() {
@@ -22,16 +23,19 @@ export function SupportButton() {
 
   return (
     <>
+      {/* Etiqueta torcida, tipo pegatina: llama la atención sin tapar nada. */}
       <button
         type="button"
         onClick={() => setOpen(true)}
         aria-label={`Apoyar ${brand.name}`}
         aria-haspopup="dialog"
-        className="grid size-8 place-items-center rounded-full text-muted transition-colors hover:bg-line/60 hover:text-[var(--t64)]"
+        className="support-sticker flex -rotate-6 items-center gap-1 rounded-full px-3 py-1 text-sm font-bold whitespace-nowrap text-white shadow-soft transition-transform hover:-rotate-2 hover:scale-105 active:scale-95"
+        style={{ background: "var(--t64)" }}
       >
-        <svg viewBox="0 0 24 24" className="size-[18px]" aria-hidden fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
+        <svg viewBox="0 0 24 24" className="size-4" aria-hidden fill="currentColor">
           <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
         </svg>
+        ¡Apóyanos!
       </button>
 
       {open && (
@@ -41,7 +45,7 @@ export function SupportButton() {
             aria-modal="true"
             aria-labelledby="support-title"
             onClick={(event) => event.stopPropagation()}
-            className="install-sheet relative flex w-full max-w-md flex-col gap-4 rounded-[1.75rem] bg-surface p-5 pb-6 shadow-lift"
+            className="install-sheet relative flex max-h-[88dvh] w-full max-w-md flex-col gap-4 overflow-y-auto rounded-[1.75rem] bg-surface p-5 pb-6 shadow-lift"
           >
             <button
               ref={closeButton}
@@ -64,8 +68,11 @@ export function SupportButton() {
               </p>
             </div>
             <SupportOptions />
+            <div className="rounded-2xl p-4" style={{ background: "var(--cell)" }}>
+              <WhereItGoes compact />
+            </div>
             <Link href="/apoyar" onClick={() => setOpen(false)} className="self-center text-sm text-muted underline-offset-4 hover:text-ink hover:underline">
-              Ver qué incluye
+              Ver qué incluye y a dónde va
             </Link>
           </div>
         </div>

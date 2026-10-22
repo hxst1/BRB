@@ -400,3 +400,29 @@ body {
     animation: none;
   }
 }
+
+/* Etiqueta de apoyar de la cabecera: un pequeño meneo de vez en cuando. */
+.support-sticker {
+  animation: support-wiggle 6s ease-in-out 3s infinite;
+}
+
+@keyframes support-wiggle {
+  0%, 92%, 100% {
+    rotate: 0deg;
+  }
+  94% {
+    rotate: -6deg;
+  }
+  96% {
+    rotate: 5deg;
+  }
+  98% {
+    rotate: -3deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .support-sticker {
+    animation: none;
+  }
+}

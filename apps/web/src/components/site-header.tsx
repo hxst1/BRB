@@ -32,15 +32,15 @@ async function getNavCounts(): Promise<NavCounts> {
 export function SiteHeader() {
   return (
     <header className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-      <div className="flex items-center gap-1.5">
-        <Link href="/" className="display text-2xl font-bold">
-          {brand.name}
-        </Link>
+      <Link href="/" className="display text-2xl font-bold">
+        {brand.name}
+      </Link>
+      <div className="flex items-center gap-3">
         <SupportButton />
+        <Suspense fallback={<span className="h-9 w-24" />}>
+          <Navigation />
+        </Suspense>
       </div>
-      <Suspense fallback={<span className="h-9 w-24" />}>
-        <Navigation />
-      </Suspense>
     </header>
   );
 }

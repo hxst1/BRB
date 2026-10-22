@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { brand } from "@repo/brand";
 import { Avatar } from "@repo/ui/avatar";
 import { SupportOptions } from "@/components/support/support-options";
+import { WhereItGoes } from "@/components/support/where-it-goes";
 import { getViewer } from "@/lib/session";
 
 export const metadata: Metadata = {
@@ -56,6 +57,8 @@ async function SupportForViewer() {
           </li>
         ))}
       </ul>
+
+      <WhereItGoes />
 
       {viewer?.supporter_tier ? (
         <div className="flex flex-col items-start gap-2">
