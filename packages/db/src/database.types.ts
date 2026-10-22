@@ -323,7 +323,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Insert: {
-                    "active": boolean,"created_at"?: string,"event": string,"id"?: string,"payload": NonNullable<Json>,"provider"?: string,"provider_ref": string,"user_id"?: string | null
+                    "active": boolean,"created_at"?: string,"event": string,"id"?: string,"payload": NonNullable<Json>,"provider": string,"provider_ref": string,"user_id"?: string | null
                   }
                   Update: {
                     "active"?: boolean,"created_at"?: string,"event"?: string,"id"?: string,"payload"?: NonNullable<Json>,"provider"?: string,"provider_ref"?: string,"user_id"?: string | null
@@ -393,7 +393,7 @@ isOneToOne: false
 { Args: { "end_reason"?: string,"match_id": string,"moves": (number)[],"previous_count": number,"winner"?: string }; Returns: undefined
                            },
 "apply_supporter_event":
-{ Args: { "active": boolean,"event": string,"payload": Json,"provider_ref": string,"user_id": string }; Returns: boolean
+{ Args: { "active": boolean,"event": string,"payload": Json,"provider": string,"provider_ref": string,"user_id": string }; Returns: boolean
                            },
 "cancel_match":
 { Args: { "match_id": string }; Returns: undefined
@@ -541,6 +541,12 @@ isOneToOne: false
                            },
 "submit_match_choice":
 { Args: { "choice": number,"match_id": string,"player_id": string }; Returns: number
+                           },
+"user_id_by_email":
+{ Args: { "email": string }; Returns: string
+                           },
+"user_id_by_friend_code":
+{ Args: { "code": string }; Returns: string
                            },
 "wordle_add_guess":
 { Args: { "game_day": string,"guess": string,"pattern": string,"player": string }; Returns: {

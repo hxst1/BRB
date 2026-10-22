@@ -157,7 +157,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
       },
       icon: "🟧",
       title: `${challenge.other_username} te reta al 2048`,
-      detail: `Supera ${formatNumber(challenge.target_score)} puntos. ${formatAgo(challenge.created_at)}.`,
+      detail: `Supera ${formatNumber(challenge.target_score)} puntos. ${capitalize(formatAgo(challenge.created_at))}.`,
     });
   }
   for (const request of requests ?? []) {

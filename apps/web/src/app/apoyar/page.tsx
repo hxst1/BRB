@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { brand } from "@repo/brand";
 import { Avatar } from "@repo/ui/avatar";
-import { checkoutUrl } from "@/lib/lemonsqueezy";
+import { SupportOptions } from "@/components/support/support-options";
 import { getViewer } from "@/lib/session";
 
 export const metadata: Metadata = {
@@ -35,7 +35,6 @@ export default function SupportPage() {
 
 async function SupportForViewer() {
   const viewer = await getViewer();
-  const checkout = process.env.NEXT_PUBLIC_SUPPORTER_CHECKOUT_URL;
   const seed = viewer?.avatar_seed ?? 7;
   const parts = viewer?.avatar_parts ?? {};
 
@@ -57,34 +56,16 @@ async function SupportForViewer() {
         ))}
       </ul>
 
-      <div className="flex flex-col items-start gap-2">
-        {viewer?.supporter_tier ? (
-          <>
-            <p className="display text-3xl font-bold">¡Gracias! Ya apoyas el proyecto ✦</p>
-            <Link href="/perfil" className="font-medium underline underline-offset-4">
-              Ponle la corona a tu monstruo
-            </Link>
-          </>
-        ) : !checkout ? (
-          <>
-            <button type="button" disabled className="rounded-full bg-ink px-6 py-3 font-semibold text-bg opacity-40">
-              Apoyar
-            </button>
-            <p className="text-sm text-muted">Muy pronto podrás apoyar desde aquí.</p>
-          </>
-        ) : viewer ? (
-          <>
-            <a href={checkoutUrl(checkout, viewer.id)} className="rounded-full bg-ink px-6 py-3 font-semibold text-bg">
-              Apoyar
-            </a>
-            <p className="text-sm text-muted">El pago lo gestiona Lemon Squeezy. Al completarlo, las partes se desbloquean solas.</p>
-          </>
-        ) : (
-          <Link href="/entrar?next=/apoyar" className="rounded-full bg-ink px-6 py-3 font-semibold text-bg">
-            Entra para apoyar
+      {viewer?.supporter_tier ? (
+        <div className="flex flex-col items-start gap-2">
+          <p className="display text-3xl font-bold">¡Gracias! Ya apoyas el proyecto ✦</p>
+          <Link href="/perfil" className="font-medium underline underline-offset-4">
+            Ponle la corona a tu monstruo
           </Link>
-        )}
-      </div>
+        </div>
+      ) : (
+        <SupportOptions />
+      )}
     </div>
   );
 }

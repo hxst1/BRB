@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { brand } from "@repo/brand";
 import { LiveRefresh } from "@/components/live-refresh";
 import { PresenceReporter } from "@/components/presence-reporter";
+import { SupportButton } from "@/components/support/support-button";
 import { AccountMenu } from "@/components/nav/account-menu";
 import { MainNav } from "@/components/nav/main-nav";
 import type { NavCounts } from "@/components/nav/nav-items";
@@ -27,9 +28,12 @@ async function getNavCounts(): Promise<NavCounts> {
 export function SiteHeader() {
   return (
     <header className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-      <Link href="/" className="display text-2xl font-bold">
-        {brand.name}
-      </Link>
+      <div className="flex items-center gap-1.5">
+        <Link href="/" className="display text-2xl font-bold">
+          {brand.name}
+        </Link>
+        <SupportButton />
+      </div>
       <Suspense fallback={<span className="h-9 w-24" />}>
         <Navigation />
       </Suspense>
