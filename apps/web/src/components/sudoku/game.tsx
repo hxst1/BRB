@@ -82,6 +82,10 @@ export function SudokuGame({
   const [game, setGame] = useState<Stored | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
   const [notesMode, setNotesMode] = useState(false);
+  /** Último número pulsado en el teclado: se resalta y se agranda en todo el tablero. */
+  const [focusDigit, setFocusDigit] = useState(0);
+  /** Estados anteriores, para deshacer (solo en esta pantalla). */
+  const [history, setHistory] = useState<Pick<Stored, "values" | "notes">[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
   const [save, setSave] = useState<Save | null>(null);
   const [confirmingNew, setConfirmingNew] = useState(false);
@@ -105,6 +109,8 @@ export function SudokuGame({
       setNotice(message);
       setSave(null);
       setSelected(null);
+      setHistory([]);
+      setFocusDigit(0);
       setConfirmingNew(false);
       setNow(clock());
     },
@@ -179,10 +185,19 @@ export function SudokuGame({
         // Al poner un número, se borra de las notas de su fila, columna y caja.
         if (digit !== 0) for (const peer of PEERS[selected]!) notes[peer] &= ~(1 << digit);
       }
+      setHistory((past) => [...past.slice(-49), { values: game.values, notes: game.notes }]);
       update({ ...game, values, notes });
     },
     [game, puzzle, selected, solved, notesMode, update],
   );
+
+  /** Deshace el último cambio (número o nota). */
+  const undo = useCallback(() => {
+    const previous = history.at(-1);
+    if (!game || !previous || solved) return;
+    setHistory((past) => past.slice(0, -1));
+    update({ ...game, values: previous.values, notes: previous.notes });
+  }, [game, history, solved, update]);
 
   // Teclado: números, borrar, flechas y N para las notas.
   useEffect(() => {
@@ -190,6 +205,7 @@ export function SudokuGame({
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       if (/^[1-9]$/.test(event.key)) input(Number(event.key));
       else if (event.key === "Backspace" || event.key === "Delete" || event.key === "0") input(0);
+      else if (event.key.toLowerCase() === "z") undo();
       else if (event.key.toLowerCase() === "n") setNotesMode((value) => !value);
       else if (event.key.startsWith("Arrow")) {
         const move = { ArrowUp: -9, ArrowDown: 9, ArrowLeft: -1, ArrowRight: 1 }[event.key] ?? 0;
@@ -204,11 +220,12 @@ export function SudokuGame({
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [input]);
+  }, [input, undo]);
 
   if (!game || !puzzle) return <div className="aspect-square w-full max-w-[30rem] animate-pulse rounded-[18px] bg-line/40" />;
 
-  const selectedDigit = selected !== null ? game.values[selected] : 0;
+  // Se resalta el número de la casilla elegida o, si está vacía, el último pulsado en el teclado.
+  const selectedDigit = (selected !== null ? game.values[selected] : 0) || focusDigit;
   const remaining = (digit: number) => 9 - game.values.filter((value) => value === digit).length;
   const filledByPlayer = game.values.some((value, i) => value !== 0 && puzzle.puzzle[i] === 0);
   const elapsed = Math.max(0, now - game.startedAt);
@@ -252,6 +269,7 @@ export function SudokuGame({
               const related =
                 selected !== null && (row(cell) === row(selected) || col(cell) === col(selected) || box(cell) === box(selected));
               const sameDigit = selectedDigit !== 0 && value === selectedDigit;
+              const focused = focusDigit !== 0 && value === focusDigit;
               return (
                 <button
                   key={cell}
@@ -260,7 +278,9 @@ export function SudokuGame({
                   aria-label={`Fila ${row(cell) + 1}, columna ${col(cell) + 1}: ${value || "vacía"}${given ? " (pista)" : ""}`}
                   aria-selected={isSelected}
                   onClick={() => setSelected(cell)}
-                  className={`sudoku-cell ${isSelected ? "sudoku-selected" : sameDigit ? "sudoku-same" : related ? "sudoku-related" : ""}`}
+                  className={`sudoku-cell ${isSelected ? "sudoku-selected" : sameDigit ? "sudoku-same" : related ? "sudoku-related" : ""} ${
+                    focused ? "sudoku-focus" : ""
+                  }`}
                       style={{
                     color: bad.has(cell) ? "var(--danger)" : given ? "var(--ink)" : "var(--mark-o)",
                     fontWeight: given ? 700 : 600,
@@ -315,12 +335,20 @@ export function SudokuGame({
               <button
                 key={digit}
                 type="button"
-                onClick={() => input(digit)}
-                disabled={remaining(digit) <= 0 && !notesMode}
-                className="display flex aspect-[3/4] flex-col items-center justify-center rounded-xl bg-surface text-2xl font-bold shadow-soft transition-colors hover:bg-line/60 disabled:opacity-30"
+                onClick={() => {
+                  // Pulsar el mismo número otra vez deja de resaltarlo.
+                  setFocusDigit((current) => (current === digit && selected === null ? 0 : digit));
+                  input(digit);
+                }}
+                aria-pressed={focusDigit === digit}
+                className={`display flex aspect-[3/4] flex-col items-center justify-center rounded-xl text-2xl font-bold shadow-soft transition-colors ${
+                  focusDigit === digit ? "bg-ink text-bg" : "bg-surface hover:bg-line/60"
+                } ${remaining(digit) <= 0 ? "opacity-40" : ""}`}
               >
                 {digit}
-                <span className="text-[10px] font-normal text-muted">{Math.max(0, remaining(digit))}</span>
+                <span className={`text-[10px] font-normal ${focusDigit === digit ? "opacity-70" : "text-muted"}`}>
+                  {remaining(digit) <= 0 ? "✓" : remaining(digit)}
+                </span>
               </button>
             ))}
           </div>
@@ -342,6 +370,14 @@ export function SudokuGame({
             >
               Borrar
             </button>
+            <button
+              type="button"
+              onClick={undo}
+              disabled={history.length === 0}
+              className="flex-1 rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium shadow-soft transition-colors hover:border-muted disabled:opacity-40"
+            >
+              Deshacer
+            </button>
           </div>
         </div>
       )}
@@ -358,7 +394,7 @@ export function SudokuGame({
         </p>
       )}
 
-      <p className="hidden text-sm text-muted sm:block">Teclado: números para escribir, 0 o retroceso para borrar, flechas para moverte y N para las notas.</p>
+      <p className="hidden text-sm text-muted sm:block">Teclado: números para escribir, 0 o retroceso para borrar, flechas para moverte, N para las notas y Z para deshacer.</p>
     </section>
   );
 }

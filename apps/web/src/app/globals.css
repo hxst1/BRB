@@ -356,6 +356,13 @@ body {
   background: color-mix(in srgb, var(--mark-o) 45%, var(--cell));
 }
 
+/* El número que has pulsado en el teclado: grande en todo el tablero para verlo de un vistazo. */
+.sudoku-focus {
+  font-size: clamp(26px, 8.6vw, 40px);
+  font-weight: 800 !important;
+  transition: font-size 120ms, background-color 120ms;
+}
+
 .sudoku-notes {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
