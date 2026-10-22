@@ -8,7 +8,7 @@ const FIELD = "w-full rounded-2xl border border-line bg-bg px-4 py-2.5 outline-n
 const INITIAL: DeleteAccountState = { error: null };
 
 /** Borrar la cuenta: explica qué se pierde y pide nombre, código de amigo y contraseña. */
-export function DeleteAccount() {
+export function DeleteAccount({ friendCode }: { friendCode: string | null }) {
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState(deleteAccount, INITIAL);
   // Controlados: si hay un error, lo escrito se conserva (React vacía los formularios tras cada acción).
@@ -51,7 +51,14 @@ export function DeleteAccount() {
             <input {...bind("username")} required autoComplete="off" className={FIELD} />
           </label>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-muted">Tu código de amigo (lo tienes en Amigos)</span>
+            <span className="flex items-baseline justify-between gap-2 text-muted">
+              Tu código de amigo
+              {friendCode && (
+                <span>
+                  Es <strong className="tabular tracking-wider text-ink">{friendCode}</strong>
+                </span>
+              )}
+            </span>
             <input {...bind("code")} required autoComplete="off" maxLength={5} className={`${FIELD} uppercase`} />
           </label>
           <label className="flex flex-col gap-1 text-sm">

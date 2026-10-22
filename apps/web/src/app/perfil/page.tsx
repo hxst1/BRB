@@ -108,11 +108,11 @@ async function AchievementsSection({ viewer }: { viewer: Viewer }) {
 }
 
 async function SettingsSection({ viewer }: { viewer: Viewer }) {
-  const { data: feedback } = await (await createClient())
-    .from("feedback")
-    .select("id, kind, body, rating, status, admin_reply, created_at")
-    .order("created_at", { ascending: false })
-    .limit(10);
+  const supabase = await createClient();
+  const [{ data: feedback }, { data: friendCode }] = await Promise.all([
+    supabase.from("feedback").select("id, kind, body, rating, status, admin_reply, created_at").order("created_at", { ascending: false }).limit(10),
+    supabase.from("friend_codes").select("code").eq("user_id", viewer.id).maybeSingle(),
+  ]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -146,7 +146,7 @@ async function SettingsSection({ viewer }: { viewer: Viewer }) {
         </form>
       </section>
 
-      <DeleteAccount />
+      <DeleteAccount friendCode={friendCode?.code ?? null} />
     </div>
   );
 }
