@@ -20,7 +20,7 @@ export const metadata: Metadata = { title: "Tu perfil", robots: PRIVATE_PAGE };
 
 /** Pestañas del perfil (en la URL: /perfil?seccion=logros). */
 const SECTIONS = [
-  { id: "monstruo", label: "Monstruo" },
+  { id: "bribon", label: "Bribón" },
   { id: "logros", label: "Logros" },
   { id: "records", label: "Récords" },
   { id: "ajustes", label: "Ajustes" },
@@ -41,7 +41,7 @@ async function Profile({ searchParams }: { searchParams: PageProps<"/perfil">["s
   const viewer = await getViewer();
   if (!viewer) redirect("/entrar?next=/perfil");
   const { seccion } = await searchParams;
-  const section: Section = SECTIONS.find((s) => s.id === seccion)?.id ?? "monstruo";
+  const section: Section = SECTIONS.find((s) => s.id === seccion)?.id ?? "bribon";
 
   return (
     <div className="flex max-w-xl flex-col gap-8">
@@ -62,7 +62,7 @@ async function Profile({ searchParams }: { searchParams: PageProps<"/perfil">["s
           {SECTIONS.map(({ id, label }) => (
             <Link
               key={id}
-              href={id === "monstruo" ? "/perfil" : `/perfil?seccion=${id}`}
+              href={id === "bribon" ? "/perfil" : `/perfil?seccion=${id}`}
               scroll={false}
               aria-current={section === id ? "page" : undefined}
               className={`rounded-full px-1 py-2 text-center text-sm whitespace-nowrap transition-colors sm:px-4 ${
@@ -77,7 +77,7 @@ async function Profile({ searchParams }: { searchParams: PageProps<"/perfil">["s
 
       {/* Cada pestaña carga solo lo suyo. */}
       <Suspense key={section} fallback={<div className="h-72 animate-pulse rounded-3xl bg-surface" />}>
-        {section === "monstruo" && <MonsterSection viewer={viewer} />}
+        {section === "bribon" && <MonsterSection viewer={viewer} />}
         {section === "logros" && <AchievementsSection viewer={viewer} />}
         {section === "records" && <Records viewerId={viewer.id} />}
         {section === "ajustes" && <SettingsSection viewer={viewer} />}

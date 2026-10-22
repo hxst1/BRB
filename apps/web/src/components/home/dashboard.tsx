@@ -179,7 +179,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     <>
       <section className="flex flex-wrap items-center gap-6">
         <Link href="/perfil" className="grid size-28 shrink-0 place-items-center rounded-[1.75rem] bg-surface shadow-soft">
-          <Avatar seed={viewer.avatar_seed} parts={viewer.avatar_parts} size={96} label="Tu monstruo" />
+          <Avatar seed={viewer.avatar_seed} parts={viewer.avatar_parts} size={96} label="Tu bribón" />
         </Link>
         <div className="flex min-w-60 flex-1 flex-col gap-4">
           <h1 className="display text-5xl font-bold sm:text-6xl">Hola, {viewer.username}</h1>

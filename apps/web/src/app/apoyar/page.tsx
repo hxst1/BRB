@@ -9,14 +9,14 @@ import { getViewer } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "Apoyar",
-  description: `Ayuda a mantener ${brand.name} y consigue partes exclusivas para tu monstruo.`,
+  description: `Ayuda a mantener ${brand.name} y consigue partes exclusivas para tu bribón.`,
   alternates: { canonical: "/apoyar" },
 };
 
 const PERKS = [
-  { title: "Corona", detail: "Para el monstruo que se lo merece." },
+  { title: "Corona", detail: "Para el bribón que se lo merece." },
   { title: "Gafas de sol", detail: "Para ganar con estilo." },
-  { title: "Color arcoíris", detail: "Un monstruo de todos los colores." },
+  { title: "Color arcoíris", detail: "Un bribón de todos los colores." },
   { title: "Color galaxia", detail: "Morado de otro planeta." },
   { title: "Colores dorado y nocturno", detail: "Que se note en el ranking." },
   { title: "Color de la app", detail: "Tiñe toda la app de uva, mar, bosque o atardecer." },
@@ -28,7 +28,7 @@ export default function SupportPage() {
     <main className="mx-auto w-full max-w-2xl px-4 pt-4 pb-16 sm:px-6">
       <h1 className="display mb-3 text-5xl font-bold text-balance sm:text-6xl">Apoya {brand.name}</h1>
       <p className="mb-10 max-w-lg text-lg text-muted">
-        Lo hacemos por gusto y sin anuncios. Si te entretiene, puedes ayudar a mantenerlo. A cambio, tu monstruo estrena
+        Lo hacemos por gusto y sin anuncios. Si te entretiene, puedes ayudar a mantenerlo. A cambio, tu bribón estrena
         ropa: solo cosméticos, nunca ventajas en las partidas.
       </p>
       <Suspense fallback={<div className="h-64 animate-pulse rounded-3xl bg-line/40" />}>
@@ -45,7 +45,7 @@ async function SupportForViewer() {
 
   return (
     <div className="flex flex-col gap-10">
-      {/* Tu propio monstruo con las partes exclusivas */}
+      {/* Tu propio bribón con las partes exclusivas */}
       <div className="flex items-end justify-center gap-4 rounded-3xl bg-surface p-6 shadow-soft">
         <Avatar seed={seed} parts={{ ...(parts as object), palette: "galaxy", top: "sunglasses" }} size={88} />
         <Avatar seed={seed} parts={{ ...(parts as object), palette: "rainbow", top: "crown" }} size={120} mood="happy" />
@@ -67,7 +67,7 @@ async function SupportForViewer() {
         <div className="flex flex-col items-start gap-2">
           <p className="display text-3xl font-bold">¡Gracias! Ya apoyas el proyecto ✦</p>
           <Link href="/perfil" className="font-medium underline underline-offset-4">
-            Ponle la corona a tu monstruo
+            Ponle la corona a tu bribón
           </Link>
         </div>
       ) : (

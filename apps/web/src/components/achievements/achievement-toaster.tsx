@@ -80,7 +80,7 @@ export function AchievementToaster({ viewerId, avatarSeed, avatarParts }: { view
             {current.name}
           </span>
           <span className="text-xs">
-            Tu monstruo estrena: <strong>{current.reward.label}</strong>
+            Tu bribón estrena: <strong>{current.reward.label}</strong>
           </span>
           <span className="mt-1 flex items-center gap-3">
             {state === "worn" ? (

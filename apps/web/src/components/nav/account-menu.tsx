@@ -76,7 +76,7 @@ export function AccountMenu({
               <LevelBar xp={xp} compact />
             </div>
           </div>
-          <MenuLink href="/perfil">Tu perfil y tu monstruo</MenuLink>
+          <MenuLink href="/perfil">Tu perfil y tu bribón</MenuLink>
           <MenuLink href="/amigos">Amigos y código de invitación</MenuLink>
           <button
             type="button"

@@ -63,7 +63,7 @@ export function SupportButton() {
                 Apoya {brand.name}
               </h2>
               <p className="text-sm text-muted">
-                Es gratis y sin anuncios. Si te entretiene, puedes ayudar a mantenerlo. A cambio, tu monstruo estrena ropa:
+                Es gratis y sin anuncios. Si te entretiene, puedes ayudar a mantenerlo. A cambio, tu bribón estrena ropa:
                 solo cosméticos, nunca ventajas en las partidas.
               </p>
             </div>

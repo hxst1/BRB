@@ -4,7 +4,7 @@ import { PART_OPTIONS, type MonsterParts } from "@repo/avatars";
 import { Avatar } from "@repo/ui/avatar";
 import { PRIVATE_PAGE } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Monstruos", robots: PRIVATE_PAGE };
+export const metadata: Metadata = { title: "Bribones", robots: PRIVATE_PAGE };
 
 /** Galería para revisar el generador. Solo en desarrollo. */
 export default function MonstersPage() {
@@ -15,7 +15,7 @@ export default function MonstersPage() {
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pb-16 sm:px-6">
-      <h1 className="display mb-8 text-6xl font-bold">Monstruos</h1>
+      <h1 className="display mb-8 text-6xl font-bold">Bribones</h1>
 
       <h2 className="mb-4 text-xl font-semibold">Al azar</h2>
       <ul className="grid grid-cols-4 gap-6 sm:grid-cols-6 lg:grid-cols-8">
