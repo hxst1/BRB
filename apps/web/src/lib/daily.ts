@@ -3,12 +3,13 @@
  * (private.daily_challenge); esto es para enseñarlo. La rotación tiene que
  * coincidir con la de la migración (lo comprueba daily.test.ts).
  */
-export const DAILY_GAMES: Record<string, { name: string; short: string; path: string; time: boolean }> = {
-  "2048": { name: "2048", short: "2048", path: "/2048", time: false },
-  snake: { name: "Snake", short: "Snake", path: "/snake", time: false },
-  "minesweeper-medium": { name: "Buscaminas (medio)", short: "Buscaminas", path: "/buscaminas", time: true },
-  lightsout: { name: "Lights Out", short: "Lights Out", path: "/lights-out", time: false },
-  "sudoku-medium": { name: "Sudoku (medio)", short: "Sudoku", path: "/sudoku", time: true },
+/** `guide`: id del juego en lib/how-to-play.ts. */
+export const DAILY_GAMES: Record<string, { name: string; short: string; path: string; time: boolean; guide: string }> = {
+  "2048": { name: "2048", short: "2048", path: "/2048", time: false, guide: "2048" },
+  snake: { name: "Snake", short: "Snake", path: "/snake", time: false, guide: "snake" },
+  "minesweeper-medium": { name: "Buscaminas (medio)", short: "Buscaminas", path: "/buscaminas", time: true, guide: "minesweeper" },
+  lightsout: { name: "Lights Out", short: "Lights Out", path: "/lights-out", time: false, guide: "lights-out" },
+  "sudoku-medium": { name: "Sudoku (medio)", short: "Sudoku", path: "/sudoku", time: true, guide: "sudoku" },
 };
 
 /** Juego de cada día laborable (ISO: 1 = lunes). Sábado y domingo, sorpresa. */

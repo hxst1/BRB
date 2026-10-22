@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { DailyGame, DailyLeaderboard } from "@/components/daily/daily-game";
 import { DailyResult, NextGame, StreakText, formatDay } from "@/components/daily/daily-summary";
 import { Game2048Screen } from "@/components/game2048/screen";
+import { HowToPlayButton } from "@/components/how-to-play";
 import { DAILY_GAMES, dailyGameName } from "@/lib/daily";
 import { getViewerId } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -28,7 +29,10 @@ export default function DailyPage() {
 function Heading({ game }: { game: string }) {
   return (
     <div className="mx-auto max-w-[30rem] lg:mx-0 lg:max-w-none">
-      <h1 className="display mb-1 text-6xl font-bold sm:text-7xl">Reto diario</h1>
+      <div className="mb-1 flex items-center justify-between gap-3">
+        <h1 className="display text-6xl font-bold sm:text-7xl">Reto diario</h1>
+        {DAILY_GAMES[game] && <HowToPlayButton game={DAILY_GAMES[game].guide} name={DAILY_GAMES[game].short} />}
+      </div>
       <p className="mb-8 text-muted">
         Hoy toca <strong className="text-ink">{dailyGameName(game)}</strong>. La misma partida para todos, un solo intento.
       </p>

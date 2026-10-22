@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { wordleToday } from "@/lib/wordle/server";
 import { GameGuideSection } from "@/components/seo/game-guide";
 import { gameMetadata } from "@/lib/seo";
+import { HowToPlayButton } from "@/components/how-to-play";
 
 export const metadata: Metadata = gameMetadata("wordle");
 
@@ -14,7 +15,10 @@ export default function WordlePage() {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pt-4 pb-16 sm:px-6">
       <div className="mx-auto max-w-[30rem]">
-        <h1 className="display mb-1 text-6xl font-bold sm:text-7xl">Wordle</h1>
+        <div className="mb-1 flex items-center justify-between gap-3">
+          <h1 className="display text-6xl font-bold sm:text-7xl">Wordle</h1>
+          <HowToPlayButton game="wordle" name="Wordle" />
+        </div>
         <p className="mb-8 text-muted">
           La palabra del día, igual para todos. Tienes 6 intentos: verde si la letra está en su sitio, amarillo si está
           en otro.

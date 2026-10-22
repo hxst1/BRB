@@ -5,13 +5,17 @@ import { getViewer } from "@/lib/session";
 import { GameGuideSection } from "@/components/seo/game-guide";
 import { SignInPrompt } from "@/components/seo/sign-in-prompt";
 import { gameMetadata } from "@/lib/seo";
+import { HowToPlayButton } from "@/components/how-to-play";
 
 export const metadata: Metadata = gameMetadata("battleship");
 
 export default function BattleshipPage() {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pt-4 pb-16 sm:px-6">
-      <h1 className="display mb-1 text-6xl font-bold sm:text-7xl">Hundir la flota</h1>
+      <div className="mb-1 flex items-center justify-between gap-3">
+        <h1 className="display text-6xl font-bold sm:text-7xl">Hundir la flota</h1>
+        <HowToPlayButton game="battleship" name="Hundir la flota" />
+      </div>
       <p className="mb-8 text-muted">Coloca tus barcos y hunde los de tu amigo antes que él los tuyos. Cada uno dispara cuando puede.</p>
       <Suspense fallback={<div className="h-40 max-w-xl animate-pulse rounded-3xl bg-line/40" />}>
         <ListForViewer />
