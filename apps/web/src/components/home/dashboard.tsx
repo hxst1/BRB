@@ -38,6 +38,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     { data: snake },
     { data: lightsOut },
     { data: minesweeper },
+    { data: sudoku },
     { data: challenges },
     { data: daily },
     { data: wordle },
@@ -58,6 +59,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     supabase.rpc("get_my_standing", { game: "snake" }).maybeSingle(),
     supabase.rpc("get_my_standing", { game: "lightsout" }).maybeSingle(),
     supabase.rpc("get_my_standing", { game: "minesweeper-medium" }).maybeSingle(),
+    supabase.rpc("get_my_standing", { game: "sudoku-medium" }).maybeSingle(),
     supabase.rpc("get_my_challenges", { max_rows: 20 }),
     supabase.rpc("get_my_daily").maybeSingle(),
     supabase
@@ -176,6 +178,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
           statsSnake={<SoloStats standing={snake} />}
           statsLightsOut={<SoloStats standing={lightsOut} unit={(n) => (n === 1 ? "nivel" : "niveles")} />}
           statsMinesweeper={<SoloStats standing={minesweeper} format={(ms) => `${formatTime(ms)} en medio`} />}
+          statsSudoku={<SoloStats standing={sudoku} format={(ms) => `${formatTime(ms)} en medio`} />}
           statsWordle={
             wordleToday?.finished_at ? (
               <span>

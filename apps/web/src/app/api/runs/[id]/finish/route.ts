@@ -3,6 +3,8 @@ import { verifyRun as verifyLightsOut } from "@repo/games/lightsout/verify";
 import { GAME_IDS, type Difficulty } from "@repo/games/minesweeper";
 import { verifyRun as verifyMinesweeper } from "@repo/games/minesweeper/verify";
 import { verifyRun as verifySnake } from "@repo/games/snake/verify";
+import { GAME_IDS as SUDOKU_IDS, type Difficulty as SudokuDifficulty } from "@repo/games/sudoku";
+import { verifyRun as verifySudoku } from "@repo/games/sudoku/verify";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClientForRequest } from "@/lib/supabase/server";
 
@@ -19,8 +21,8 @@ type Verified = { valid: true; score: number; detail: number } | { valid: false;
 /**
  * Repite la partida con el motor de su juego. En Snake, `moves` son los giros
  * (puede no haber ninguno); en Lights Out, las pulsaciones (se puede plantar
- * sin pulsar); en el buscaminas, las casillas abiertas, y la puntuación es el
- * tiempo que ha medido el servidor.
+ * sin pulsar); en el buscaminas, las casillas abiertas, y en el sudoku, el
+ * tablero resuelto. En estos dos, la puntuación es el tiempo que ha medido el servidor.
  */
 function verify(game: string, seed: number, moves: string, elapsedMs: number): Verified | null {
   if (game === "2048") {
@@ -40,6 +42,11 @@ function verify(game: string, seed: number, moves: string, elapsedMs: number): V
   if (difficulty) {
     const result = verifyMinesweeper(difficulty, seed, moves, elapsedMs);
     return result.valid ? { valid: true, score: result.timeMs, detail: result.opens } : result;
+  }
+  const sudoku = (Object.keys(SUDOKU_IDS) as SudokuDifficulty[]).find((d) => SUDOKU_IDS[d] === game);
+  if (sudoku) {
+    const result = verifySudoku(sudoku, seed, moves, elapsedMs);
+    return result.valid ? { valid: true, score: result.timeMs, detail: result.filled } : result;
   }
   return null;
 }

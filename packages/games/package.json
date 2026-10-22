@@ -20,7 +20,9 @@
     "./battleship": "./src/battleship/index.ts",
     "./tron": "./src/tron/index.ts",
     "./minesweeper": "./src/minesweeper/index.ts",
-    "./minesweeper/verify": "./src/minesweeper/verify.ts"
+    "./minesweeper/verify": "./src/minesweeper/verify.ts",
+    "./sudoku": "./src/sudoku/index.ts",
+    "./sudoku/verify": "./src/sudoku/verify.ts"
   },
   "scripts": {
     "test": "vitest run",

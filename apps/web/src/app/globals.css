@@ -308,3 +308,77 @@ body {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
+
+/* Sudoku: 3 × 3 cajas, separadas con un hueco mayor que el de sus casillas. */
+.sudoku-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px;
+  border-radius: 18px;
+  background: var(--board);
+}
+
+.sudoku-box {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+}
+
+/* Cajas alternas con un tono algo distinto, como un tablero de ajedrez. */
+.sudoku-box:nth-child(even) .sudoku-cell:not(.sudoku-related, .sudoku-same, .sudoku-selected) {
+  background: color-mix(in srgb, var(--ink) 7%, var(--cell));
+}
+
+.sudoku-cell {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  aspect-ratio: 1;
+  border-radius: 22%;
+  background: var(--cell);
+  font-family: var(--font-bricolage), system-ui, sans-serif;
+  font-size: clamp(16px, 5.2vw, 26px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 120ms;
+}
+
+.sudoku-related {
+  background: color-mix(in srgb, var(--mark-o) 10%, var(--cell));
+}
+
+.sudoku-same {
+  background: color-mix(in srgb, var(--mark-o) 28%, var(--cell));
+}
+
+.sudoku-selected {
+  background: color-mix(in srgb, var(--mark-o) 45%, var(--cell));
+}
+
+.sudoku-notes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 8%;
+  font-size: clamp(8px, 2.3vw, 12px);
+  font-weight: 700;
+  /* Ámbar: no se confunden con las pistas (tinta) ni con tus números (azul). */
+  color: var(--t256);
+}
+
+.sudoku-notes > span {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 30%;
+}
+
+/* La nota del número seleccionado, resaltada en todo el tablero. */
+.sudoku-notes > .sudoku-note-match:not(:empty) {
+  background: var(--t256);
+  color: #15171c;
+}

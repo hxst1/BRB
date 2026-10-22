@@ -15,6 +15,12 @@ const PREVIEW_SNAKE = { body: [20, 15, 16, 17, 12, 7, 8], food: 4 };
 const PREVIEW_LIGHTS = [1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1];
 /** Buscaminas en miniatura (5 × 5): números, casillas cerradas (·) y una bandera (f). */
 const PREVIEW_MINES = ["..1··", "..12·", "...1f", "11.1·", "·1.1·"];
+/** Sudoku en miniatura: una caja de 3 × 3 con pistas (p) y números del jugador (j). */
+const PREVIEW_SUDOKU: [string, "p" | "j" | ""][] = [
+  ["5", "p"], ["", ""], ["8", "j"],
+  ["", ""], ["2", "p"], ["", ""],
+  ["7", "j"], ["", ""], ["4", "p"],
+];
 /** Wordle en miniatura: tres intentos hasta acertar. */
 const PREVIEW_WORDLE = ["bybbb", "gbygb", "ggggg"];
 
@@ -34,6 +40,7 @@ export function GameCards({
   statsLightsOut,
   statsWordle,
   statsMinesweeper,
+  statsSudoku,
   statsTicTacToe,
   statsConnect4,
   statsBattleship,
@@ -46,6 +53,7 @@ export function GameCards({
   statsLightsOut?: ReactNode;
   statsWordle?: ReactNode;
   statsMinesweeper?: ReactNode;
+  statsSudoku?: ReactNode;
   statsTicTacToe?: ReactNode;
   statsConnect4?: ReactNode;
   statsBattleship?: ReactNode;
@@ -128,6 +136,25 @@ export function GameCards({
                   </span>
                 )),
               )}
+            </div>
+          </GameCard>
+        </li>
+        <li className={ITEM}>
+          <GameCard href="/sudoku" title="Sudoku" subtitle="Sin repetir, y contra el reloj" stats={statsSudoku}>
+            <div aria-hidden className="grid grid-cols-3 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+              {PREVIEW_SUDOKU.map(([digit, kind], i) => (
+                <span
+                  key={i}
+                  className="display grid aspect-square place-items-center rounded-md text-2xl font-bold transition-transform duration-300 group-hover:scale-95 sm:rounded-lg sm:text-4xl"
+                  style={{
+                    background: "var(--cell)",
+                    color: kind === "j" ? "var(--mark-o)" : "var(--ink)",
+                    transitionDelay: `${(i % 3) * 25}ms`,
+                  }}
+                >
+                  {digit}
+                </span>
+              ))}
             </div>
           </GameCard>
         </li>

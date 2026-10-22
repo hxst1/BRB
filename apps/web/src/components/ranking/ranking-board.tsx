@@ -8,7 +8,7 @@ import { formatNumber, formatTime } from "@/lib/format";
 import { levelFromXp } from "@repo/games/level";
 import { createClient } from "@/lib/supabase/client";
 
-type Category = "level" | "2048" | "snake" | "lightsout" | "minesweeper-easy" | "minesweeper-medium" | "minesweeper-hard" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron";
+type Category = "level" | "2048" | "snake" | "lightsout" | "minesweeper-easy" | "minesweeper-medium" | "minesweeper-hard" | "sudoku-easy" | "sudoku-medium" | "sudoku-hard" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron";
 type Scope = "global" | "friends";
 type Period = "all" | "week";
 
@@ -82,6 +82,13 @@ const RANKED_GAMES: {
       ["minesweeper-hard", "Buscaminas difícil"],
     ] as const
   ).map(([id, label]) => ({ id, label, icon: "💣", format: formatTime })),
+  ...(
+    [
+      ["sudoku-easy", "Sudoku fácil"],
+      ["sudoku-medium", "Sudoku medio"],
+      ["sudoku-hard", "Sudoku difícil"],
+    ] as const
+  ).map(([id, label]) => ({ id, label, icon: "🔢", format: formatTime })),
   {
     id: "tictactoe",
     label: "3 en raya",
