@@ -2,7 +2,7 @@
 --
 -- Viven en la base de datos (no en el código) para editarlos desde el panel
 -- de admin y para que los datos del titular no acaben en el repositorio: se
--- crean con huecos entre corchetes ([nombre del titular]…) que se rellenan
+-- crean con huecos entre corchetes ([Nombre y apellidos del titular, o razón social si es una empresa o asociación]…) que se rellenan
 -- desde el panel. El cuerpo es Markdown sencillo (títulos, listas, negrita y
 -- enlaces), que la web pinta con apps/web/src/lib/markdown.ts.
 
@@ -63,7 +63,7 @@ Estos términos regulan el uso de la app de minijuegos (la «app»). Al crear un
 
 ## Quién está detrás
 
-La app la gestiona **[nombre del titular]**, con NIF **[NIF]** y domicilio en **[domicilio]**. Puedes escribirnos a **[email de contacto]**, que es también el punto de contacto para autoridades y usuarios.
+La app la gestiona **[Nombre y apellidos del titular, o razón social si es una empresa o asociación]**, con NIF **[NIF del titular, o CIF si es una empresa o asociación]** y domicilio en **[Domicilio completo: calle, número, código postal, ciudad y país]**. Puedes escribirnos a **[Email de contacto para usuarios y autoridades, por ejemplo hola@tudominio.com]**, que es también el punto de contacto para autoridades y usuarios.
 
 ## La app
 
@@ -86,7 +86,7 @@ No está permitido:
 - Hacer trampas: modificar el juego, automatizar partidas o aprovechar fallos para subir en los rankings.
 - Suplantar a otra persona o usar la app para enviar spam o fines ilegales.
 
-Si alguien incumple estas normas, podemos invalidar sus puntuaciones, cambiar su nombre, suspender su cuenta o borrarla. Si ves algo que no debería estar, avísanos desde «Ayúdanos a mejorar» en Ajustes o en **[email de contacto]**.
+Si alguien incumple estas normas, podemos invalidar sus puntuaciones, cambiar su nombre, suspender su cuenta o borrarla. Si ves algo que no debería estar, avísanos desde «Ayúdanos a mejorar» en Ajustes o en **[Email de contacto para usuarios y autoridades, por ejemplo hola@tudominio.com]**.
 
 ## Apoyar el proyecto
 
@@ -112,7 +112,7 @@ Aquí explicamos qué datos tuyos usamos, para qué y qué puedes hacer con ello
 
 ## Responsable
 
-**[nombre del titular]**, NIF **[NIF]**, **[domicilio]**. Contacto para cualquier cuestión de privacidad: **[email de contacto]**.
+**[Nombre y apellidos del titular, o razón social si es una empresa o asociación]**, NIF **[NIF del titular, o CIF si es una empresa o asociación]**, **[Domicilio completo: calle, número, código postal, ciudad y país]**. Contacto para cualquier cuestión de privacidad: **[Email de contacto para usuarios y autoridades, por ejemplo hola@tudominio.com]**.
 
 ## Qué datos usamos y para qué
 
@@ -146,7 +146,7 @@ Mientras tengas la cuenta. Si la borras, se borran tus datos de la app al moment
 
 ## Tus derechos
 
-Puedes pedirnos acceder a tus datos, corregirlos, borrarlos, oponerte o limitar su uso, y llevártelos (portabilidad), escribiendo a **[email de contacto]**. Puedes borrar tu cuenta tú mismo desde Ajustes. Si crees que no tratamos bien tus datos, puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es).
+Puedes pedirnos acceder a tus datos, corregirlos, borrarlos, oponerte o limitar su uso, y llevártelos (portabilidad), escribiendo a **[Email de contacto para usuarios y autoridades, por ejemplo hola@tudominio.com]**. Puedes borrar tu cuenta tú mismo desde Ajustes. Si crees que no tratamos bien tus datos, puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es).
 
 ## Menores
 
