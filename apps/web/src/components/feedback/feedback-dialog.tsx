@@ -117,7 +117,7 @@ export function FeedbackDialog() {
             <p className="text-sm text-muted">
               {kind === "rating"
                 ? "Tu valoración nos ayuda a saber si vamos bien."
-                : "Lo leemos todo. Verás la respuesta y el estado en tu perfil, en «Tus mensajes»."}
+                : "Lo leemos todo. Verás la respuesta y el estado en tu perfil, en Ajustes."}
             </p>
             <button type="button" onClick={close} className="rounded-full bg-ink px-5 py-2 text-sm font-semibold text-bg">
               Cerrar

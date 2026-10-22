@@ -173,9 +173,9 @@ export function AvatarEditor({
 
       <p className="text-sm text-muted">
         Las partes con candado se desbloquean con los{" "}
-        <a href="#logros" className="font-medium text-ink underline underline-offset-4">
+        <Link href="/perfil?seccion=logros" className="font-medium text-ink underline underline-offset-4">
           logros
-        </a>
+        </Link>
         .
         {!isSupporter && (
           <>

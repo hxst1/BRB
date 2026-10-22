@@ -95,7 +95,7 @@ export function AchievementToaster({ viewerId, avatarSeed, avatarParts }: { view
                 Estrenar
               </button>
             )}
-            <Link href="/perfil#logros" onClick={next} className="text-sm text-muted hover:text-ink">
+            <Link href="/perfil?seccion=logros" onClick={next} className="text-sm text-muted hover:text-ink">
               Ver logros
             </Link>
           </span>

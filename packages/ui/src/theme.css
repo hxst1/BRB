@@ -43,8 +43,13 @@
   --mark-o: #22b8cf;
 }
 
+/*
+ * Oscuro: el del sistema, salvo que se elija otro tema en Ajustes
+ * (data-theme en <html>, lo pone el script de app/layout.tsx).
+ */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --bg: #111318;
     --surface: #1b1e25;
     --ink: #f1f2f5;
@@ -62,6 +67,30 @@
     --t4: #646c80;
     --t-high: #f1f2f5;
   }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111318;
+  --surface: #1b1e25;
+  --ink: #f1f2f5;
+  --muted: #959bab;
+  --line: #2a2e38;
+  --focus: #748ffc;
+  --danger: #ff8787;
+
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.3), 0 18px 40px -18px rgb(0 0 0 / 0.8);
+
+  --board: #1b1e25;
+  --cell: #23262e;
+  --t2: #4d5466;
+  --t4: #646c80;
+  --t-high: #f1f2f5;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
 }
 
 @theme inline {

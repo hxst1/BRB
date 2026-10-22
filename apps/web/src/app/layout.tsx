@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque } from "next/font/google";
 import { brand, siteUrl } from "@repo/brand";
 import { ErrorReporter } from "@/components/error-reporter";
+import { THEME_SCRIPT } from "@/lib/theme";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { ServiceWorker } from "@/components/pwa/service-worker";
 import { SiteHeader } from "@/components/site-header";
@@ -58,7 +59,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="es"
       className={`${bricolage.variable} h-full antialiased`}
+      // El script del tema pone data-theme antes de que React hidrate.
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="flex min-h-full flex-col">
         <ServiceWorker />
         <SiteHeader />

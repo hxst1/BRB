@@ -3,10 +3,11 @@
 import { useSyncExternalStore } from "react";
 import { brand } from "@repo/brand";
 import { showInstallGuide } from "./install-prompt";
+import { ThemePicker } from "./theme-picker";
 import { canInstall, promptInstall, subscribeInstall } from "./install-store";
 import { usePushNotifications } from "./push";
 
-/** Instalar la app y activar las notificaciones en este dispositivo. */
+/** Tema, notificaciones e instalar la app en este dispositivo. */
 export function AppSettings() {
   const installable = useSyncExternalStore(subscribeInstall, canInstall, () => false);
   const { env, push, busy, error, enable, disable } = usePushNotifications();
@@ -16,6 +17,8 @@ export function AppSettings() {
       <h2 id="app-title" className="font-semibold">
         La app
       </h2>
+
+      <ThemePicker />
 
       <div className="flex flex-col gap-1">
         <p className="text-sm font-medium">Notificaciones</p>

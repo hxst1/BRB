@@ -3,43 +3,45 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { signOut } from "@/app/entrar/actions";
-import { LevelBar } from "@/components/level-bar";
-import { AppSettings } from "@/components/pwa/app-settings";
 import { FeedbackSection } from "@/components/feedback/feedback-section";
+import { LevelBar } from "@/components/level-bar";
 import { Achievements } from "@/components/profile/achievements";
 import { AvatarEditor } from "@/components/profile/avatar-editor";
-import { getViewer } from "@/lib/session";
+import { Records } from "@/components/profile/records";
+import { AppSettings } from "@/components/pwa/app-settings";
+import { getViewer, type Viewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { PRIVATE_PAGE } from "@/lib/seo";
 
 export const metadata: Metadata = { title: "Tu perfil", robots: PRIVATE_PAGE };
 
-export default function ProfilePage() {
+/** Pestañas del perfil (en la URL: /perfil?seccion=logros). */
+const SECTIONS = [
+  { id: "monstruo", label: "Monstruo" },
+  { id: "logros", label: "Logros" },
+  { id: "records", label: "Récords" },
+  { id: "ajustes", label: "Ajustes" },
+] as const;
+type Section = (typeof SECTIONS)[number]["id"];
+
+export default function ProfilePage({ searchParams }: PageProps<"/perfil">) {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pt-4 pb-16 sm:px-6">
       <Suspense fallback={<div className="h-96 animate-pulse rounded-3xl bg-surface" />}>
-        <Profile />
+        <Profile searchParams={searchParams} />
       </Suspense>
     </main>
   );
 }
 
-async function Profile() {
+async function Profile({ searchParams }: { searchParams: PageProps<"/perfil">["searchParams"] }) {
   const viewer = await getViewer();
   if (!viewer) redirect("/entrar?next=/perfil");
-  const supabase = await createClient();
-  const [{ data: achievements }, { data: feedback }] = await Promise.all([
-    supabase.rpc("get_my_achievements"),
-    supabase
-      .from("feedback")
-      .select("id, kind, body, rating, status, admin_reply, created_at")
-      .order("created_at", { ascending: false })
-      .limit(10),
-  ]);
-  const unlocked = (achievements ?? []).filter((a) => a.unlocked_at).map((a) => a.achievement);
+  const { seccion } = await searchParams;
+  const section: Section = SECTIONS.find((s) => s.id === seccion)?.id ?? "monstruo";
 
   return (
-    <div className="flex max-w-xl flex-col gap-10">
+    <div className="flex max-w-xl flex-col gap-8">
       <div>
         <h1 className="display mb-3 text-5xl font-bold sm:text-6xl">
           {viewer.username}
@@ -52,18 +54,65 @@ async function Profile() {
         <LevelBar xp={viewer.xp} className="max-w-sm" />
       </div>
 
-      <AvatarEditor
-        // Si el avatar cambia fuera del editor (p. ej. al estrenar un logro), empieza de nuevo con el guardado.
-        key={`${viewer.avatar_seed}:${JSON.stringify(viewer.avatar_parts)}`}
-        userId={viewer.id}
-        initialSeed={viewer.avatar_seed}
-        initialParts={viewer.avatar_parts}
-        isSupporter={viewer.supporter_tier !== null}
-        unlocked={unlocked}
-      />
+      <nav aria-label="Secciones del perfil">
+        <div className="grid grid-flow-col auto-cols-fr rounded-full bg-line/60 p-1">
+          {SECTIONS.map(({ id, label }) => (
+            <Link
+              key={id}
+              href={id === "monstruo" ? "/perfil" : `/perfil?seccion=${id}`}
+              scroll={false}
+              aria-current={section === id ? "page" : undefined}
+              className={`rounded-full px-1 py-2 text-center text-sm whitespace-nowrap transition-colors sm:px-4 ${
+                section === id ? "bg-surface font-medium shadow-soft" : "text-muted hover:text-ink"
+              }`}
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
+      </nav>
 
-      <Achievements statuses={achievements ?? []} avatarSeed={viewer.avatar_seed} avatarParts={viewer.avatar_parts} />
+      {/* Cada pestaña carga solo lo suyo. */}
+      <Suspense key={section} fallback={<div className="h-72 animate-pulse rounded-3xl bg-surface" />}>
+        {section === "monstruo" && <MonsterSection viewer={viewer} />}
+        {section === "logros" && <AchievementsSection viewer={viewer} />}
+        {section === "records" && <Records viewerId={viewer.id} />}
+        {section === "ajustes" && <SettingsSection viewer={viewer} />}
+      </Suspense>
+    </div>
+  );
+}
 
+async function MonsterSection({ viewer }: { viewer: Viewer }) {
+  const { data: achievements } = await (await createClient()).rpc("get_my_achievements");
+  const unlocked = (achievements ?? []).filter((a) => a.unlocked_at).map((a) => a.achievement);
+  return (
+    <AvatarEditor
+      // Si el avatar cambia fuera del editor (p. ej. al estrenar un logro), empieza de nuevo con el guardado.
+      key={`${viewer.avatar_seed}:${JSON.stringify(viewer.avatar_parts)}`}
+      userId={viewer.id}
+      initialSeed={viewer.avatar_seed}
+      initialParts={viewer.avatar_parts}
+      isSupporter={viewer.supporter_tier !== null}
+      unlocked={unlocked}
+    />
+  );
+}
+
+async function AchievementsSection({ viewer }: { viewer: Viewer }) {
+  const { data: achievements } = await (await createClient()).rpc("get_my_achievements");
+  return <Achievements statuses={achievements ?? []} avatarSeed={viewer.avatar_seed} avatarParts={viewer.avatar_parts} />;
+}
+
+async function SettingsSection({ viewer }: { viewer: Viewer }) {
+  const { data: feedback } = await (await createClient())
+    .from("feedback")
+    .select("id, kind, body, rating, status, admin_reply, created_at")
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  return (
+    <div className="flex flex-col gap-8">
       <AppSettings />
 
       <FeedbackSection items={feedback ?? []} />
