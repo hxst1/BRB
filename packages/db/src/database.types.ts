@@ -263,6 +263,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"presence": {
+                  Row: {
+                    "path": string | null,"seen_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "path"?: string | null,"seen_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "path"?: string | null,"seen_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "presence_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "avatar_parts": NonNullable<Json>,"avatar_seed": number,"created_at": string,"id": string,"streak_best": number,"streak_days": number,"streak_last_day": string | null,"supporter_since": string | null,"supporter_tier": string | null,"username": string,"xp": number
@@ -498,6 +518,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"set_presence":
+{ Args: { "path": string }; Returns: undefined
+                           },
 "start_challenge_run":
 { Args: { "challenge_id": string }; Returns: {
               "id": string,"seed": number

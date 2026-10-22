@@ -382,3 +382,21 @@ body {
   background: var(--t256);
   color: #15171c;
 }
+
+/* Aviso de instalar la app: sube desde abajo, como una hoja del sistema. */
+.install-sheet {
+  animation: install-sheet-in 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes install-sheet-in {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .install-sheet {
+    animation: none;
+  }
+}

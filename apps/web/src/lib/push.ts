@@ -11,6 +11,9 @@ export type PushMessage = {
   tag: string;
 };
 
+/** Presencia más reciente que esto cuenta como "lo está mirando ahora" (se renueva cada 20 s). */
+const PRESENCE_MS = 45_000;
+
 let configured = false;
 
 function configure(): boolean {
@@ -23,13 +26,21 @@ function configure(): boolean {
   return true;
 }
 
+/** ¿Tiene el usuario esa pantalla a la vista ahora mismo? (ver set_presence) */
+async function isWatching(admin: ReturnType<typeof createAdminClient>, userId: string, url: string): Promise<boolean> {
+  const { data } = await admin.from("presence").select("path, seen_at").eq("user_id", userId).maybeSingle();
+  return data?.path === url && Date.now() - new Date(data.seen_at).getTime() < PRESENCE_MS;
+}
+
 /**
- * Envía la notificación a todos los dispositivos del usuario. Las
+ * Envía la notificación a todos los dispositivos del usuario, salvo que esté
+ * mirando justo esa pantalla (la partida o el chat): ahí el aviso sobra. Las
  * suscripciones que el navegador ya ha dado de baja (404/410) se borran.
  */
 export async function sendPush(userId: string, message: PushMessage): Promise<number> {
   if (!configure()) return 0;
   const admin = createAdminClient();
+  if (await isWatching(admin, userId, message.url)) return 0;
   const { data: subscriptions } = await admin
     .from("push_subscriptions")
     .select("id, endpoint, p256dh, auth")

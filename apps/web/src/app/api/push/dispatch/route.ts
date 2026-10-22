@@ -20,6 +20,10 @@ type Change =
 
 type Notification = { userId: string; message: PushMessage };
 
+/** Los retos pendientes caducan a los 3 días (un poco menos, por si el trabajo se adelanta). */
+const EXPIRY_MS = 3 * 24 * 60 * 60 * 1000 - 5 * 60 * 1000;
+
+
 function authorized(request: Request): boolean {
   const expected = process.env.PUSH_WEBHOOK_SECRET;
   const received = request.headers.get("x-push-secret");
@@ -97,6 +101,22 @@ async function notificationsFor(change: Change): Promise<Notification[]> {
   }
   if (old.status === "pending" && m.status === "declined") {
     return [notify(m.created_by, "Reto rechazado", `${name(other(m.created_by))} ha rechazado tu reto.`)];
+  }
+  if (old.status === "pending" && m.status === "cancelled") {
+    // Lo retira quien retó (no hace falta avisar) o caduca a los 3 días (ver expire_challenges).
+    const expired = Date.now() - new Date(m.created_at).getTime() >= EXPIRY_MS;
+    if (!expired) return [];
+    return [
+      {
+        userId: m.created_by,
+        message: {
+          title: "Reto caducado",
+          body: `${name(other(m.created_by))} no ha respondido a tu reto (${game.toLowerCase()}) en 3 días.`,
+          url: matchGame(m.game).path,
+          tag,
+        },
+      },
+    ];
   }
 
   if (m.game === "tictactoe" || m.game === "connect4") {

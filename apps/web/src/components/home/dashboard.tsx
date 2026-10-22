@@ -1,20 +1,19 @@
 import Link from "next/link";
 import { replay as replayConnect4 } from "@repo/games/connect4";
 import { replay } from "@repo/games/tictactoe";
-import type { Functions, Json, Match } from "@repo/db";
+import type { Functions, Match } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { DailyCard } from "@/components/daily/daily-summary";
 import { LevelBar } from "@/components/level-bar";
 import { battleshipMyTurn } from "@/components/tictactoe/data";
-import { formatNumber, formatTime } from "@/lib/format";
-import { matchGame, matchHref } from "@/lib/games";
+import { formatAgo, formatNumber, formatTime, formatTimeLeft } from "@/lib/format";
+import { CHALLENGE_EXPIRY_MS, matchGame, matchHref } from "@/lib/games";
 import { MATCH_WITH_PLAYERS, PLAYER_COLUMNS } from "@/lib/queries";
 import type { Viewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { GameCards } from "./game-cards";
+import { NowSection, type NowItem, type WaitingItem } from "./now";
 
-type Person = { id: string; username: string; avatar_seed: number; avatar_parts: Json };
-type Pending = { key: string; href: string; person: Person; text: string; urgent?: boolean };
 type GameTally = { myTurn: number; invites: number; waiting: number };
 
 /**
@@ -52,7 +51,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
       .order("updated_at", { ascending: false }),
     supabase
       .from("friendships")
-      .select(`id, requester:profiles!friendships_requester_id_fkey(${PLAYER_COLUMNS})`)
+      .select(`id, created_at, requester:profiles!friendships_requester_id_fkey(${PLAYER_COLUMNS})`)
       .eq("status", "pending")
       .eq("addressee_id", viewer.id),
     supabase.rpc("get_my_standing", { game: "2048" }).maybeSingle(),
@@ -87,7 +86,11 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     if (match && !battleshipMyTurn(match, viewer.id, status)) chosen.add(match.id);
   }
 
-  const pending: Pending[] = [];
+  // "Ahora": lo que te toca (primero), retos recibidos, retos al 2048 y solicitudes.
+  const now: NowItem[] = [];
+  const invites: NowItem[] = [];
+  const waiting: WaitingItem[] = [];
+  const expiresAt = (match: Match) => new Date(new Date(match.created_at).getTime() + CHALLENGE_EXPIRY_MS);
   const tally: Record<"tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron", GameTally> = {
     tictactoe: { myTurn: 0, invites: 0, waiting: 0 },
     connect4: { myTurn: 0, invites: 0, waiting: 0 },
@@ -98,22 +101,53 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
   };
   for (const match of matches ?? []) {
     const rival = match.player_x === viewer.id ? match.o : match.x;
-    const name = matchGame(match.game).name;
+    const { name, icon } = matchGame(match.game);
     const counts = tally[match.game === "rpsls" ? "rps" : (match.game as keyof typeof tally)] ?? tally.rps;
     if (match.status === "pending") {
       if (match.created_by !== viewer.id) {
         counts.invites++;
-        pending.push({ key: match.id, href: matchHref(match), person: rival, text: `${rival.username} te reta: ${name.toLowerCase()}` });
-      } else counts.waiting++;
+        invites.push({
+          key: match.id,
+          kind: "invite",
+          id: match.id,
+          href: matchHref(match),
+          person: rival,
+          icon,
+          title: `${rival.username} te reta: ${name.toLowerCase()}`,
+          detail: `${capitalize(formatAgo(match.created_at))}. Caduca en ${formatTimeLeft(expiresAt(match))}.`,
+        });
+      } else {
+        counts.waiting++;
+        waiting.push({
+          key: match.id,
+          href: matchHref(match),
+          person: rival,
+          icon,
+          title: `${rival.username}: ${name.toLowerCase()}`,
+          detail: `caduca en ${formatTimeLeft(expiresAt(match))}`,
+        });
+      }
     } else if (myTurnIn(match, viewer.id, chosen)) {
       counts.myTurn++;
-      pending.push({ key: match.id, href: matchHref(match), person: rival, text: `Te toca contra ${rival.username} (${name.toLowerCase()})`, urgent: true });
+      now.push({
+        key: match.id,
+        kind: "turn",
+        id: match.id,
+        href: matchHref(match),
+        person: rival,
+        icon,
+        title: match.game === "pong" || match.game === "tron" ? `${name} contra ${rival.username}` : `Te toca contra ${rival.username}`,
+        detail: match.game === "pong" || match.game === "tron" ? "En directo: entrad los dos" : `${name}, ${formatAgo(match.updated_at)}`,
+      });
     } else counts.waiting++;
   }
+  now.push(...invites);
   for (const challenge of challenges ?? []) {
     if (!challenge.incoming || challenge.status !== "pending") continue;
-    pending.push({
+    now.push({
       key: challenge.id,
+      kind: "challenge",
+      id: challenge.id,
       href: `/2048?reto=${challenge.id}`,
       person: {
         id: challenge.other_id,
@@ -121,15 +155,21 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
         avatar_seed: challenge.other_avatar_seed,
         avatar_parts: challenge.other_avatar_parts,
       },
-      text: `${challenge.other_username} te reta al 2048: supera ${formatNumber(challenge.target_score)}`,
+      icon: "🟧",
+      title: `${challenge.other_username} te reta al 2048`,
+      detail: `Supera ${formatNumber(challenge.target_score)} puntos. ${formatAgo(challenge.created_at)}.`,
     });
   }
   for (const request of requests ?? []) {
-    pending.push({
+    now.push({
       key: request.id,
+      kind: "friend",
+      id: request.id,
       href: "/amigos",
       person: request.requester,
-      text: `${request.requester.username} te ha enviado una solicitud de amistad`,
+      icon: "👋",
+      title: `${request.requester.username} quiere ser tu amigo`,
+      detail: capitalize(formatAgo(request.created_at)),
     });
   }
 
@@ -145,32 +185,16 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
         </div>
       </section>
 
+      <div className="mt-12">
+        <NowSection items={now} waiting={waiting} />
+      </div>
+
       {daily && (
-        <div className="mt-14">
+        <div className="mt-12">
           <DailyCard summary={daily} />
         </div>
       )}
 
-      <section aria-labelledby="pending-title" className="mt-14 max-w-xl">
-        <h2 id="pending-title" className="mb-2 text-xl font-semibold">
-          Pendiente
-        </h2>
-        {pending.length === 0 ? (
-          <p className="text-muted">Nada pendiente. Buen momento para echar una partida.</p>
-        ) : (
-          <ul className="flex flex-col">
-            {pending.map((item) => (
-              <li key={item.key}>
-                <Link href={item.href} className="flex items-center gap-3 border-b border-line py-2.5 hover:bg-surface/60">
-                  <Avatar seed={item.person.avatar_seed} parts={item.person.avatar_parts} size={36} />
-                  <span className={`min-w-0 flex-1 ${item.urgent ? "font-semibold" : ""}`}>{item.text}</span>
-                  {item.urgent && <span className="rounded-full bg-ink px-3 py-1 text-sm font-medium text-bg">Jugar</span>}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
 
       <div className="mt-14">
         <GameCards
@@ -201,6 +225,8 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     </>
   );
 }
+
+const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 /** Récord y puesto en un juego en solitario. */
 function SoloStats({

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { brand } from "@repo/brand";
 import { LiveRefresh } from "@/components/live-refresh";
+import { PresenceReporter } from "@/components/presence-reporter";
 import { AccountMenu } from "@/components/nav/account-menu";
 import { MainNav } from "@/components/nav/main-nav";
 import type { NavCounts } from "@/components/nav/nav-items";
@@ -51,6 +52,7 @@ async function Navigation() {
   return (
     <>
       <LiveRefresh viewerId={viewer.id} />
+      <PresenceReporter />
       <div className="flex items-center gap-3">
         <MainNav counts={counts} />
         <AccountMenu

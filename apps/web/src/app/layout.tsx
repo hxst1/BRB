@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque } from "next/font/google";
 import { brand, siteUrl } from "@repo/brand";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { ServiceWorker } from "@/components/pwa/service-worker";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ServiceWorker />
         <SiteHeader />
         {children}
+        <InstallPrompt />
       </body>
     </html>
   );

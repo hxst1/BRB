@@ -1,100 +1,15 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
 import { brand } from "@repo/brand";
-import { createClient } from "@/lib/supabase/client";
+import { showInstallGuide } from "./install-prompt";
 import { canInstall, promptInstall, subscribeInstall } from "./install-store";
-
-function urlBase64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
-  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
-  const raw = atob((base64 + padding).replace(/-/g, "+").replace(/_/g, "/"));
-  return Uint8Array.from(raw, (char) => char.charCodeAt(0));
-}
-
-type PushState = "loading" | "unsupported" | "ios-install" | "denied" | "off" | "on";
-
-function detectEnvironment() {
-  const standalone = window.matchMedia("(display-mode: standalone)").matches || ("standalone" in navigator && navigator.standalone === true);
-  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  return { standalone, ios };
-}
+import { usePushNotifications } from "./push";
 
 /** Instalar la app y activar las notificaciones en este dispositivo. */
 export function AppSettings() {
   const installable = useSyncExternalStore(subscribeInstall, canInstall, () => false);
-  const [env, setEnv] = useState<{ standalone: boolean; ios: boolean } | null>(null);
-  const [push, setPush] = useState<PushState>("loading");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const environment = detectEnvironment();
-    let cancelled = false;
-    (async () => {
-      let state: PushState;
-      if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
-        // En iPhone las notificaciones solo existen con la app instalada.
-        state = environment.ios && !environment.standalone ? "ios-install" : "unsupported";
-      } else if (Notification.permission === "denied") {
-        state = "denied";
-      } else {
-        const registration = await navigator.serviceWorker.ready;
-        state = (await registration.pushManager.getSubscription()) ? "on" : "off";
-      }
-      if (!cancelled) {
-        setEnv(environment);
-        setPush(state);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  async function enable() {
-    setBusy(true);
-    setError(null);
-    try {
-      const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        setPush(permission === "denied" ? "denied" : "off");
-        return;
-      }
-      const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
-      });
-      const json = subscription.toJSON();
-      const { error: saveError } = await createClient().rpc("save_push_subscription", {
-        endpoint: subscription.endpoint,
-        p256dh: json.keys!.p256dh!,
-        auth: json.keys!.auth!,
-      });
-      if (saveError) {
-        await subscription.unsubscribe();
-        throw saveError;
-      }
-      setPush("on");
-    } catch {
-      setError("No se han podido activar. Inténtalo otra vez.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function disable() {
-    setBusy(true);
-    setError(null);
-    const registration = await navigator.serviceWorker.ready;
-    const subscription = await registration.pushManager.getSubscription();
-    if (subscription) {
-      await createClient().rpc("delete_push_subscription", { endpoint: subscription.endpoint });
-      await subscription.unsubscribe();
-    }
-    setPush("off");
-    setBusy(false);
-  }
+  const { env, push, busy, error, enable, disable } = usePushNotifications();
 
   return (
     <section aria-labelledby="app-title" className="flex flex-col gap-4 rounded-3xl bg-surface p-5 shadow-soft">
@@ -137,21 +52,20 @@ export function AppSettings() {
         )}
       </div>
 
-      {env && !env.standalone && (installable || env.ios) && (
+      {env && !env.standalone && (
         <div className="flex flex-col gap-1 border-t border-line pt-4">
           <p className="text-sm font-medium">Instalar {brand.name}</p>
-          {installable ? (
-            <>
-              <p className="text-sm text-muted">Tenla en tu pantalla de inicio y ábrela como una app más.</p>
-              <button type="button" onClick={() => void promptInstall()} className="mt-2 self-start rounded-full border border-line px-4 py-2 text-sm font-semibold hover:border-muted">
+          <p className="text-sm text-muted">Tenla en tu pantalla de inicio y ábrela como una app más.</p>
+          <div className="mt-2 flex flex-wrap gap-3">
+            {installable && (
+              <button type="button" onClick={() => void promptInstall()} className="rounded-full border border-line px-4 py-2 text-sm font-semibold hover:border-muted">
                 Instalar la app
               </button>
-            </>
-          ) : (
-            <p className="text-sm text-muted">
-              En Safari, toca <span aria-hidden>⎙</span> <strong>Compartir</strong> y luego <strong>Añadir a pantalla de inicio</strong>.
-            </p>
-          )}
+            )}
+            <button type="button" onClick={showInstallGuide} className="rounded-full border border-line px-4 py-2 text-sm font-semibold hover:border-muted">
+              Ver cómo instalarla
+            </button>
+          </div>
         </div>
       )}
     </section>
