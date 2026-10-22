@@ -22,5 +22,5 @@ async function ChatForViewer({ params }: { params: PageProps<"/chat/[friendId]">
   const { friendId } = await params;
   const viewer = await getViewer();
   if (!viewer) redirect(`/entrar?next=${encodeURIComponent(`/chat/${friendId}`)}`);
-  return <ChatShell viewerId={viewer.id} friendId={friendId} />;
+  return <ChatShell viewerId={viewer.id} viewerAvatar={{ seed: viewer.avatar_seed, parts: viewer.avatar_parts }} friendId={friendId} />;
 }

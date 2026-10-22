@@ -672,6 +672,23 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"send_sticker":
+{ Args: { "recipient": string,"sticker": string }; Returns: {
+              "body": string,
+"created_at": string,
+"id": string,
+"kind": string,
+"read_at": string | null,
+"recipient_id": string,
+"ref_id": string | null,
+"sender_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "messages"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "set_presence":
 { Args: { "path": string }; Returns: undefined
                            },

@@ -26,33 +26,57 @@ export function ConversationList({ items, activeId }: { items: ConversationSumma
     <ul className="flex flex-col">
       {items.map((item) => {
         const active = item.friend_id === activeId;
+        const unread = item.unread > 0;
         return (
-          <li key={item.friend_id}>
+          // Una línea entre chats (salvo en el abierto, que ya se distingue por su fondo).
+          <li key={item.friend_id} className="border-b border-line last:border-b-0">
             <Link
               href={`/chat/${item.friend_id}`}
               aria-current={active ? "page" : undefined}
-              className={`flex items-center gap-3 rounded-2xl p-2.5 ${active ? "bg-surface shadow-soft" : "hover:bg-surface/60"}`}
+              className={`-mx-2 my-1 flex items-center gap-3 rounded-2xl px-2 py-2.5 transition-colors ${
+                active ? "bg-surface shadow-soft" : "hover:bg-surface/60"
+              }`}
             >
-              <Avatar seed={item.avatar_seed} parts={item.avatar_parts} size={40} />
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className={`truncate ${item.unread > 0 ? "font-bold" : "font-medium"}`}>{item.username}</span>
-                <span className={`truncate text-sm ${item.unread > 0 ? "text-ink" : "text-muted"}`}>
-                  {item.last_body ? `${item.last_from_me ? "Tú: " : ""}${item.last_body}` : "Sin mensajes todavía"}
+              <Avatar seed={item.avatar_seed} parts={item.avatar_parts} size={48} />
+              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="flex items-baseline justify-between gap-2">
+                  <span className={`truncate ${unread ? "font-bold" : "font-semibold"}`}>{item.username}</span>
+                  {item.last_body && (
+                    <span className={`shrink-0 text-xs ${unread ? "font-semibold" : "text-muted"}`} style={unread ? { color: "var(--mark-x)" } : undefined}>
+                      {lastAt(item.last_at)}
+                    </span>
+                  )}
+                </span>
+                <span className="flex items-center justify-between gap-2">
+                  <span className={`truncate text-sm ${unread ? "font-medium text-ink" : "text-muted"}`}>
+                    {item.last_body ? `${item.last_from_me ? "Tú: " : ""}${item.last_body}` : "Sin mensajes todavía"}
+                  </span>
+                  {unread && (
+                    <span
+                      className="tabular grid h-5 min-w-5 shrink-0 place-items-center rounded-full px-1 text-[11px] font-bold text-white"
+                      style={{ background: "var(--mark-x)" }}
+                      aria-label={`${item.unread} sin leer`}
+                    >
+                      {item.unread}
+                    </span>
+                  )}
                 </span>
               </span>
-              {item.unread > 0 && (
-                <span
-                  className="tabular grid h-5 min-w-5 place-items-center rounded-full px-1 text-[11px] font-bold text-white"
-                  style={{ background: "var(--mark-x)" }}
-                  aria-label={`${item.unread} sin leer`}
-                >
-                  {item.unread}
-                </span>
-              )}
             </Link>
           </li>
         );
       })}
     </ul>
   );
+}
+
+/** Hora si es de hoy, "ayer", o la fecha corta, como en las apps de mensajes. */
+function lastAt(iso: string): string {
+  const date = new Date(iso);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  if (date.toDateString() === today.toDateString()) return date.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
+  if (date.toDateString() === yesterday.toDateString()) return "ayer";
+  return date.toLocaleDateString("es", { day: "numeric", month: "short" });
 }

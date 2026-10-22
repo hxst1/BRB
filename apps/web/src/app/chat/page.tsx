@@ -21,5 +21,5 @@ export default function ChatPage() {
 async function ChatForViewer() {
   const viewer = await getViewer();
   if (!viewer) redirect("/entrar?next=/chat");
-  return <ChatShell viewerId={viewer.id} friendId={null} />;
+  return <ChatShell viewerId={viewer.id} viewerAvatar={{ seed: viewer.avatar_seed, parts: viewer.avatar_parts }} friendId={null} />;
 }

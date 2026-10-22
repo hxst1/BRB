@@ -2,14 +2,17 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import type { Match, Tables } from "@repo/db";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type FormEvent, type KeyboardEvent } from "react";
+import type { Json, Match, Tables } from "@repo/db";
+import type { Sticker } from "@repo/avatars";
 import { Avatar } from "@repo/ui/avatar";
 import type { Challenge } from "@/components/game2048/challenge-text";
 import { ChallengeMenu } from "@/components/challenge-menu";
 import type { Friend } from "@/lib/friends";
 import { createClient } from "@/lib/supabase/client";
+import { STICKER_LIST, stickerFromEmoji } from "@/lib/stickers";
 import { ChallengeEmbed } from "./embed";
+import { StickerImage } from "./sticker";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
 
 type Message = Tables<"messages">;
@@ -29,7 +32,17 @@ function pairFilter(viewerId: string, friendId: string): string {
   return `and(sender_id.eq.${viewerId},recipient_id.eq.${friendId}),and(sender_id.eq.${friendId},recipient_id.eq.${viewerId})`;
 }
 
-export function Conversation({ viewerId, friend, onActivity }: { viewerId: string; friend: Friend; onActivity: () => void }) {
+export function Conversation({
+  viewerId,
+  viewerAvatar,
+  friend,
+  onActivity,
+}: {
+  viewerId: string;
+  viewerAvatar: { seed: number; parts: Json };
+  friend: Friend;
+  onActivity: () => void;
+}) {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[] | null>(null);
   const [outgoing, setOutgoing] = useState<Outgoing[]>([]);
@@ -39,8 +52,12 @@ export function Conversation({ viewerId, friend, onActivity }: { viewerId: strin
   const [matches, setMatches] = useState<Record<string, Match>>({});
   const [challenges, setChallenges] = useState<Record<string, Challenge>>({});
   const [refsVersion, setRefsVersion] = useState(0);
+  const [stickersOpen, setStickersOpen] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
+  const content = useRef<HTMLDivElement>(null);
+  const textarea = useRef<HTMLTextAreaElement>(null);
   const stickToBottom = useRef(true);
+  const mobile = useMobileFullscreen();
 
   const markRead = useCallback(async () => {
     const { error: readError } = await createClient().rpc("mark_conversation_read", { friend: friend.id });
@@ -137,6 +154,19 @@ export function Conversation({ viewerId, friend, onActivity }: { viewerId: strin
     if (element && stickToBottom.current) element.scrollTop = element.scrollHeight;
   }, [messages, outgoing]);
 
+  // Y también cuando algo cambia de tamaño después: las tarjetas de retos que
+  // cargan sus datos, o el hueco visible al abrir o cerrar el teclado.
+  useEffect(() => {
+    const element = scroller.current;
+    if (!element || !content.current) return;
+    const observer = new ResizeObserver(() => {
+      if (stickToBottom.current) element.scrollTop = element.scrollHeight;
+    });
+    observer.observe(element);
+    observer.observe(content.current);
+    return () => observer.disconnect();
+  }, []);
+
   async function loadOlder() {
     const oldest = messages?.[0];
     if (!oldest) return;
@@ -176,6 +206,19 @@ export function Conversation({ viewerId, friend, onActivity }: { viewerId: strin
       return;
     }
     setOutgoing((current) => current.filter((m) => m.id !== id));
+    setMessages((current) => (current && !current.some((m) => m.id === data.id) ? [...current, data] : current));
+    onActivity();
+  }
+
+  async function sendSticker(sticker: Sticker) {
+    setStickersOpen(false);
+    setError(null);
+    stickToBottom.current = true;
+    const { data, error: sendError } = await createClient().rpc("send_sticker", { recipient: friend.id, sticker });
+    if (sendError || !data) {
+      setError(SEND_ERRORS[sendError?.hint ?? ""] ?? "No se ha podido enviar el sticker.");
+      return;
+    }
     setMessages((current) => (current && !current.some((m) => m.id === data.id) ? [...current, data] : current));
     onActivity();
   }
@@ -220,10 +263,25 @@ export function Conversation({ viewerId, friend, onActivity }: { viewerId: strin
   ];
 
   return (
-    <section aria-label={`Conversación con ${friend.username}`} className="flex h-full min-h-0 flex-col">
+    <section
+      aria-label={`Conversación con ${friend.username}`}
+      // En el móvil, a pantalla completa y del alto de lo visible (sin el teclado), como una app de mensajes.
+      style={mobile.style}
+      className={
+        mobile.active
+          ? "fixed inset-x-0 top-0 z-30 flex flex-col bg-bg px-4 pt-[calc(env(safe-area-inset-top)+0.5rem)]"
+          : "flex h-full min-h-0 flex-col"
+      }
+    >
       <header className="flex items-center gap-3 border-b border-line pb-3">
-        <Link href="/chat" className="text-sm text-muted hover:text-ink lg:hidden">
-          Chats
+        <Link
+          href="/chat"
+          aria-label="Volver a los chats"
+          className="-ml-2 grid size-10 shrink-0 place-items-center rounded-full text-muted hover:bg-line/60 hover:text-ink lg:hidden"
+        >
+          <svg viewBox="0 0 24 24" className="size-6" aria-hidden fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 5 8 12l7 7" />
+          </svg>
         </Link>
         <Avatar seed={friend.avatar_seed} parts={friend.avatar_parts} size={40} />
         <h2 className="min-w-0 flex-1 truncate text-lg font-semibold">{friend.username}</h2>
@@ -236,9 +294,10 @@ export function Conversation({ viewerId, friend, onActivity }: { viewerId: strin
           const el = event.currentTarget;
           stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
         }}
-        className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto py-4"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-4"
         aria-live="polite"
       >
+        <div ref={content} className="flex min-h-full flex-col justify-end gap-1.5">
         {hasMore && (
           <button type="button" onClick={() => void loadOlder()} className="mb-2 self-center text-sm text-muted hover:text-ink">
             Cargar mensajes anteriores
@@ -256,7 +315,16 @@ export function Conversation({ viewerId, friend, onActivity }: { viewerId: strin
           return (
             <div key={item.id} className="flex flex-col">
               {showDay && <p className="my-2 self-center text-xs text-muted">{day}</p>}
-              {(item.kind === "match" || item.kind === "challenge") && item.ref_id ? (
+              {item.kind === "sticker" && stickerFromEmoji(item.body) ? (
+                <span title={formatTime(item.created_at)} className={item.mine ? "self-end" : "self-start"}>
+                  <StickerImage
+                    sticker={stickerFromEmoji(item.body)!.id}
+                    seed={item.mine ? viewerAvatar.seed : friend.avatar_seed}
+                    parts={item.mine ? viewerAvatar.parts : friend.avatar_parts}
+                    label={`Sticker: ${stickerFromEmoji(item.body)!.label}`}
+                  />
+                </span>
+              ) : (item.kind === "match" || item.kind === "challenge") && item.ref_id ? (
                 <ChallengeEmbed
                   kind={item.kind}
                   mine={item.mine}
@@ -290,6 +358,7 @@ export function Conversation({ viewerId, friend, onActivity }: { viewerId: strin
             </div>
           );
         })}
+        </div>
       </div>
 
       {error && (
@@ -298,12 +367,49 @@ export function Conversation({ viewerId, friend, onActivity }: { viewerId: strin
         </p>
       )}
 
-      <form onSubmit={onSubmit} className="flex items-end gap-2 border-t border-line pt-3">
+      {stickersOpen && (
+        <div role="group" aria-label="Stickers" className="grid grid-cols-6 gap-1 border-t border-line py-2">
+          {STICKER_LIST.map((sticker) => (
+            <button
+              key={sticker.id}
+              type="button"
+              onClick={() => void sendSticker(sticker.id)}
+              className="grid place-items-center rounded-2xl p-1 transition-transform hover:bg-surface active:scale-90"
+              aria-label={`Enviar sticker: ${sticker.label}`}
+            >
+              <StickerImage sticker={sticker.id} seed={viewerAvatar.seed} parts={viewerAvatar.parts} label="" size={52} />
+            </button>
+          ))}
+        </div>
+      )}
+
+      <form
+        onSubmit={onSubmit}
+        className={`flex items-end gap-2 border-t border-line pt-3 ${
+          mobile.active ? (mobile.keyboard ? "pb-2" : "pb-[calc(env(safe-area-inset-bottom)+0.75rem)]") : ""
+        }`}
+      >
+        <button
+          type="button"
+          onClick={() => setStickersOpen((open) => !open)}
+          aria-expanded={stickersOpen}
+          aria-label={stickersOpen ? "Cerrar stickers" : "Stickers"}
+          className={`grid size-11 shrink-0 place-items-center rounded-2xl transition-colors ${stickersOpen ? "bg-ink text-bg" : "text-muted hover:bg-surface hover:text-ink"}`}
+        >
+          <svg viewBox="0 0 24 24" className="size-6" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M8.5 14.5q3.5 3 7 0" />
+            <circle cx="9" cy="10" r="0.6" fill="currentColor" />
+            <circle cx="15" cy="10" r="0.6" fill="currentColor" />
+          </svg>
+        </button>
         <label htmlFor="message" className="sr-only">
           Mensaje para {friend.username}
         </label>
         <textarea
+          ref={textarea}
           id="message"
+          enterKeyHint="send"
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={onKeyDown}
@@ -314,6 +420,8 @@ export function Conversation({ viewerId, friend, onActivity }: { viewerId: strin
         />
         <button
           type="submit"
+          // Que pulsar Enviar no quite el foco: el teclado sigue abierto para seguir escribiendo.
+          onPointerDown={(event) => event.preventDefault()}
           disabled={!draft.trim()}
           className="h-11 rounded-2xl bg-ink px-4 font-semibold text-bg disabled:opacity-40"
         >
@@ -336,4 +444,55 @@ function dayLabel(iso: string): string {
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
+}
+
+/**
+ * En el móvil (sin la columna de la lista), la conversación ocupa la parte
+ * visible de la pantalla: al abrir el teclado, iOS no encoge la página sino
+ * que la desplaza, así que se sigue a visualViewport. También bloquea el
+ * scroll de la página de debajo y dice si el teclado está abierto.
+ */
+function useMobileFullscreen(): { active: boolean; keyboard: boolean; style?: CSSProperties } {
+  const [state, setState] = useState<{ active: boolean; keyboard: boolean; height: number; top: number }>({
+    active: false,
+    keyboard: false,
+    height: 0,
+    top: 0,
+  });
+
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 1023px)");
+    const viewport = window.visualViewport;
+    const root = document.documentElement;
+
+    const update = () => {
+      if (!query.matches) {
+        root.style.removeProperty("overflow");
+        setState((current) => (current.active ? { active: false, keyboard: false, height: 0, top: 0 } : current));
+        return;
+      }
+      root.style.overflow = "hidden";
+      const height = viewport?.height ?? window.innerHeight;
+      const top = viewport?.offsetTop ?? 0;
+      // Si lo visible es bastante más bajo que la ventana, es el teclado.
+      const keyboard = window.innerHeight - height > 120;
+      setState({ active: true, keyboard, height, top });
+    };
+
+    update();
+    query.addEventListener("change", update);
+    viewport?.addEventListener("resize", update);
+    viewport?.addEventListener("scroll", update);
+    window.addEventListener("resize", update);
+    return () => {
+      query.removeEventListener("change", update);
+      viewport?.removeEventListener("resize", update);
+      viewport?.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+      root.style.removeProperty("overflow");
+    };
+  }, []);
+
+  if (!state.active) return { active: false, keyboard: false };
+  return { active: true, keyboard: state.keyboard, style: { height: state.height, transform: `translateY(${state.top}px)` } };
 }

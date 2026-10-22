@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import type { Json } from "@repo/db";
 import { createClient } from "@/lib/supabase/client";
 import { Conversation } from "./conversation";
 import { ConversationList, type ConversationSummary } from "./conversation-list";
@@ -10,7 +11,16 @@ import { channelName, subscribeWhenReady } from "@/lib/realtime";
  * Lista de conversaciones + conversación abierta. En el móvil se ve una cosa
  * u otra según la ruta; en escritorio, las dos a la vez.
  */
-export function ChatShell({ viewerId, friendId }: { viewerId: string; friendId: string | null }) {
+export function ChatShell({
+  viewerId,
+  viewerAvatar,
+  friendId,
+}: {
+  viewerId: string;
+  /** Tu monstruo, para tus stickers. */
+  viewerAvatar: { seed: number; parts: Json };
+  friendId: string | null;
+}) {
   const [items, setItems] = useState<ConversationSummary[] | null>(null);
 
   const reload = useCallback(async () => {
@@ -55,6 +65,7 @@ export function ChatShell({ viewerId, friendId }: { viewerId: string; friendId: 
           <Conversation
             key={friend.friend_id}
             viewerId={viewerId}
+            viewerAvatar={viewerAvatar}
             friend={{ id: friend.friend_id, username: friend.username, avatar_seed: friend.avatar_seed, avatar_parts: friend.avatar_parts }}
             onActivity={() => void reload()}
           />

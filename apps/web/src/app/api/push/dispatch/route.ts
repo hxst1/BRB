@@ -60,7 +60,12 @@ async function notificationsFor(change: Change): Promise<Notification[]> {
     return [
       {
         userId: m.recipient_id,
-        message: { title: sender, body: truncate(m.body), url: `/chat/${m.sender_id}`, tag: `chat:${m.sender_id}` },
+        message: {
+          title: sender,
+          body: m.kind === "sticker" ? `Te ha enviado un sticker ${m.body}` : truncate(m.body),
+          url: `/chat/${m.sender_id}`,
+          tag: `chat:${m.sender_id}`,
+        },
       },
     ];
   }

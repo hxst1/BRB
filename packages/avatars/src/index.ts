@@ -415,3 +415,73 @@ export function renderMonsterSvg(parts: MonsterParts, mood: Mood = "neutral"): s
 function sadMouth(y: number): string {
   return `<path d="M41 ${y + 5}q9-8 18 0" ${stroke}/>`;
 }
+
+// ---------------------------------------------------------------------------
+// Stickers: el monstruo con una expresión, para el chat
+// ---------------------------------------------------------------------------
+
+export const STICKERS = ["laugh", "cry", "sad", "angry", "love", "shock"] as const;
+export type Sticker = (typeof STICKERS)[number];
+
+const TEAR = "#6cc6ff";
+
+/** Lágrima con la punta arriba en (x, y) y alto `h`. */
+function tear(x: number, y: number, h: number): string {
+  const w = h * 0.42;
+  return `<path d="M${x} ${y}c${w} ${h * 0.45} ${w} ${h * 0.75} 0 ${h}c${-w} ${-h * 0.25} ${-w} ${-h * 0.55} 0 ${-h}z" fill="${TEAR}"/>`;
+}
+
+function heart(x: number, y: number, r: number): string {
+  return `<path d="M${x} ${y + r * 0.9}c${-r * 1.5} ${-r} ${-r * 1.3} ${-r * 2.1} ${-r * 0.5} ${-r * 2.1}c${r * 0.3} 0 ${r * 0.5} ${r * 0.3} ${r * 0.5} ${r * 0.5}c0 ${-r * 0.2} ${r * 0.2} ${-r * 0.5} ${r * 0.5} ${-r * 0.5}c${r * 0.8} 0 ${r} ${r * 1.1} ${-r * 0.5} ${r * 2.1}z" fill="#ff4d6d"/>`;
+}
+
+/** Cara de cada sticker: ojos, boca y extras, sobre el punto de los ojos y la altura de la boca. */
+const STICKER_FACES: Record<Sticker, (eyes: Point, mouthY: number, parts: MonsterParts) => string> = {
+  laugh: ({ x, y }, m) =>
+    EYES.joy({ x, y }) +
+    `<path d="M37 ${m - 3}h26q0 15-13 15t-13-15z" fill="${INK}"/>` +
+    `<path d="M44 ${m + 7}q6-4 12 0q-2 5-6 5t-6-5z" fill="${BLUSH}"/>` +
+    tear(x - 24, y + 1, 9) +
+    tear(x + 24, y + 1, 9),
+  cry: ({ x, y }, m) =>
+    `<path d="M${x - 19} ${y}q6 4 12 0M${x + 7} ${y}q6 4 12 0" stroke="${INK}" stroke-width="4" fill="none" stroke-linecap="round"/>` +
+    `<path d="M${x - 13} ${y + 4}V${m + 14}M${x + 13} ${y + 4}V${m + 14}" stroke="${TEAR}" stroke-width="6" stroke-linecap="round"/>` +
+    `<path d="M38 ${m + 8}q12-16 24 0z" fill="${INK}"/>`,
+  sad: (eyes, m, parts) =>
+    EYES[parts.eyes](eyes) +
+    `<path d="M${eyes.x - 21} ${eyes.y - 13}l12-5M${eyes.x + 21} ${eyes.y - 13}l-12-5" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/>` +
+    sadMouth(m) +
+    tear(eyes.x + 15, eyes.y + 9, 8),
+  angry: (eyes, m, parts) =>
+    EYES[parts.eyes](eyes) +
+    `<path d="M${eyes.x - 22} ${eyes.y - 17}l13 6M${eyes.x + 22} ${eyes.y - 17}l-13 6" stroke="${INK}" stroke-width="4.5" stroke-linecap="round"/>` +
+    `<path d="M40 ${m + 5}q10-7 20 0" ${stroke}/>` +
+    `<path d="M73 22q3 4 7 1M77 18q-1 5 3 7" stroke="#e03131" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+  love: ({ x, y }, m) => heart(x - 13, y, 7) + heart(x + 13, y, 7) + MOUTHS.smile(m),
+  shock: ({ x, y }, m) =>
+    `<circle cx="${x - 13}" cy="${y}" r="10" fill="${WHITE}"/><circle cx="${x + 13}" cy="${y}" r="10" fill="${WHITE}"/>` +
+    `<circle cx="${x - 13}" cy="${y}" r="2.6" fill="${INK}"/><circle cx="${x + 13}" cy="${y}" r="2.6" fill="${INK}"/>` +
+    `<path d="M${x - 21} ${y - 16}q8-5 16 0M${x + 5} ${y - 16}q8-5 16 0" ${stroke}/>` +
+    `<ellipse cx="50" cy="${m + 4}" rx="6" ry="8.5" fill="${INK}"/>`,
+};
+
+/** SVG de un sticker: el monstruo de esa persona con la expresión. */
+export function renderStickerSvg(parts: MonsterParts, sticker: Sticker): string {
+  const body: Body = BODIES[parts.body];
+  const palette: Palette = PALETTES[parts.palette];
+  const top: Top = TOPS[parts.top];
+  const { x } = body.eyes;
+  const blush =
+    sticker === "laugh" || sticker === "love" || sticker === "angry"
+      ? `<g fill="${sticker === "angry" ? "#ff4d4d" : BLUSH}" opacity=".5"><ellipse cx="${x - 22}" cy="${body.mouthY - 4}" rx="6" ry="4"/><ellipse cx="${x + 22}" cy="${body.mouthY - 4}" rx="6" ry="4"/></g>`
+      : "";
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">` +
+    (top.layer === "back" ? top.draw(body, palette) : "") +
+    body.shape(palette.body) +
+    (top.layer === "front" ? top.draw(body, palette) : "") +
+    blush +
+    STICKER_FACES[sticker](body.eyes, body.mouthY, parts) +
+    `</svg>`
+  );
+}

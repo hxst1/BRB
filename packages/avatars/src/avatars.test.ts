@@ -5,7 +5,9 @@ import {
   partAchievement,
   PART_OPTIONS,
   renderMonsterSvg,
+  renderStickerSvg,
   resolveMonster,
+  STICKERS,
   sanitizeParts,
   type MonsterParts,
 } from ".";
@@ -83,5 +85,17 @@ describe("partes de supporter", () => {
 
     expect(listed("palette").sort()).toEqual(PART_OPTIONS.palette.filter((id) => isSupporterPart("palette", id)).sort());
     expect(listed("top").sort()).toEqual(PART_OPTIONS.top.filter((id) => isSupporterPart("top", id)).sort());
+  });
+});
+
+describe("stickers", () => {
+  it("se dibujan con cualquier monstruo", () => {
+    for (const body of PART_OPTIONS.body)
+      for (const eyes of PART_OPTIONS.eyes)
+        for (const sticker of STICKERS) {
+          const svg = renderStickerSvg({ body, eyes, mouth: "smile", top: "horns", palette: "coral", cheeks: false }, sticker);
+          expect(svg).toMatch(/^<svg [^>]*viewBox="0 0 100 100">.*<\/svg>$/);
+          expect(svg).not.toMatch(/undefined|NaN|null/);
+        }
   });
 });
