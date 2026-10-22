@@ -4,11 +4,11 @@ import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 
 import type { Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { useDragScroll } from "@/components/drag-scroll";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, formatTime } from "@/lib/format";
 import { levelFromXp } from "@repo/games/level";
 import { createClient } from "@/lib/supabase/client";
 
-type Category = "level" | "2048" | "snake" | "lightsout" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron";
+type Category = "level" | "2048" | "snake" | "lightsout" | "minesweeper-easy" | "minesweeper-medium" | "minesweeper-hard" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron";
 type Scope = "global" | "friends";
 type Period = "all" | "week";
 
@@ -32,7 +32,15 @@ type Row = {
  */
 type GameId = Exclude<Category, "level">;
 
-const RANKED_GAMES: { id: GameId; label: string; icon: ReactNode; games?: string[]; unit?: string }[] = [
+const RANKED_GAMES: {
+  id: GameId;
+  label: string;
+  icon: ReactNode;
+  games?: string[];
+  unit?: string;
+  /** Si la puntuación es un tiempo (gana el menor), cómo mostrarla. */
+  format?: (score: number) => string;
+}[] = [
   {
     id: "2048",
     label: "2048",
@@ -67,6 +75,13 @@ const RANKED_GAMES: { id: GameId; label: string; icon: ReactNode; games?: string
       </span>
     ),
   },
+  ...(
+    [
+      ["minesweeper-easy", "Buscaminas fácil"],
+      ["minesweeper-medium", "Buscaminas medio"],
+      ["minesweeper-hard", "Buscaminas difícil"],
+    ] as const
+  ).map(([id, label]) => ({ id, label, icon: "💣", format: formatTime })),
   {
     id: "tictactoe",
     label: "3 en raya",
@@ -125,8 +140,8 @@ async function loadRows(category: Category, scope: Scope, period: Period): Promi
       avatarSeed: r.avatar_seed,
       avatarParts: r.avatar_parts,
       supporter: r.supporter_tier !== null,
-      value: formatNumber(r.score),
-      detail: ranked.unit ?? "puntos",
+      value: ranked.format ? ranked.format(r.score) : formatNumber(r.score),
+      detail: ranked.format ? "" : (ranked.unit ?? "puntos"),
     }));
   }
 

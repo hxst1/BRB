@@ -6,7 +6,7 @@ import { Avatar } from "@repo/ui/avatar";
 import { DailyCard } from "@/components/daily/daily-summary";
 import { LevelBar } from "@/components/level-bar";
 import { battleshipMyTurn } from "@/components/tictactoe/data";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, formatTime } from "@/lib/format";
 import { matchGame, matchHref } from "@/lib/games";
 import { MATCH_WITH_PLAYERS, PLAYER_COLUMNS } from "@/lib/queries";
 import type { Viewer } from "@/lib/session";
@@ -37,6 +37,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     { data: standing },
     { data: snake },
     { data: lightsOut },
+    { data: minesweeper },
     { data: challenges },
     { data: daily },
     { data: wordle },
@@ -56,6 +57,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     supabase.rpc("get_my_standing", { game: "2048" }).maybeSingle(),
     supabase.rpc("get_my_standing", { game: "snake" }).maybeSingle(),
     supabase.rpc("get_my_standing", { game: "lightsout" }).maybeSingle(),
+    supabase.rpc("get_my_standing", { game: "minesweeper-medium" }).maybeSingle(),
     supabase.rpc("get_my_challenges", { max_rows: 20 }),
     supabase.rpc("get_my_daily").maybeSingle(),
     supabase
@@ -173,6 +175,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
           stats2048={<SoloStats standing={standing} />}
           statsSnake={<SoloStats standing={snake} />}
           statsLightsOut={<SoloStats standing={lightsOut} unit={(n) => (n === 1 ? "nivel" : "niveles")} />}
+          statsMinesweeper={<SoloStats standing={minesweeper} format={(ms) => `${formatTime(ms)} en medio`} />}
           statsWordle={
             wordleToday?.finished_at ? (
               <span>
@@ -200,16 +203,19 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
 function SoloStats({
   standing,
   unit,
+  format = formatNumber,
 }: {
   standing: Functions<"get_my_standing">["Returns"][number] | null;
   /** Unidad tras el récord (p. ej. niveles); sin ella, solo el número. */
   unit?: (score: number) => string;
+  /** Si el récord es un tiempo, cómo mostrarlo. */
+  format?: (score: number) => string;
 }) {
   if (standing?.best_score == null) return <span className="text-muted">Aún no tienes puntuación. Juega una partida.</span>;
   return (
     <span className="flex flex-col gap-0.5">
       <span>
-        Tu récord: <strong className="tabular">{formatNumber(standing.best_score)}</strong>
+        Tu récord: <strong className="tabular">{format(standing.best_score)}</strong>
         {unit && ` ${unit(standing.best_score)}`}
       </span>
       <span className="text-muted">

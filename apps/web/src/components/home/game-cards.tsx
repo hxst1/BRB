@@ -13,6 +13,8 @@ const PREVIEW_SEA = ["m....", ".sss.", "....m", "h....", "h..m."];
 const PREVIEW_SNAKE = { body: [20, 15, 16, 17, 12, 7, 8], food: 4 };
 /** Luces encendidas del Lights Out en miniatura (4 × 4). */
 const PREVIEW_LIGHTS = [1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1];
+/** Buscaminas en miniatura (5 × 5): números, casillas cerradas (·) y una bandera (f). */
+const PREVIEW_MINES = ["..1··", "..12·", "...1f", "11.1·", "·1.1·"];
 /** Wordle en miniatura: tres intentos hasta acertar. */
 const PREVIEW_WORDLE = ["bybbb", "gbygb", "ggggg"];
 
@@ -31,6 +33,7 @@ export function GameCards({
   statsSnake,
   statsLightsOut,
   statsWordle,
+  statsMinesweeper,
   statsTicTacToe,
   statsConnect4,
   statsBattleship,
@@ -42,6 +45,7 @@ export function GameCards({
   statsSnake?: ReactNode;
   statsLightsOut?: ReactNode;
   statsWordle?: ReactNode;
+  statsMinesweeper?: ReactNode;
   statsTicTacToe?: ReactNode;
   statsConnect4?: ReactNode;
   statsBattleship?: ReactNode;
@@ -103,6 +107,27 @@ export function GameCards({
                   style={{ background: on ? "var(--t128)" : "var(--cell)", transitionDelay: `${(i % 4) * 25}ms` }}
                 />
               ))}
+            </div>
+          </GameCard>
+        </li>
+        <li className={ITEM}>
+          <GameCard href="/buscaminas" title="Buscaminas" subtitle="Despeja el tablero contra el reloj" stats={statsMinesweeper}>
+            <div aria-hidden className="grid grid-cols-5 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+              {PREVIEW_MINES.flatMap((row, r) =>
+                [...row].map((kind, i) => (
+                  <span
+                    key={`${r}${i}`}
+                    className="display grid aspect-square place-items-center rounded-md text-sm font-bold transition-transform duration-300 group-hover:scale-95 sm:rounded-lg sm:text-xl"
+                    style={{
+                      background: kind === "·" || kind === "f" ? "var(--cell)" : "transparent",
+                      color: kind === "2" ? "var(--t512)" : "var(--mark-o)",
+                      transitionDelay: `${i * 25}ms`,
+                    }}
+                  >
+                    {kind === "f" ? <span className="size-2.5 rounded-sm sm:size-3.5" style={{ background: "var(--mark-x)" }} /> : /\d/.test(kind) ? kind : null}
+                  </span>
+                )),
+              )}
             </div>
           </GameCard>
         </li>

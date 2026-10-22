@@ -18,7 +18,9 @@
     "./wordle": "./src/wordle/index.ts",
     "./connect4": "./src/connect4/index.ts",
     "./battleship": "./src/battleship/index.ts",
-    "./tron": "./src/tron/index.ts"
+    "./tron": "./src/tron/index.ts",
+    "./minesweeper": "./src/minesweeper/index.ts",
+    "./minesweeper/verify": "./src/minesweeper/verify.ts"
   },
   "scripts": {
     "test": "vitest run",

@@ -12,12 +12,15 @@ type Period = "all" | "week";
 export function Leaderboard({
   game,
   daily = false,
+  formatScore = formatNumber,
   viewerId,
   refreshKey,
 }: {
   game: string;
   /** Ranking del reto diario de hoy (solo 2048). */
   daily?: boolean;
+  /** Cómo mostrar la puntuación (p. ej. un tiempo); por defecto, el número. */
+  formatScore?: (score: number) => string;
   viewerId: string | null;
   refreshKey: number;
 }) {
@@ -100,7 +103,7 @@ export function Leaderboard({
                 {row.username}
                 {isViewer && <span className="ml-2 text-xs font-normal text-muted">tú</span>}
               </span>
-              <span className="tabular font-semibold">{formatNumber(row.score)}</span>
+              <span className="tabular font-semibold">{formatScore(row.score)}</span>
             </li>
           );
         })}
