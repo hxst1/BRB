@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { signOut } from "@/app/entrar/actions";
 import { LevelBar } from "@/components/level-bar";
 import { AppSettings } from "@/components/pwa/app-settings";
+import { FeedbackSection } from "@/components/feedback/feedback-section";
 import { Achievements } from "@/components/profile/achievements";
 import { AvatarEditor } from "@/components/profile/avatar-editor";
 import { getViewer } from "@/lib/session";
@@ -26,7 +27,15 @@ export default function ProfilePage() {
 async function Profile() {
   const viewer = await getViewer();
   if (!viewer) redirect("/entrar?next=/perfil");
-  const { data: achievements } = await (await createClient()).rpc("get_my_achievements");
+  const supabase = await createClient();
+  const [{ data: achievements }, { data: feedback }] = await Promise.all([
+    supabase.rpc("get_my_achievements"),
+    supabase
+      .from("feedback")
+      .select("id, kind, body, rating, status, admin_reply, created_at")
+      .order("created_at", { ascending: false })
+      .limit(10),
+  ]);
   const unlocked = (achievements ?? []).filter((a) => a.unlocked_at).map((a) => a.achievement);
 
   return (
@@ -56,6 +65,8 @@ async function Profile() {
       <Achievements statuses={achievements ?? []} avatarSeed={viewer.avatar_seed} avatarParts={viewer.avatar_parts} />
 
       <AppSettings />
+
+      <FeedbackSection items={feedback ?? []} />
 
       <section aria-label="Cuenta" className="flex flex-col gap-3 border-t border-line pt-6">
         <Link href="/amigos" className="text-sm font-medium underline-offset-4 hover:underline">

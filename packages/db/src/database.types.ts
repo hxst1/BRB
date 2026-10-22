@@ -87,6 +87,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"feedback": {
+                  Row: {
+                    "admin_reply": string | null,"app_version": string | null,"body": string | null,"created_at": string,"id": string,"kind": string,"path": string | null,"rating": number | null,"replied_at": string | null,"status": string,"updated_at": string,"user_agent": string | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "admin_reply"?: string | null,"app_version"?: string | null,"body"?: string | null,"created_at"?: string,"id"?: string,"kind": string,"path"?: string | null,"rating"?: number | null,"replied_at"?: string | null,"status"?: string,"updated_at"?: string,"user_agent"?: string | null,"user_id": string
+                  }
+                  Update: {
+                    "admin_reply"?: string | null,"app_version"?: string | null,"body"?: string | null,"created_at"?: string,"id"?: string,"kind"?: string,"path"?: string | null,"rating"?: number | null,"replied_at"?: string | null,"status"?: string,"updated_at"?: string,"user_agent"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "feedback_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"friend_codes": {
                   Row: {
                     "code": string,"user_id": string
@@ -583,6 +603,9 @@ isOneToOne: false
                            },
 "submit_battleship_fleet":
 { Args: { "match_id": string,"player_id": string,"ships": Json }; Returns: undefined
+                           },
+"submit_feedback":
+{ Args: { "app_version"?: string,"body"?: string,"kind": string,"path"?: string,"rating"?: number,"user_agent"?: string }; Returns: string
                            },
 "submit_match_choice":
 { Args: { "choice": number,"match_id": string,"player_id": string }; Returns: number

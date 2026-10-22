@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Json } from "@repo/db";
 import { signOut } from "@/app/entrar/actions";
 import { Avatar } from "@repo/ui/avatar";
+import { showFeedback } from "@/components/feedback/feedback-dialog";
 import { LevelBar } from "@/components/level-bar";
 
 /**
@@ -77,6 +78,17 @@ export function AccountMenu({
           </div>
           <MenuLink href="/perfil">Tu perfil y tu monstruo</MenuLink>
           <MenuLink href="/amigos">Amigos y código de invitación</MenuLink>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              showFeedback("bug");
+            }}
+            className="w-full rounded-2xl px-3 py-2 text-left text-sm hover:bg-bg"
+          >
+            Reportar un problema o sugerir algo
+          </button>
           <div className="my-1.5 border-t border-line" />
           <form action={signOut}>
             <button type="submit" role="menuitem" className="w-full rounded-2xl px-3 py-2 text-left text-sm text-danger hover:bg-bg">
