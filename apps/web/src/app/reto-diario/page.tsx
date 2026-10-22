@@ -8,8 +8,9 @@ import { getViewerId } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Reto diario",
-  description: "La misma partida de 2048 para todos, cada día. Un solo intento.",
+  title: "Reto diario de 2048",
+  description: "Cada día, la misma partida de 2048 para todo el mundo y un solo intento. Juega gratis, compara tu puntuación y mantén tu racha.",
+  alternates: { canonical: "/reto-diario" },
 };
 
 export default function DailyPage() {

@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { SnakeScreen } from "@/components/snake/screen";
 import { getViewerId } from "@/lib/session";
+import { GameGuideSection } from "@/components/seo/game-guide";
+import { gameMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Snake",
-  description: "Come manzanas sin chocar. Cada una te hace más largo y más rápido.",
-};
+export const metadata: Metadata = gameMetadata("snake");
 
 export default function SnakePage() {
   return (
@@ -18,6 +17,7 @@ export default function SnakePage() {
       <Suspense fallback={<div className="mx-auto aspect-square max-w-[30rem] animate-pulse rounded-[22px] bg-line/40 lg:mx-0" />}>
         <SnakeForViewer />
       </Suspense>
+      <GameGuideSection id="snake" />
     </main>
   );
 }

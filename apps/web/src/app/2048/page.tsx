@@ -5,11 +5,10 @@ import { Game2048Screen, type ActiveChallenge } from "@/components/game2048/scre
 import { PLAYER_COLUMNS } from "@/lib/queries";
 import { getViewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { GameGuideSection } from "@/components/seo/game-guide";
+import { gameMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "2048",
-  description: "Junta fichas iguales hasta llegar a 2048.",
-};
+export const metadata: Metadata = gameMetadata("2048");
 
 export default function Game2048Page({ searchParams }: PageProps<"/2048">) {
   return (
@@ -28,6 +27,7 @@ export default function Game2048Page({ searchParams }: PageProps<"/2048">) {
       <Suspense fallback={<div className="board mx-auto max-w-[30rem] animate-pulse lg:mx-0" />}>
         <GameForViewer searchParams={searchParams} />
       </Suspense>
+      <GameGuideSection id="2048" />
     </main>
   );
 }

@@ -3,8 +3,9 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { RpsMatchView } from "@/components/rps/match-view";
 import { getViewer } from "@/lib/session";
+import { PRIVATE_PAGE } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Piedra, papel o tijera" };
+export const metadata: Metadata = { title: "Piedra, papel o tijera", robots: PRIVATE_PAGE };
 
 export default function RpsMatchPage({ params }: PageProps<"/piedra-papel-tijera/[id]">) {
   return (

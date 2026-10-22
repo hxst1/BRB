@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { MatchList } from "@/components/tictactoe/match-list";
 import { getViewer } from "@/lib/session";
+import { GameGuideSection } from "@/components/seo/game-guide";
+import { SignInPrompt } from "@/components/seo/sign-in-prompt";
+import { gameMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "4 en raya",
-  description: "Reta a tus amigos al 4 en raya. Cada uno juega cuando puede.",
-};
+export const metadata: Metadata = gameMetadata("connect4");
 
 export default function ConnectFourPage() {
   return (
@@ -17,12 +16,13 @@ export default function ConnectFourPage() {
       <Suspense fallback={<div className="h-40 max-w-xl animate-pulse rounded-3xl bg-line/40" />}>
         <ListForViewer />
       </Suspense>
+      <GameGuideSection id="connect4" />
     </main>
   );
 }
 
 async function ListForViewer() {
   const viewer = await getViewer();
-  if (!viewer) redirect("/entrar?next=/4-en-raya");
+  if (!viewer) return <SignInPrompt next="/4-en-raya" />;
   return <MatchList viewerId={viewer.id} games={["connect4"]} />;
 }

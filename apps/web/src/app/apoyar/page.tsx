@@ -9,6 +9,7 @@ import { getViewer } from "@/lib/session";
 export const metadata: Metadata = {
   title: "Apoyar",
   description: `Ayuda a mantener ${brand.name} y consigue partes exclusivas para tu monstruo.`,
+  alternates: { canonical: "/apoyar" },
 };
 
 const PERKS = [

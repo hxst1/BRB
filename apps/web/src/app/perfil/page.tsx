@@ -9,8 +9,9 @@ import { Achievements } from "@/components/profile/achievements";
 import { AvatarEditor } from "@/components/profile/avatar-editor";
 import { getViewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { PRIVATE_PAGE } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Tu perfil" };
+export const metadata: Metadata = { title: "Tu perfil", robots: PRIVATE_PAGE };
 
 export default function ProfilePage() {
   return (

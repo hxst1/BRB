@@ -3,8 +3,9 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { getViewer } from "@/lib/session";
 import { NewPasswordForm } from "./new-password-form";
+import { PRIVATE_PAGE } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Nueva contraseña" };
+export const metadata: Metadata = { title: "Nueva contraseña", robots: PRIVATE_PAGE };
 
 export default function NewPasswordPage() {
   return (

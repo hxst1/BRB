@@ -2,8 +2,9 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PART_OPTIONS, type MonsterParts } from "@repo/avatars";
 import { Avatar } from "@repo/ui/avatar";
+import { PRIVATE_PAGE } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Monstruos" };
+export const metadata: Metadata = { title: "Monstruos", robots: PRIVATE_PAGE };
 
 /** Galería para revisar el generador. Solo en desarrollo. */
 export default function MonstersPage() {

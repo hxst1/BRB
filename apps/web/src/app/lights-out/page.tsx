@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { LightsOutScreen } from "@/components/lightsout/screen";
 import { getViewerId } from "@/lib/session";
+import { GameGuideSection } from "@/components/seo/game-guide";
+import { gameMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Lights Out",
-  description: "Apaga todas las luces. Cada nivel, un tablero más grande y menos margen.",
-};
+export const metadata: Metadata = gameMetadata("lights-out");
 
 export default function LightsOutPage() {
   return (
@@ -18,6 +17,7 @@ export default function LightsOutPage() {
       <Suspense fallback={<div className="mx-auto aspect-square max-w-[30rem] animate-pulse rounded-[22px] bg-line/40 lg:mx-0" />}>
         <LightsOutForViewer />
       </Suspense>
+      <GameGuideSection id="lights-out" />
     </main>
   );
 }

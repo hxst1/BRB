@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { MatchList } from "@/components/tictactoe/match-list";
 import { getViewer } from "@/lib/session";
+import { GameGuideSection } from "@/components/seo/game-guide";
+import { SignInPrompt } from "@/components/seo/sign-in-prompt";
+import { gameMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Hundir la flota",
-  description: "Reta a tus amigos a hundir la flota. Agua, tocado y hundido, cada uno a su ritmo.",
-};
+export const metadata: Metadata = gameMetadata("battleship");
 
 export default function BattleshipPage() {
   return (
@@ -17,12 +16,13 @@ export default function BattleshipPage() {
       <Suspense fallback={<div className="h-40 max-w-xl animate-pulse rounded-3xl bg-line/40" />}>
         <ListForViewer />
       </Suspense>
+      <GameGuideSection id="battleship" />
     </main>
   );
 }
 
 async function ListForViewer() {
   const viewer = await getViewer();
-  if (!viewer) redirect("/entrar?next=/hundir-la-flota");
+  if (!viewer) return <SignInPrompt next="/hundir-la-flota" />;
   return <MatchList viewerId={viewer.id} games={["battleship"]} />;
 }

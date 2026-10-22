@@ -15,11 +15,28 @@ const bricolage = Bricolage_Grotesque({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: {
-    default: brand.name,
+    default: `${brand.name}: minijuegos online gratis`,
     template: `%s · ${brand.name}`,
   },
   description: brand.description,
   applicationName: brand.name,
+  category: "games",
+  openGraph: {
+    type: "website",
+    siteName: brand.name,
+    locale: "es_ES",
+    title: `${brand.name}: minijuegos online gratis`,
+    description: brand.description,
+    url: "/",
+  },
+  twitter: { card: "summary_large_image" },
+  // Códigos de Google Search Console y Bing Webmaster Tools, cuando haya dominio.
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    other: process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
+      ? { "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION }
+      : undefined,
+  },
   appleWebApp: {
     capable: true,
     title: brand.name,

@@ -3,8 +3,9 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { MatchView } from "@/components/tictactoe/match-view";
 import { getViewer } from "@/lib/session";
+import { PRIVATE_PAGE } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "3 en raya" };
+export const metadata: Metadata = { title: "3 en raya", robots: PRIVATE_PAGE };
 
 export default function MatchPage({ params }: PageProps<"/3-en-raya/[id]">) {
   return (

@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { safeNext } from "@/lib/safe-next";
 import { AuthForm } from "./auth-form";
+import { PRIVATE_PAGE } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Entrar" };
+export const metadata: Metadata = { title: "Entrar", robots: PRIVATE_PAGE };
 
 export default function SignInPage({ searchParams }: PageProps<"/entrar">) {
   return (

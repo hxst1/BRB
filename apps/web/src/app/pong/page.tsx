@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { MatchList } from "@/components/tictactoe/match-list";
 import { getViewer } from "@/lib/session";
+import { GameGuideSection } from "@/components/seo/game-guide";
+import { SignInPrompt } from "@/components/seo/sign-in-prompt";
+import { gameMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Pong",
-  description: "Pong en directo contra tus amigos, a 5 puntos.",
-};
+export const metadata: Metadata = gameMetadata("pong");
 
 export default function PongPage() {
   return (
@@ -17,12 +16,13 @@ export default function PongPage() {
       <Suspense fallback={<div className="h-40 max-w-xl animate-pulse rounded-3xl bg-line/40" />}>
         <ListForViewer />
       </Suspense>
+      <GameGuideSection id="pong" />
     </main>
   );
 }
 
 async function ListForViewer() {
   const viewer = await getViewer();
-  if (!viewer) redirect("/entrar?next=/pong");
+  if (!viewer) return <SignInPrompt next="/pong" />;
   return <MatchList viewerId={viewer.id} games={["pong"]} />;
 }

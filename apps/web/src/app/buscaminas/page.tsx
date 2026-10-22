@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { MinesweeperScreen } from "@/components/minesweeper/screen";
 import { getViewerId } from "@/lib/session";
+import { GameGuideSection } from "@/components/seo/game-guide";
+import { gameMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Buscaminas",
-  description: "Despeja el tablero sin pisar ninguna mina, lo más rápido que puedas.",
-};
+export const metadata: Metadata = gameMetadata("minesweeper");
 
 export default function MinesweeperPage() {
   return (
@@ -18,6 +17,7 @@ export default function MinesweeperPage() {
       <Suspense fallback={<div className="mx-auto aspect-square max-w-[30rem] animate-pulse rounded-[18px] bg-line/40 lg:mx-0" />}>
         <MinesweeperForViewer />
       </Suspense>
+      <GameGuideSection id="minesweeper" />
     </main>
   );
 }

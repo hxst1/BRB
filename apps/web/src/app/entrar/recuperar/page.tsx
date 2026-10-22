@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { RecoverForm } from "./recover-form";
+import { PRIVATE_PAGE } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Recuperar contraseña" };
+export const metadata: Metadata = { title: "Recuperar contraseña", robots: PRIVATE_PAGE };
 
 export default function RecoverPage({ searchParams }: PageProps<"/entrar/recuperar">) {
   return (

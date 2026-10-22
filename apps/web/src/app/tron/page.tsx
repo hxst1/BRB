@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { MatchList } from "@/components/tictactoe/match-list";
 import { getViewer } from "@/lib/session";
+import { GameGuideSection } from "@/components/seo/game-guide";
+import { SignInPrompt } from "@/components/seo/sign-in-prompt";
+import { gameMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Tron",
-  description: "Tron en directo contra tus amigos, a 3 rondas.",
-};
+export const metadata: Metadata = gameMetadata("tron");
 
 export default function TronPage() {
   return (
@@ -17,12 +16,13 @@ export default function TronPage() {
       <Suspense fallback={<div className="h-40 max-w-xl animate-pulse rounded-3xl bg-line/40" />}>
         <ListForViewer />
       </Suspense>
+      <GameGuideSection id="tron" />
     </main>
   );
 }
 
 async function ListForViewer() {
   const viewer = await getViewer();
-  if (!viewer) redirect("/entrar?next=/tron");
+  if (!viewer) return <SignInPrompt next="/tron" />;
   return <MatchList viewerId={viewer.id} games={["tron"]} />;
 }

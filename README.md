@@ -108,6 +108,27 @@ Si `pnpm dev` sirve estilos o componentes viejos (p. ej. un cambio en `globals.c
 aplica), la caché de Turbopack se ha quedado colgada: para el servidor, borra `apps/web/.next/dev`
 y vuelve a arrancarlo.
 
+## SEO y asistentes de IA
+
+Todo sale de `apps/web/src/lib/seo.ts`: título, descripción, "Cómo se juega" y preguntas frecuentes
+de cada juego. De ahí se generan la sección visible de cada página, los datos estructurados (JSON-LD:
+`VideoGame`, `FAQPage`, `BreadcrumbList`), `sitemap.xml`, `/llms.txt` y las imágenes al compartir
+(`opengraph-image.tsx` de cada juego, con `lib/og.tsx`). Al añadir un juego, añade también su guía.
+
+- `robots.txt` deja pasar a todos (también a GPTBot, ClaudeBot, PerplexityBot…) salvo `/api/` y `/dev/`.
+- Las páginas privadas (perfil, amigos, chat, entrar, partidas concretas) llevan `noindex` con
+  `PRIVATE_PAGE`. No se bloquean en `robots.txt`: si no, el buscador no llegaría a leer el `noindex`.
+- Todas las URL absolutas salen de `NEXT_PUBLIC_SITE_URL`.
+
+Cuando haya dominio:
+
+- [ ] `NEXT_PUBLIC_SITE_URL` con el dominio en Vercel, y redirección 301 de `*.vercel.app` al dominio
+      (Vercel → Settings → Domains).
+- [ ] Alta en Google Search Console y Bing Webmaster Tools; sus códigos en
+      `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` y `NEXT_PUBLIC_BING_SITE_VERIFICATION`, y enviar el sitemap.
+- [ ] Revisar los datos estructurados con la prueba de resultados enriquecidos de Google.
+- [ ] Actualizar en Supabase (Auth → URL) el `site_url` y las URL de redirección.
+
 ## Antes de producción
 
 - [ ] Activar confirmación de email (`auth.email.enable_confirmations`) y captcha (Cloudflare Turnstile)

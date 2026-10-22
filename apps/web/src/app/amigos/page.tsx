@@ -5,8 +5,9 @@ import { FriendCode } from "@/components/profile/friend-code";
 import { Friends } from "@/components/profile/friends";
 import { getViewerId } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { PRIVATE_PAGE } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Amigos" };
+export const metadata: Metadata = { title: "Amigos", robots: PRIVATE_PAGE };
 
 export default function FriendsPage({ searchParams }: PageProps<"/amigos">) {
   return (

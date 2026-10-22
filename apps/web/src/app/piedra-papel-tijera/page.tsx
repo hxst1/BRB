@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { MatchList } from "@/components/tictactoe/match-list";
 import { getViewer } from "@/lib/session";
+import { GameGuideSection } from "@/components/seo/game-guide";
+import { SignInPrompt } from "@/components/seo/sign-in-prompt";
+import { gameMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Piedra, papel o tijera",
-  description: "Reta a tus amigos a piedra, papel o tijera, o a la versión con lagarto y Spock.",
-};
+export const metadata: Metadata = gameMetadata("rps");
 
 export default function RpsPage() {
   return (
@@ -17,12 +16,13 @@ export default function RpsPage() {
       <Suspense fallback={<div className="h-40 max-w-xl animate-pulse rounded-3xl bg-line/40" />}>
         <ListForViewer />
       </Suspense>
+      <GameGuideSection id="rps" />
     </main>
   );
 }
 
 async function ListForViewer() {
   const viewer = await getViewer();
-  if (!viewer) redirect("/entrar?next=/piedra-papel-tijera");
+  if (!viewer) return <SignInPrompt next="/piedra-papel-tijera" />;
   return <MatchList viewerId={viewer.id} games={["rps", "rpsls"]} />;
 }

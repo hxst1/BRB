@@ -3,8 +3,9 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { ChatShell } from "@/components/chat/chat-shell";
 import { getViewer } from "@/lib/session";
+import { PRIVATE_PAGE } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Chat" };
+export const metadata: Metadata = { title: "Chat", robots: PRIVATE_PAGE };
 
 export default function ChatPage() {
   return (

@@ -3,8 +3,9 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { PongMatchView } from "@/components/pong/match-view";
 import { getViewer } from "@/lib/session";
+import { PRIVATE_PAGE } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Pong" };
+export const metadata: Metadata = { title: "Pong", robots: PRIVATE_PAGE };
 
 export default function PongMatchPage({ params }: PageProps<"/pong/[id]">) {
   return (

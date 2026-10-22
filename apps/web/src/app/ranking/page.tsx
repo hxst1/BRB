@@ -4,8 +4,9 @@ import { RankingBoard } from "@/components/ranking/ranking-board";
 import { getViewer } from "@/lib/session";
 
 export const metadata: Metadata = {
-  title: "Ranking",
-  description: "Quién tiene más nivel, quién va mejor en el 2048 y el Snake, y quién gana más partidas.",
+  title: "Ranking de minijuegos",
+  description: "Clasificación mundial y entre amigos: quién tiene más nivel, los mejores en 2048, Snake, Sudoku y Buscaminas, y quién gana más partidas.",
+  alternates: { canonical: "/ranking" },
 };
 
 export default function RankingPage() {

@@ -3,8 +3,9 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { TronMatchView } from "@/components/tron/match-view";
 import { getViewer } from "@/lib/session";
+import { PRIVATE_PAGE } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Tron" };
+export const metadata: Metadata = { title: "Tron", robots: PRIVATE_PAGE };
 
 export default function TronMatchPage({ params }: PageProps<"/tron/[id]">) {
   return (

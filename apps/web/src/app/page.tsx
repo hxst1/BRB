@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Dashboard } from "@/components/home/dashboard";
 import { Landing } from "@/components/home/landing";
 import { getViewer } from "@/lib/session";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default function Home() {
   return (

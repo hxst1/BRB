@@ -5,11 +5,10 @@ import { WordleGame, type FriendResult } from "@/components/wordle/game";
 import { getViewerId } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { wordleToday } from "@/lib/wordle/server";
+import { GameGuideSection } from "@/components/seo/game-guide";
+import { gameMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Wordle",
-  description: "La palabra del día: adivínala en 6 intentos.",
-};
+export const metadata: Metadata = gameMetadata("wordle");
 
 export default function WordlePage() {
   return (
@@ -24,6 +23,7 @@ export default function WordlePage() {
           <WordleForViewer />
         </Suspense>
       </div>
+      <GameGuideSection id="wordle" />
     </main>
   );
 }
