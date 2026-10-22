@@ -325,14 +325,14 @@ isOneToOne: true
                   ]
                 },"profiles": {
                   Row: {
-                    "avatar_parts": NonNullable<Json>,"avatar_seed": number,"created_at": string,"id": string,"streak_best": number,"streak_days": number,"streak_last_day": string | null,"supporter_since": string | null,"supporter_tier": string | null,"username": string,"xp": number
+                    "avatar_parts": NonNullable<Json>,"avatar_seed": number,"created_at": string,"id": string,"streak_best": number,"streak_days": number,"streak_last_day": string | null,"supporter_since": string | null,"supporter_tier": string | null,"username": string,"username_changed_at": string | null,"xp": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "avatar_parts"?: NonNullable<Json>,"avatar_seed": number,"created_at"?: string,"id": string,"streak_best"?: number,"streak_days"?: number,"streak_last_day"?: string | null,"supporter_since"?: string | null,"supporter_tier"?: string | null,"username": string,"xp"?: number
+                    "avatar_parts"?: NonNullable<Json>,"avatar_seed": number,"created_at"?: string,"id": string,"streak_best"?: number,"streak_days"?: number,"streak_last_day"?: string | null,"supporter_since"?: string | null,"supporter_tier"?: string | null,"username": string,"username_changed_at"?: string | null,"xp"?: number
                   }
                   Update: {
-                    "avatar_parts"?: NonNullable<Json>,"avatar_seed"?: number,"created_at"?: string,"id"?: string,"streak_best"?: number,"streak_days"?: number,"streak_last_day"?: string | null,"supporter_since"?: string | null,"supporter_tier"?: string | null,"username"?: string,"xp"?: number
+                    "avatar_parts"?: NonNullable<Json>,"avatar_seed"?: number,"created_at"?: string,"id"?: string,"streak_best"?: number,"streak_days"?: number,"streak_last_day"?: string | null,"supporter_since"?: string | null,"supporter_tier"?: string | null,"username"?: string,"username_changed_at"?: string | null,"xp"?: number
                   }
                   Relationships: [
                     
