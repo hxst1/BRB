@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { DragScrollList } from "@/components/drag-scroll";
 import type { CSSProperties, ReactNode } from "react";
+import { DragScrollList } from "@/components/drag-scroll";
+import { PinButton } from "./pin-button";
 
 /** Tablero en miniatura para la tarjeta del 2048 (decorativo). */
 const PREVIEW_2048 = [2, 0, 8, 0, 0, 16, 64, 4, 0, 4, 128, 32, 2, 8, 512, 2048];
@@ -26,253 +27,327 @@ const PREVIEW_WORDLE = ["bybbb", "gbygb", "ggggg"];
 
 const ITEM = "w-44 shrink-0 snap-start sm:w-auto";
 
+export type GameId =
+  | "2048"
+  | "snake"
+  | "lights-out"
+  | "minesweeper"
+  | "sudoku"
+  | "wordle"
+  | "tictactoe"
+  | "connect4"
+  | "battleship"
+  | "rps"
+  | "pong"
+  | "tron";
+
+type Game = { id: GameId; group: "solo" | "friends"; href: string; title: string; subtitle: string; preview: ReactNode };
+
+const GAMES: Game[] = [
+  {
+    id: "2048",
+    group: "solo",
+    href: "/2048",
+    title: "2048",
+    subtitle: "Tú solo contra el ranking",
+    preview: (
+        <div aria-hidden className="grid grid-cols-4 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+          {PREVIEW_2048.map((value, i) => (
+            <span
+              key={i}
+              className="aspect-square rounded-md transition-transform sm:rounded-lg duration-300 group-hover:scale-95"
+              style={
+                {
+                  background: value ? `var(--t${value})` : "var(--cell)",
+                  transitionDelay: `${(i % 4) * 25}ms`,
+                } as CSSProperties
+              }
+            />
+          ))}
+        </div>
+    ),
+  },
+  {
+    id: "snake",
+    group: "solo",
+    href: "/snake",
+    title: "Snake",
+    subtitle: "Come sin chocar, cada vez más rápido",
+    preview: (
+        <div aria-hidden className="grid grid-cols-5 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+          {Array.from({ length: 25 }, (_, i) => {
+            const segment = PREVIEW_SNAKE.body.indexOf(i);
+            const isHead = segment === PREVIEW_SNAKE.body.length - 1;
+            return (
+              <span
+                key={i}
+                className={`aspect-square transition-transform duration-300 group-hover:scale-95 ${
+                  i === PREVIEW_SNAKE.food ? "scale-75 rounded-full" : "rounded-md sm:rounded-lg"
+                }`}
+                style={{
+                  background:
+                    i === PREVIEW_SNAKE.food ? "var(--t64)" : isHead ? "var(--t1024)" : segment >= 0 ? "var(--t512)" : "var(--cell)",
+                  transitionDelay: `${Math.max(segment, 0) * 30}ms`,
+                }}
+              />
+            );
+          })}
+        </div>
+    ),
+  },
+  {
+    id: "lights-out",
+    group: "solo",
+    href: "/lights-out",
+    title: "Lights Out",
+    subtitle: "Apágalo todo, nivel a nivel",
+    preview: (
+        <div aria-hidden className="grid grid-cols-4 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+          {PREVIEW_LIGHTS.map((on, i) => (
+            <span
+              key={i}
+              className="aspect-square rounded-md transition-transform duration-300 group-hover:scale-95 sm:rounded-lg"
+              style={{ background: on ? "var(--t128)" : "var(--cell)", transitionDelay: `${(i % 4) * 25}ms` }}
+            />
+          ))}
+        </div>
+    ),
+  },
+  {
+    id: "minesweeper",
+    group: "solo",
+    href: "/buscaminas",
+    title: "Buscaminas",
+    subtitle: "Despeja el tablero contra el reloj",
+    preview: (
+        <div aria-hidden className="grid grid-cols-5 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+          {PREVIEW_MINES.flatMap((row, r) =>
+            [...row].map((kind, i) => (
+              <span
+                key={`${r}${i}`}
+                className="display grid aspect-square place-items-center rounded-md text-sm font-bold transition-transform duration-300 group-hover:scale-95 sm:rounded-lg sm:text-xl"
+                style={{
+                  background: kind === "·" || kind === "f" ? "var(--cell)" : "transparent",
+                  color: kind === "2" ? "var(--t512)" : "var(--mark-o)",
+                  transitionDelay: `${i * 25}ms`,
+                }}
+              >
+                {kind === "f" ? <span className="size-2.5 rounded-sm sm:size-3.5" style={{ background: "var(--mark-x)" }} /> : /\d/.test(kind) ? kind : null}
+              </span>
+            )),
+          )}
+        </div>
+    ),
+  },
+  {
+    id: "sudoku",
+    group: "solo",
+    href: "/sudoku",
+    title: "Sudoku",
+    subtitle: "Sin repetir, y contra el reloj",
+    preview: (
+        <div aria-hidden className="grid grid-cols-3 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+          {PREVIEW_SUDOKU.map(([digit, kind], i) => (
+            <span
+              key={i}
+              className="display grid aspect-square place-items-center rounded-md text-2xl font-bold transition-transform duration-300 group-hover:scale-95 sm:rounded-lg sm:text-4xl"
+              style={{
+                background: "var(--cell)",
+                color: kind === "j" ? "var(--mark-o)" : "var(--ink)",
+                transitionDelay: `${(i % 3) * 25}ms`,
+              }}
+            >
+              {digit}
+            </span>
+          ))}
+        </div>
+    ),
+  },
+  {
+    id: "wordle",
+    group: "solo",
+    href: "/wordle",
+    title: "Wordle",
+    subtitle: "La palabra del día en 6 intentos",
+    preview: (
+        <div aria-hidden className="grid aspect-square grid-cols-5 content-center gap-1 rounded-xl p-1.5 sm:gap-1.5 sm:rounded-2xl sm:p-2.5" style={{ background: "var(--board)" }}>
+          {PREVIEW_WORDLE.flatMap((row, r) =>
+            [...row].map((mark, i) => (
+              <span
+                key={`${r}${i}`}
+                className="aspect-square rounded-md transition-transform duration-300 group-hover:scale-95 sm:rounded-lg"
+                style={{
+                  background: mark === "g" ? "var(--t512)" : mark === "y" ? "var(--t128)" : "var(--cell)",
+                  transitionDelay: `${i * 25}ms`,
+                }}
+              />
+            )),
+          )}
+        </div>
+    ),
+  },
+  {
+    id: "tictactoe",
+    group: "friends",
+    href: "/3-en-raya",
+    title: "3 en raya",
+    subtitle: "Por turnos, cada uno cuando puede",
+    preview: (
+        <div aria-hidden className="grid grid-cols-3 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+          {PREVIEW_TTT.map((mark, i) => (
+            <span
+              key={i}
+              className="display grid aspect-square place-items-center rounded-lg text-2xl font-bold sm:text-5xl transition-transform duration-300 group-hover:scale-95"
+              style={{
+                background: "var(--cell)",
+                color: mark === "×" ? "var(--mark-x)" : "var(--mark-o)",
+                transitionDelay: `${(i % 3) * 25}ms`,
+              }}
+            >
+              {mark}
+            </span>
+          ))}
+        </div>
+    ),
+  },
+  {
+    id: "connect4",
+    group: "friends",
+    href: "/4-en-raya",
+    title: "4 en raya",
+    subtitle: "Deja caer fichas y junta cuatro",
+    preview: (
+        <div aria-hidden className="grid aspect-square grid-cols-5 content-end gap-1 rounded-xl p-1.5 sm:gap-1.5 sm:rounded-2xl sm:p-2.5" style={{ background: "var(--board)" }}>
+          {PREVIEW_C4.flatMap((row, r) =>
+            [...row].map((mark, i) => (
+              <span
+                key={`${r}${i}`}
+                className="aspect-square rounded-full transition-transform duration-300 group-hover:translate-y-0.5"
+                style={{
+                  background: mark === "x" ? "var(--mark-x)" : mark === "o" ? "var(--mark-o)" : "var(--cell)",
+                  transitionDelay: `${i * 25}ms`,
+                }}
+              />
+            )),
+          )}
+        </div>
+    ),
+  },
+  {
+    id: "battleship",
+    group: "friends",
+    href: "/hundir-la-flota",
+    title: "Hundir la flota",
+    subtitle: "Agua, tocado y hundido",
+    preview: (
+        <div aria-hidden className="grid aspect-square grid-cols-5 gap-1 rounded-xl p-1.5 sm:gap-1.5 sm:rounded-2xl sm:p-2.5" style={{ background: "var(--board)" }}>
+          {PREVIEW_SEA.flatMap((row, r) =>
+            [...row].map((kind, i) => (
+              <span
+                key={`${r}${i}`}
+                className="grid aspect-square place-items-center rounded-md transition-transform duration-300 group-hover:scale-95 sm:rounded-lg"
+                style={{
+                  background: kind === "s" ? "var(--t4)" : kind === "h" ? "var(--mark-x)" : "var(--cell)",
+                  transitionDelay: `${i * 25}ms`,
+                }}
+              >
+                {kind === "m" && <span className="size-1.5 rounded-full sm:size-2" style={{ background: "var(--mark-o)" }} />}
+              </span>
+            )),
+          )}
+        </div>
+    ),
+  },
+  {
+    id: "rps",
+    group: "friends",
+    href: "/piedra-papel-tijera",
+    title: "Piedra, papel o tijera",
+    subtitle: "Al mejor de 3, con lagarto y Spock",
+    preview: (
+        <div aria-hidden className="grid aspect-[4/3] grid-cols-3 place-items-center gap-1 rounded-xl p-1 sm:aspect-square sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+          {["🪨", "📄", "✂️", "🦎", "🖖", "🪨"].map((emoji, i) => (
+            <span
+              key={i}
+              className="grid size-full place-items-center rounded-md text-2xl transition-transform duration-300 group-hover:scale-95 sm:rounded-lg sm:text-4xl"
+              style={{ background: "var(--cell)", transitionDelay: `${(i % 3) * 25}ms` }}
+            >
+              {emoji}
+            </span>
+          ))}
+        </div>
+    ),
+  },
+  {
+    id: "pong",
+    group: "friends",
+    href: "/pong",
+    title: "Pong",
+    subtitle: "En directo, los dos a la vez",
+    preview: (
+        <div aria-hidden className="relative aspect-square overflow-hidden rounded-xl sm:rounded-2xl" style={{ background: "var(--board)" }}>
+          <span className="absolute top-[12%] left-[38%] h-[5%] w-[30%] rounded-full" style={{ background: "var(--mark-o)" }} />
+          <span className="absolute top-1/2 right-0 left-0 border-t-2 border-dashed" style={{ borderColor: "var(--cell)" }} />
+          <span className="absolute top-[30%] left-[58%] size-[9%] rounded-full bg-ink transition-transform duration-500 group-hover:translate-x-[-120%] group-hover:translate-y-[220%]" />
+          <span className="absolute bottom-[12%] left-[22%] h-[5%] w-[30%] rounded-full" style={{ background: "var(--mark-x)" }} />
+        </div>
+    ),
+  },
+  {
+    id: "tron",
+    group: "friends",
+    href: "/tron",
+    title: "Tron",
+    subtitle: "En directo: encierra a tu rival",
+    preview: (
+        <div aria-hidden className="relative aspect-square overflow-hidden rounded-xl sm:rounded-2xl" style={{ background: "var(--board)" }}>
+          <svg viewBox="0 0 100 100" className="absolute inset-0 size-full">
+            <path d="M12 70 H45 V30 H70" fill="none" stroke="var(--mark-x)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M88 30 H80 V78 H55 V48" fill="none" stroke="var(--mark-o)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="70" cy="30" r="5.5" fill="var(--mark-x)" />
+            <circle cx="55" cy="48" r="5.5" fill="var(--mark-o)" />
+          </svg>
+        </div>
+    ),
+  },
+];
+
 /**
  * Tarjetas de los juegos. `stats` añade debajo una línea con tus datos
  * (récord, puesto, partidas en juego) cuando hay sesión.
  *
- * Dos grupos: en solitario y contra amigos. En el móvil cada grupo va en fila
- * con scroll horizontal (asoma la siguiente para que se vea que hay más);
- * desde `sm`, en cuadrícula.
+ * Con `pinned` (solo con sesión) cada tarjeta lleva una chincheta, y los
+ * juegos fijados salen primero, en "Tus juegos", en el orden en que se
+ * fijaron. El resto va en dos grupos: en solitario y contra amigos. En el
+ * móvil cada grupo va en fila con scroll horizontal (asoma la siguiente para
+ * que se vea que hay más); desde `sm`, en cuadrícula.
  */
-export function GameCards({
-  stats2048,
-  statsSnake,
-  statsLightsOut,
-  statsWordle,
-  statsMinesweeper,
-  statsSudoku,
-  statsTicTacToe,
-  statsConnect4,
-  statsBattleship,
-  statsTron,
-  statsRps,
-  statsPong,
-}: {
-  stats2048?: ReactNode;
-  statsSnake?: ReactNode;
-  statsLightsOut?: ReactNode;
-  statsWordle?: ReactNode;
-  statsMinesweeper?: ReactNode;
-  statsSudoku?: ReactNode;
-  statsTicTacToe?: ReactNode;
-  statsConnect4?: ReactNode;
-  statsBattleship?: ReactNode;
-  statsTron?: ReactNode;
-  statsRps?: ReactNode;
-  statsPong?: ReactNode;
-}) {
+export function GameCards({ stats = {}, pinned }: { stats?: Partial<Record<GameId, ReactNode>>; pinned?: readonly string[] }) {
+  const favourites = (pinned ?? []).flatMap((id) => GAMES.find((game) => game.id === id) ?? []);
+  const rest = GAMES.filter((game) => !favourites.includes(game));
+  const card = (game: Game) => (
+    <li key={game.id} className={ITEM}>
+      <GameCard game={game} stats={stats[game.id]} pinned={pinned ? favourites.includes(game) : undefined} />
+    </li>
+  );
+
   return (
     <div className="flex flex-col gap-10">
-      <GameSection title="En solitario" description="Cuando quieras, contra el ranking.">
-        <li className={ITEM}>
-          <GameCard href="/2048" title="2048" subtitle="Tú solo contra el ranking" stats={stats2048}>
-            <div aria-hidden className="grid grid-cols-4 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
-              {PREVIEW_2048.map((value, i) => (
-                <span
-                  key={i}
-                  className="aspect-square rounded-md transition-transform sm:rounded-lg duration-300 group-hover:scale-95"
-                  style={
-                    {
-                      background: value ? `var(--t${value})` : "var(--cell)",
-                      transitionDelay: `${(i % 4) * 25}ms`,
-                    } as CSSProperties
-                  }
-                />
-              ))}
-            </div>
-          </GameCard>
-        </li>
-        <li className={ITEM}>
-          <GameCard href="/snake" title="Snake" subtitle="Come sin chocar, cada vez más rápido" stats={statsSnake}>
-            <div aria-hidden className="grid grid-cols-5 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
-              {Array.from({ length: 25 }, (_, i) => {
-                const segment = PREVIEW_SNAKE.body.indexOf(i);
-                const isHead = segment === PREVIEW_SNAKE.body.length - 1;
-                return (
-                  <span
-                    key={i}
-                    className={`aspect-square transition-transform duration-300 group-hover:scale-95 ${
-                      i === PREVIEW_SNAKE.food ? "scale-75 rounded-full" : "rounded-md sm:rounded-lg"
-                    }`}
-                    style={{
-                      background:
-                        i === PREVIEW_SNAKE.food ? "var(--t64)" : isHead ? "var(--t1024)" : segment >= 0 ? "var(--t512)" : "var(--cell)",
-                      transitionDelay: `${Math.max(segment, 0) * 30}ms`,
-                    }}
-                  />
-                );
-              })}
-            </div>
-          </GameCard>
-        </li>
-        <li className={ITEM}>
-          <GameCard href="/lights-out" title="Lights Out" subtitle="Apágalo todo, nivel a nivel" stats={statsLightsOut}>
-            <div aria-hidden className="grid grid-cols-4 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
-              {PREVIEW_LIGHTS.map((on, i) => (
-                <span
-                  key={i}
-                  className="aspect-square rounded-md transition-transform duration-300 group-hover:scale-95 sm:rounded-lg"
-                  style={{ background: on ? "var(--t128)" : "var(--cell)", transitionDelay: `${(i % 4) * 25}ms` }}
-                />
-              ))}
-            </div>
-          </GameCard>
-        </li>
-        <li className={ITEM}>
-          <GameCard href="/buscaminas" title="Buscaminas" subtitle="Despeja el tablero contra el reloj" stats={statsMinesweeper}>
-            <div aria-hidden className="grid grid-cols-5 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
-              {PREVIEW_MINES.flatMap((row, r) =>
-                [...row].map((kind, i) => (
-                  <span
-                    key={`${r}${i}`}
-                    className="display grid aspect-square place-items-center rounded-md text-sm font-bold transition-transform duration-300 group-hover:scale-95 sm:rounded-lg sm:text-xl"
-                    style={{
-                      background: kind === "·" || kind === "f" ? "var(--cell)" : "transparent",
-                      color: kind === "2" ? "var(--t512)" : "var(--mark-o)",
-                      transitionDelay: `${i * 25}ms`,
-                    }}
-                  >
-                    {kind === "f" ? <span className="size-2.5 rounded-sm sm:size-3.5" style={{ background: "var(--mark-x)" }} /> : /\d/.test(kind) ? kind : null}
-                  </span>
-                )),
-              )}
-            </div>
-          </GameCard>
-        </li>
-        <li className={ITEM}>
-          <GameCard href="/sudoku" title="Sudoku" subtitle="Sin repetir, y contra el reloj" stats={statsSudoku}>
-            <div aria-hidden className="grid grid-cols-3 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
-              {PREVIEW_SUDOKU.map(([digit, kind], i) => (
-                <span
-                  key={i}
-                  className="display grid aspect-square place-items-center rounded-md text-2xl font-bold transition-transform duration-300 group-hover:scale-95 sm:rounded-lg sm:text-4xl"
-                  style={{
-                    background: "var(--cell)",
-                    color: kind === "j" ? "var(--mark-o)" : "var(--ink)",
-                    transitionDelay: `${(i % 3) * 25}ms`,
-                  }}
-                >
-                  {digit}
-                </span>
-              ))}
-            </div>
-          </GameCard>
-        </li>
-        <li className={ITEM}>
-          <GameCard href="/wordle" title="Wordle" subtitle="La palabra del día en 6 intentos" stats={statsWordle}>
-            <div aria-hidden className="grid aspect-square grid-cols-5 content-center gap-1 rounded-xl p-1.5 sm:gap-1.5 sm:rounded-2xl sm:p-2.5" style={{ background: "var(--board)" }}>
-              {PREVIEW_WORDLE.flatMap((row, r) =>
-                [...row].map((mark, i) => (
-                  <span
-                    key={`${r}${i}`}
-                    className="aspect-square rounded-md transition-transform duration-300 group-hover:scale-95 sm:rounded-lg"
-                    style={{
-                      background: mark === "g" ? "var(--t512)" : mark === "y" ? "var(--t128)" : "var(--cell)",
-                      transitionDelay: `${i * 25}ms`,
-                    }}
-                  />
-                )),
-              )}
-            </div>
-          </GameCard>
-        </li>
-      </GameSection>
-      <GameSection title="Contra tus amigos" description="Rétalos y jugad a vuestro ritmo.">
-        <li className={ITEM}>
-          <GameCard href="/3-en-raya" title="3 en raya" subtitle="Por turnos, cada uno cuando puede" stats={statsTicTacToe}>
-            <div aria-hidden className="grid grid-cols-3 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
-              {PREVIEW_TTT.map((mark, i) => (
-                <span
-                  key={i}
-                  className="display grid aspect-square place-items-center rounded-lg text-2xl font-bold sm:text-5xl transition-transform duration-300 group-hover:scale-95"
-                  style={{
-                    background: "var(--cell)",
-                    color: mark === "×" ? "var(--mark-x)" : "var(--mark-o)",
-                    transitionDelay: `${(i % 3) * 25}ms`,
-                  }}
-                >
-                  {mark}
-                </span>
-              ))}
-            </div>
-          </GameCard>
-        </li>
-        <li className={ITEM}>
-          <GameCard href="/4-en-raya" title="4 en raya" subtitle="Deja caer fichas y junta cuatro" stats={statsConnect4}>
-            <div aria-hidden className="grid aspect-square grid-cols-5 content-end gap-1 rounded-xl p-1.5 sm:gap-1.5 sm:rounded-2xl sm:p-2.5" style={{ background: "var(--board)" }}>
-              {PREVIEW_C4.flatMap((row, r) =>
-                [...row].map((mark, i) => (
-                  <span
-                    key={`${r}${i}`}
-                    className="aspect-square rounded-full transition-transform duration-300 group-hover:translate-y-0.5"
-                    style={{
-                      background: mark === "x" ? "var(--mark-x)" : mark === "o" ? "var(--mark-o)" : "var(--cell)",
-                      transitionDelay: `${i * 25}ms`,
-                    }}
-                  />
-                )),
-              )}
-            </div>
-          </GameCard>
-        </li>
-        <li className={ITEM}>
-          <GameCard href="/hundir-la-flota" title="Hundir la flota" subtitle="Agua, tocado y hundido" stats={statsBattleship}>
-            <div aria-hidden className="grid aspect-square grid-cols-5 gap-1 rounded-xl p-1.5 sm:gap-1.5 sm:rounded-2xl sm:p-2.5" style={{ background: "var(--board)" }}>
-              {PREVIEW_SEA.flatMap((row, r) =>
-                [...row].map((kind, i) => (
-                  <span
-                    key={`${r}${i}`}
-                    className="grid aspect-square place-items-center rounded-md transition-transform duration-300 group-hover:scale-95 sm:rounded-lg"
-                    style={{
-                      background: kind === "s" ? "var(--t4)" : kind === "h" ? "var(--mark-x)" : "var(--cell)",
-                      transitionDelay: `${i * 25}ms`,
-                    }}
-                  >
-                    {kind === "m" && <span className="size-1.5 rounded-full sm:size-2" style={{ background: "var(--mark-o)" }} />}
-                  </span>
-                )),
-              )}
-            </div>
-          </GameCard>
-        </li>
-        <li className={ITEM}>
-          <GameCard href="/piedra-papel-tijera" title="Piedra, papel o tijera" subtitle="Al mejor de 3, con lagarto y Spock" stats={statsRps}>
-            <div aria-hidden className="grid aspect-[4/3] grid-cols-3 place-items-center gap-1 rounded-xl p-1 sm:aspect-square sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
-              {["🪨", "📄", "✂️", "🦎", "🖖", "🪨"].map((emoji, i) => (
-                <span
-                  key={i}
-                  className="grid size-full place-items-center rounded-md text-2xl transition-transform duration-300 group-hover:scale-95 sm:rounded-lg sm:text-4xl"
-                  style={{ background: "var(--cell)", transitionDelay: `${(i % 3) * 25}ms` }}
-                >
-                  {emoji}
-                </span>
-              ))}
-            </div>
-          </GameCard>
-        </li>
-        <li className={ITEM}>
-          <GameCard href="/pong" title="Pong" subtitle="En directo, los dos a la vez" stats={statsPong}>
-            <div aria-hidden className="relative aspect-square overflow-hidden rounded-xl sm:rounded-2xl" style={{ background: "var(--board)" }}>
-              <span className="absolute top-[12%] left-[38%] h-[5%] w-[30%] rounded-full" style={{ background: "var(--mark-o)" }} />
-              <span className="absolute top-1/2 right-0 left-0 border-t-2 border-dashed" style={{ borderColor: "var(--cell)" }} />
-              <span className="absolute top-[30%] left-[58%] size-[9%] rounded-full bg-ink transition-transform duration-500 group-hover:translate-x-[-120%] group-hover:translate-y-[220%]" />
-              <span className="absolute bottom-[12%] left-[22%] h-[5%] w-[30%] rounded-full" style={{ background: "var(--mark-x)" }} />
-            </div>
-          </GameCard>
-        </li>
-        <li className={ITEM}>
-          <GameCard href="/tron" title="Tron" subtitle="En directo: encierra a tu rival" stats={statsTron}>
-            <div aria-hidden className="relative aspect-square overflow-hidden rounded-xl sm:rounded-2xl" style={{ background: "var(--board)" }}>
-              <svg viewBox="0 0 100 100" className="absolute inset-0 size-full">
-                <path d="M12 70 H45 V30 H70" fill="none" stroke="var(--mark-x)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M88 30 H80 V78 H55 V48" fill="none" stroke="var(--mark-o)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="70" cy="30" r="5.5" fill="var(--mark-x)" />
-                <circle cx="55" cy="48" r="5.5" fill="var(--mark-o)" />
-              </svg>
-            </div>
-          </GameCard>
-        </li>
-      </GameSection>
+      {favourites.length > 0 && (
+        <GameSection title="Tus juegos" description="Los que has fijado. Quítalos con la chincheta.">
+          {favourites.map(card)}
+        </GameSection>
+      )}
+      {rest.some((game) => game.group === "solo") && (
+        <GameSection title="En solitario" description="Cuando quieras, contra el ranking.">
+          {rest.filter((game) => game.group === "solo").map(card)}
+        </GameSection>
+      )}
+      {rest.some((game) => game.group === "friends") && (
+        <GameSection title="Contra tus amigos" description="Rétalos y jugad a vuestro ritmo.">
+          {rest.filter((game) => game.group === "friends").map(card)}
+        </GameSection>
+      )}
     </div>
   );
 }
@@ -289,30 +364,24 @@ function GameSection({ title, description, children }: { title: string; descript
   );
 }
 
-function GameCard({
-  href,
-  title,
-  subtitle,
-  stats,
-  children,
-}: {
-  href: string;
-  title: string;
-  subtitle: string;
-  stats?: ReactNode;
-  children: ReactNode;
-}) {
+/**
+ * `pinned` undefined: sin chincheta (sin sesión). El enlace cubre toda la
+ * tarjeta (con ::after) y la chincheta queda por encima, junto al título.
+ */
+function GameCard({ game, stats, pinned }: { game: Game; stats?: ReactNode; pinned?: boolean }) {
   return (
-    <Link
-      href={href}
-      className="group flex h-full flex-col gap-3 rounded-3xl bg-surface p-3.5 shadow-soft transition-shadow hover:shadow-lift sm:gap-5 sm:p-5"
-    >
-      {children}
-      <div>
-        <p className="display text-2xl font-bold sm:text-3xl">{title}</p>
-        <p className="text-xs text-muted sm:text-sm">{subtitle}</p>
+    <div className="group relative flex h-full flex-col gap-3 rounded-3xl bg-surface p-3.5 shadow-soft transition-shadow hover:shadow-lift sm:gap-5 sm:p-5">
+      {game.preview}
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <Link href={game.href} className="display block text-2xl font-bold after:absolute after:inset-0 after:rounded-3xl sm:text-3xl">
+            {game.title}
+          </Link>
+          <p className="text-xs text-muted sm:text-sm">{game.subtitle}</p>
+        </div>
+        {pinned !== undefined && <PinButton game={game.id} title={game.title} pinned={pinned} />}
       </div>
       {stats && <div className="mt-auto border-t border-line pt-2.5 text-xs sm:pt-3 sm:text-sm">{stats}</div>}
-    </Link>
+    </div>
   );
 }

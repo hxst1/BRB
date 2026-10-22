@@ -237,6 +237,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"pinned_games": {
+                  Row: {
+                    "game": string,"pinned_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "game": string,"pinned_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "game"?: string,"pinned_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pinned_games_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"pong_reports": {
                   Row: {
                     "created_at": string,"match_id": string,"o_score": number,"player_id": string,"x_score": number
@@ -541,6 +561,9 @@ isOneToOne: false
                            },
 "submit_match_choice":
 { Args: { "choice": number,"match_id": string,"player_id": string }; Returns: number
+                           },
+"toggle_pinned_game":
+{ Args: { "game": string }; Returns: boolean
                            },
 "user_id_by_email":
 { Args: { "email": string }; Returns: string

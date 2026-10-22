@@ -42,6 +42,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     { data: daily },
     { data: wordle },
     { data: battleship },
+    { data: pins },
   ] =
     await Promise.all([
     supabase
@@ -69,6 +70,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
       .limit(1)
       .maybeSingle(),
     supabase.rpc("get_battleship_status"),
+    supabase.from("pinned_games").select("game").order("pinned_at"),
   ]);
   // Solo cuenta la partida de hoy (el día lo da el resumen del reto diario).
   const wordleToday = wordle && daily && wordle.day === daily.day ? wordle : null;
@@ -198,13 +200,14 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
 
       <div className="mt-14">
         <GameCards
-          stats2048={<SoloStats standing={standing} />}
-          statsSnake={<SoloStats standing={snake} />}
-          statsLightsOut={<SoloStats standing={lightsOut} unit={(n) => (n === 1 ? "nivel" : "niveles")} />}
-          statsMinesweeper={<SoloStats standing={minesweeper} format={(ms) => `${formatTime(ms)} en medio`} />}
-          statsSudoku={<SoloStats standing={sudoku} format={(ms) => `${formatTime(ms)} en medio`} />}
-          statsWordle={
-            wordleToday?.finished_at ? (
+          pinned={(pins ?? []).map((pin) => pin.game)}
+          stats={{
+            "2048": <SoloStats standing={standing} />,
+            snake: <SoloStats standing={snake} />,
+            "lights-out": <SoloStats standing={lightsOut} unit={(n) => (n === 1 ? "nivel" : "niveles")} />,
+            minesweeper: <SoloStats standing={minesweeper} format={(ms) => `${formatTime(ms)} en medio`} />,
+            sudoku: <SoloStats standing={sudoku} format={(ms) => `${formatTime(ms)} en medio`} />,
+            wordle: wordleToday?.finished_at ? (
               <span>
                 Hoy: <strong className="tabular">{wordleToday.solved ? wordleToday.guesses.length : "X"}/6</strong>
               </span>
@@ -212,14 +215,14 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
               <strong>La tienes a medias</strong>
             ) : (
               <span className="text-muted">Aún no has jugado la de hoy.</span>
-            )
-          }
-          statsTicTacToe={<MatchStats counts={tally.tictactoe} />}
-          statsConnect4={<MatchStats counts={tally.connect4} />}
-          statsBattleship={<MatchStats counts={tally.battleship} />}
-          statsTron={<MatchStats counts={tally.tron} />}
-          statsRps={<MatchStats counts={tally.rps} />}
-          statsPong={<MatchStats counts={tally.pong} />}
+            ),
+            tictactoe: <MatchStats counts={tally.tictactoe} />,
+            connect4: <MatchStats counts={tally.connect4} />,
+            battleship: <MatchStats counts={tally.battleship} />,
+            tron: <MatchStats counts={tally.tron} />,
+            rps: <MatchStats counts={tally.rps} />,
+            pong: <MatchStats counts={tally.pong} />,
+          }}
         />
       </div>
     </>
