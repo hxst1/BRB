@@ -8,6 +8,7 @@ import { messagesFor } from "@/lib/i18n";
 import { INVITE_COOKIE } from "@/lib/invite";
 import { recordVisit } from "@/lib/visits";
 import { safeNext } from "@/lib/safe-next";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthState = {
@@ -15,11 +16,23 @@ export type AuthState = {
   mode: "signin" | "signup";
   /** Email al que se ha enviado la confirmación (cuando el proyecto la exige). */
   confirmEmail?: string;
+  /** Lo que había escrito: React vacía el formulario al enviarlo y, si falla, se vuelve a rellenar. */
+  fields?: { username: string; email: string; inviteCode: string; accept: boolean };
 };
 
 const USERNAME = /^[A-Za-z0-9_]{3,20}$/;
 
-export async function authenticate(_prev: AuthState, formData: FormData): Promise<AuthState> {
+export async function authenticate(prev: AuthState, formData: FormData): Promise<AuthState> {
+  const fields = {
+    username: String(formData.get("username") ?? ""),
+    email: String(formData.get("email") ?? ""),
+    inviteCode: String(formData.get("invite_code") ?? ""),
+    accept: formData.get("accept") === "on",
+  };
+  return { ...(await attempt(prev, formData)), fields };
+}
+
+async function attempt(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const locale = await getRequestLocale();
   const t = messagesFor(locale).auth;
   const mode = formData.get("mode") === "signup" ? "signup" : "signin";
@@ -52,9 +65,18 @@ export async function authenticate(_prev: AuthState, formData: FormData): Promis
       return { mode, error: t.taken(username) };
     }
 
+    // Código de quien le invitó: viene relleno si llegó por su enlace (app/invita/[code]),
+    // o lo escribe a mano si abrió el enlace en otro navegador. Lo apunta el disparador
+    // de la migración de referrals.
+    const invitedBy = String(formData.get("invite_code") ?? "").trim().toUpperCase();
+    if (invitedBy) {
+      const { data: inviter } = /^[0-9A-Z]{5}$/.test(invitedBy)
+        ? await createAdminClient().rpc("user_id_by_friend_code", { code: invitedBy })
+        : { data: null };
+      if (!inviter) return { mode, error: t.inviteCodeUnknown(invitedBy) };
+    }
+
     const next = safeNext(formData.get("next"));
-    // Si llegó por el enlace de invitación de alguien (app/invita/[code]).
-    const invitedBy = (await cookies()).get(INVITE_COOKIE)?.value;
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -77,7 +99,7 @@ export async function authenticate(_prev: AuthState, formData: FormData): Promis
               : error.message,
       };
     }
-    if (invitedBy) (await cookies()).delete(INVITE_COOKIE);
+    (await cookies()).delete(INVITE_COOKIE);
     // Para las estadísticas: con la huella del día se sabe de dónde venía quien se registra.
     await recordVisit(await headers(), { kind: "signup", path: "/entrar", lang: locale }).catch(() => undefined);
     // Si el proyecto exige confirmar el email, todavía no hay sesión.

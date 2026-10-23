@@ -9,13 +9,23 @@ import { authenticate, type AuthState } from "./actions";
 const inputClass =
   "w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-base outline-none transition-colors focus:border-focus";
 
-export function AuthForm({ next, initialMode = "signin" }: { next: string; initialMode?: AuthState["mode"] }) {
+export function AuthForm({
+  next,
+  initialMode = "signin",
+  inviteCode = "",
+}: {
+  next: string;
+  initialMode?: AuthState["mode"];
+  /** Código de quien te invitó, si llegaste por su enlace. */
+  inviteCode?: string;
+}) {
   const [mode, setMode] = useState<AuthState["mode"]>(initialMode);
   const [state, action, pending] = useActionState(authenticate, { error: null, mode });
   const m = useMessages();
   const t = m.auth;
   const copy = t[mode];
   const error = state.mode === mode ? state.error : null;
+  const fields = state.fields;
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -52,6 +62,7 @@ export function AuthForm({ next, initialMode = "signin" }: { next: string; initi
             maxLength={20}
             pattern="[A-Za-z0-9_]+"
             autoComplete="username"
+            defaultValue={fields?.username}
             className={inputClass}
           />
           <span className="text-xs font-normal text-muted">{t.playerNameHint}</span>
@@ -60,7 +71,7 @@ export function AuthForm({ next, initialMode = "signin" }: { next: string; initi
 
       <label className="flex flex-col gap-1.5 text-sm font-medium">
         Email
-        <input name="email" type="email" required autoComplete="email" className={inputClass} />
+        <input name="email" type="email" required autoComplete="email" defaultValue={fields?.email} className={inputClass} />
       </label>
 
       <label className="flex flex-col gap-1.5 text-sm font-medium">
@@ -99,9 +110,25 @@ export function AuthForm({ next, initialMode = "signin" }: { next: string; initi
       )}
 
       {mode === "signup" && (
+        <label className="flex flex-col gap-1.5 text-sm font-medium">
+          {t.inviteCode}
+          <input
+            name="invite_code"
+            defaultValue={fields?.inviteCode ?? inviteCode}
+            maxLength={5}
+            autoComplete="off"
+            autoCapitalize="characters"
+            spellCheck={false}
+            className={`${inputClass} uppercase`}
+          />
+          <span className="text-xs font-normal text-muted">{t.inviteCodeHint}</span>
+        </label>
+      )}
+
+      {mode === "signup" && (
         // Edad mínima para dar el consentimiento en España: 14 años (LOPDGDD, art. 7).
         <label className="flex items-start gap-3 text-sm">
-          <input type="checkbox" name="accept" required className="mt-0.5 size-4 shrink-0 accent-ink" />
+          <input type="checkbox" name="accept" required defaultChecked={fields?.accept} className="mt-0.5 size-4 shrink-0 accent-ink" />
           <span>
             {t.acceptBefore}{" "}
             <Link href="/legal/terminos" target="_blank" className="font-medium underline underline-offset-4">

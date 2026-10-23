@@ -29,7 +29,8 @@ export default function SignInPage({ searchParams }: PageProps<"/[lang]/entrar">
  */
 async function AuthFormForRequest({ searchParams }: { searchParams: PageProps<"/[lang]/entrar">["searchParams"] }) {
   const { next, modo } = await searchParams;
-  const [inviter, m] = await Promise.all([invitedBy(), getMessages()]);
+  const code = (await cookies()).get(INVITE_COOKIE)?.value ?? "";
+  const [inviter, m] = await Promise.all([inviterName(code), getMessages()]);
   // /entrar?modo=registro abre directamente "Crear cuenta" (los botones de registro de la portada y los juegos).
   return (
     <>
@@ -39,14 +40,13 @@ async function AuthFormForRequest({ searchParams }: { searchParams: PageProps<"/
           {m.auth.invitedBy}
         </p>
       )}
-      <AuthForm next={safeNext(next)} initialMode={modo === "registro" ? "signup" : "signin"} />
+      <AuthForm next={safeNext(next)} initialMode={modo === "registro" ? "signup" : "signin"} inviteCode={inviter ? code : ""} />
     </>
   );
 }
 
 /** Nombre de quien te invitó, si llegaste por su enlace (app/invita/[code]). */
-async function invitedBy(): Promise<string | null> {
-  const code = (await cookies()).get(INVITE_COOKIE)?.value;
+async function inviterName(code: string): Promise<string | null> {
   if (!code) return null;
   const admin = createAdminClient();
   const { data: userId } = await admin.rpc("user_id_by_friend_code", { code });
