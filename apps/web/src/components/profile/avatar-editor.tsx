@@ -76,13 +76,13 @@ export function AvatarEditor({
   }
 
   return (
-    <section aria-labelledby="avatar-title" className="flex flex-col gap-6">
+    <section aria-labelledby="avatar-title" className="grid gap-6 lg:grid-cols-[auto_minmax(0,1fr)] lg:gap-12">
       <h2 id="avatar-title" className="sr-only">
         {m.home.yourMonster}
       </h2>
 
-      <div className="flex items-center gap-6">
-        <div className="grid size-40 shrink-0 place-items-center rounded-[2rem] bg-surface shadow-soft">
+      <div className="flex items-center gap-6 lg:flex-col lg:items-start">
+        <div className="grid size-40 shrink-0 lg:size-48 place-items-center rounded-[2rem] bg-surface shadow-soft">
           {/* Cambiar la key reinicia el estado de ánimo "contento" tras cada cambio. */}
           <CheeringAvatar key={cheer} seed={seed} parts={overrides} animate={cheer > 0} />
         </div>
@@ -103,110 +103,112 @@ export function AvatarEditor({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <div role="tablist" aria-label={t.parts} className="flex gap-1 overflow-x-auto rounded-full bg-line/60 p-1">
-          {SLOTS.map((slot) => (
-            <button
-              key={slot}
-              type="button"
-              role="tab"
-              id={`tab-${slot}`}
-              aria-selected={activeSlot === slot}
-              aria-controls="slot-panel"
-              onClick={() => setActiveSlot(slot)}
-              className={`flex-1 rounded-full px-3 py-1.5 text-sm whitespace-nowrap transition-colors ${
-                activeSlot === slot ? "bg-surface font-medium shadow-soft" : "text-muted hover:text-ink"
-              }`}
-            >
-              {t.slots[slot]}
-            </button>
-          ))}
-        </div>
-
-        <div id="slot-panel" role="tabpanel" aria-labelledby={`tab-${activeSlot}`} className="flex flex-wrap gap-2">
-          {(PART_OPTIONS[activeSlot] as string[]).map((id) => {
-            const lockable = activeSlot === "palette" || activeSlot === "top";
-            const needed = lockable ? partAchievement(activeSlot, id) : null;
-            const supporterOnly = lockable && isSupporterPart(activeSlot, id) && !isSupporter;
-            const achievementLocked = needed !== null && !unlocked.includes(needed);
-            const locked = supporterOnly || achievementLocked;
-            const lockReason = supporterOnly
-              ? t.supportersOnly
-              : achievementLocked
-                ? t.unlockWith(achievementById(needed, locale)?.name ?? needed)
-                : undefined;
-            const selected = monster[activeSlot] === id;
-            return (
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3">
+          <div role="tablist" aria-label={t.parts} className="flex gap-1 overflow-x-auto rounded-full bg-line/60 p-1">
+            {SLOTS.map((slot) => (
               <button
-                key={id}
+                key={slot}
                 type="button"
-                aria-pressed={selected}
-                aria-haspopup={locked ? "dialog" : undefined}
-                title={lockReason}
-                onClick={() =>
-                  locked
-                    ? setLockedPart({ slot: activeSlot as "palette" | "top", id, achievement: achievementLocked ? needed : null })
-                    : void save(seed, { ...overrides, [activeSlot]: id })
-                }
-                className={`relative grid size-16 place-items-center rounded-2xl bg-surface transition-shadow ${
-                  selected ? "ring-2 ring-ink" : "shadow-soft hover:shadow-lift"
+                role="tab"
+                id={`tab-${slot}`}
+                aria-selected={activeSlot === slot}
+                aria-controls="slot-panel"
+                onClick={() => setActiveSlot(slot)}
+                className={`flex-1 rounded-full px-3 py-1.5 text-sm whitespace-nowrap transition-colors ${
+                  activeSlot === slot ? "bg-surface font-medium shadow-soft" : "text-muted hover:text-ink"
                 }`}
               >
-                <span className={locked ? "opacity-40" : undefined}>
-                  <Avatar seed={seed} parts={{ ...monster, [activeSlot]: id }} size={48} />
-                </span>
-                {locked && <span className="sr-only">{lockReason}</span>}
-                {locked && (
-                  <span
-                    aria-hidden
-                    className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full text-[10px]"
-                    style={{ background: supporterOnly ? "var(--t256)" : "var(--ink)", color: supporterOnly ? "#15171c" : "var(--bg)" }}
-                  >
-                    {supporterOnly ? "✦" : "🔒"}
-                  </span>
-                )}
+                {t.slots[slot]}
               </button>
-            );
-          })}
+            ))}
+          </div>
+
+          <div id="slot-panel" role="tabpanel" aria-labelledby={`tab-${activeSlot}`} className="flex flex-wrap gap-2">
+            {(PART_OPTIONS[activeSlot] as string[]).map((id) => {
+              const lockable = activeSlot === "palette" || activeSlot === "top";
+              const needed = lockable ? partAchievement(activeSlot, id) : null;
+              const supporterOnly = lockable && isSupporterPart(activeSlot, id) && !isSupporter;
+              const achievementLocked = needed !== null && !unlocked.includes(needed);
+              const locked = supporterOnly || achievementLocked;
+              const lockReason = supporterOnly
+                ? t.supportersOnly
+                : achievementLocked
+                  ? t.unlockWith(achievementById(needed, locale)?.name ?? needed)
+                  : undefined;
+              const selected = monster[activeSlot] === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  aria-pressed={selected}
+                  aria-haspopup={locked ? "dialog" : undefined}
+                  title={lockReason}
+                  onClick={() =>
+                    locked
+                      ? setLockedPart({ slot: activeSlot as "palette" | "top", id, achievement: achievementLocked ? needed : null })
+                      : void save(seed, { ...overrides, [activeSlot]: id })
+                  }
+                  className={`relative grid size-16 place-items-center rounded-2xl bg-surface transition-shadow ${
+                    selected ? "ring-2 ring-ink" : "shadow-soft hover:shadow-lift"
+                  }`}
+                >
+                  <span className={locked ? "opacity-40" : undefined}>
+                    <Avatar seed={seed} parts={{ ...monster, [activeSlot]: id }} size={48} />
+                  </span>
+                  {locked && <span className="sr-only">{lockReason}</span>}
+                  {locked && (
+                    <span
+                      aria-hidden
+                      className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full text-[10px]"
+                      style={{ background: supporterOnly ? "var(--t256)" : "var(--ink)", color: supporterOnly ? "#15171c" : "var(--bg)" }}
+                    >
+                      {supporterOnly ? "✦" : "🔒"}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      <label className="flex items-center gap-3 text-sm font-medium">
-        <input
-          type="checkbox"
-          checked={monster.cheeks}
-          onChange={(event) => void save(seed, { ...overrides, cheeks: event.target.checked })}
-          className="size-4 accent-ink"
-        />
-        {t.cheeks}
-      </label>
+        <label className="flex items-center gap-3 text-sm font-medium">
+          <input
+            type="checkbox"
+            checked={monster.cheeks}
+            onChange={(event) => void save(seed, { ...overrides, cheeks: event.target.checked })}
+            className="size-4 accent-ink"
+          />
+          {t.cheeks}
+        </label>
 
-      {lockedPart && (
-        <LockedPartDialog
-          part={lockedPart}
-          seed={seed}
-          monster={monster}
-          onClose={() => setLockedPart(null)}
-        />
-      )}
-
-      <p className="text-sm text-muted">
-        {t.lockedHint}{" "}
-        <Link href="/perfil?seccion=logros" className="font-medium text-ink underline underline-offset-4">
-          {t.achievementsLink}
-        </Link>
-        .
-        {!isSupporter && (
-          <>
-            {" "}
-            {t.supporterHint}{" "}
-            <Link href="/apoyar" className="font-medium text-ink underline underline-offset-4">
-              {t.howToGet}
-            </Link>
-            .
-          </>
+        {lockedPart && (
+          <LockedPartDialog
+            part={lockedPart}
+            seed={seed}
+            monster={monster}
+            onClose={() => setLockedPart(null)}
+          />
         )}
-      </p>
+
+        <p className="text-sm text-muted">
+          {t.lockedHint}{" "}
+          <Link href="/perfil?seccion=logros" className="font-medium text-ink underline underline-offset-4">
+            {t.achievementsLink}
+          </Link>
+          .
+          {!isSupporter && (
+            <>
+              {" "}
+              {t.supporterHint}{" "}
+              <Link href="/apoyar" className="font-medium text-ink underline underline-offset-4">
+                {t.howToGet}
+              </Link>
+              .
+            </>
+          )}
+        </p>
+      </div>
     </section>
   );
 }

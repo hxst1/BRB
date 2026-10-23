@@ -65,7 +65,7 @@ export async function Records({ viewerId }: { viewerId: string }) {
   const average = solved.length ? solved.reduce((sum, game) => sum + game.guesses.length, 0) / solved.length : 0;
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-12">
       <section aria-labelledby="records-solo" className="flex flex-col gap-3">
         <h2 id="records-solo" className="text-xl font-semibold">
           {m.gameCards.soloTitle}

@@ -43,7 +43,7 @@ async function Profile({ searchParams }: { searchParams: PageProps<"/[lang]/perf
   const section: Section = SECTIONS.find((s) => s === seccion) ?? "monster";
 
   return (
-    <div className="flex max-w-xl flex-col gap-8">
+    <div className="flex flex-col gap-8">
       <div>
         <h1 className="display mb-3 text-5xl font-bold sm:text-6xl">
           {viewer.username}
@@ -114,39 +114,43 @@ async function SettingsSection({ viewer }: { viewer: Viewer }) {
     supabase.from("friend_codes").select("code").eq("user_id", viewer.id).maybeSingle(),
   ]);
 
+  // En escritorio, dos columnas: la app y los mensajes; tu cuenta, enlaces y borrar la cuenta.
   return (
-    <div className="flex flex-col gap-8">
-      <AppSettings isSupporter={viewer.supporter_tier !== null} />
+    <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-10">
+      <div className="flex flex-col gap-8">
+        <AppSettings isSupporter={viewer.supporter_tier !== null} />
+        <FeedbackSection items={feedback ?? []} />
+      </div>
 
-      <AccountSettings userId={viewer.id} username={viewer.username} />
+      <div className="flex flex-col gap-8">
+        <AccountSettings userId={viewer.id} username={viewer.username} />
 
-      <FeedbackSection items={feedback ?? []} />
+        <section aria-label={m.profile.account} className="flex flex-col gap-3 border-t border-line pt-6">
+          <Link href="/amigos" className="text-sm font-medium underline-offset-4 hover:underline">
+            {m.nav.friendsAndCode}
+          </Link>
+          <Link href="/apoyar" className="text-sm font-medium underline-offset-4 hover:underline">
+            {viewer.supporter_tier ? m.profile.thanksSupport : m.profile.support}
+          </Link>
+          <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
+            {LEGAL_LINKS.map((link) => (
+              <Link key={link.href} href={link.href} className="underline-offset-4 hover:text-ink hover:underline">
+                {m.legal[link.label]}
+              </Link>
+            ))}
+          </p>
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="rounded-full border border-line px-4 py-2 text-sm text-danger transition-colors hover:border-danger"
+            >
+              {m.nav.signOut}
+            </button>
+          </form>
+        </section>
 
-      <section aria-label={m.profile.account} className="flex flex-col gap-3 border-t border-line pt-6">
-        <Link href="/amigos" className="text-sm font-medium underline-offset-4 hover:underline">
-          {m.nav.friendsAndCode}
-        </Link>
-        <Link href="/apoyar" className="text-sm font-medium underline-offset-4 hover:underline">
-          {viewer.supporter_tier ? m.profile.thanksSupport : m.profile.support}
-        </Link>
-        <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
-          {LEGAL_LINKS.map((link) => (
-            <Link key={link.href} href={link.href} className="underline-offset-4 hover:text-ink hover:underline">
-              {m.legal[link.label]}
-            </Link>
-          ))}
-        </p>
-        <form action={signOut}>
-          <button
-            type="submit"
-            className="rounded-full border border-line px-4 py-2 text-sm text-danger transition-colors hover:border-danger"
-          >
-            {m.nav.signOut}
-          </button>
-        </form>
-      </section>
-
-      <DeleteAccount friendCode={friendCode?.code ?? null} />
+        <DeleteAccount friendCode={friendCode?.code ?? null} />
+      </div>
     </div>
   );
 }
