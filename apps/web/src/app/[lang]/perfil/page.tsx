@@ -57,14 +57,15 @@ async function Profile({ searchParams }: { searchParams: PageProps<"/[lang]/perf
       </div>
 
       <nav aria-label={m.profile.sections}>
-        <div className="grid grid-flow-col auto-cols-fr rounded-full bg-line/60 p-1">
+        {/* Cada pestaña, del ancho de su texto más un reparto del sitio que sobra ("Achievements" es largo). */}
+        <div className="flex rounded-full bg-line/60 p-1">
           {SECTIONS.map((id) => (
             <Link
               key={id}
               href={id === "monster" ? "/perfil" : `/perfil?seccion=${id}`}
               scroll={false}
               aria-current={section === id ? "page" : undefined}
-              className={`rounded-full px-1 py-2 text-center text-sm whitespace-nowrap transition-colors sm:px-4 ${
+              className={`flex-auto rounded-full px-1 py-2 text-center text-[13px] whitespace-nowrap transition-colors sm:px-4 sm:text-sm ${
                 section === id ? "bg-surface font-medium shadow-soft" : "text-muted hover:text-ink"
               }`}
             >
