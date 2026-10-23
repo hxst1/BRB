@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { HOW_TO_PLAY } from "@/lib/how-to-play";
+import { HOW_TO_PLAY, stepIconSrc } from "@/lib/how-to-play";
 import { useLocale, useMessages } from "@/lib/i18n/client";
 
 /** Botón "?" junto al título de un juego: abre la explicación sencilla de cómo se juega. */
@@ -52,14 +52,17 @@ export function HowToPlayButton({ game, name }: { game: string; name: string }) 
                 {name}
               </h2>
             </div>
-            <p className="rounded-2xl p-3 font-medium" style={{ background: "var(--cell)" }}>
-              🎯 {guide.goal}
+            <p className="flex items-start gap-2 rounded-2xl p-3 font-medium" style={{ background: "var(--cell)" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={stepIconSrc("target")} alt="" aria-hidden className="mt-0.5 size-5 shrink-0" />
+              {guide.goal}
             </p>
             <ol className="flex flex-col gap-3">
               {guide.steps.map((step, index) => (
                 <li key={index} className="flex items-start gap-3">
-                  <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-xl text-xl" style={{ background: "var(--cell)" }}>
-                    {step.icon}
+                  <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-xl" style={{ background: "var(--cell)" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={stepIconSrc(step.icon)} alt="" className="size-7" />
                   </span>
                   <span className="pt-2 text-sm">{step.text}</span>
                 </li>
