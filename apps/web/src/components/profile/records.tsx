@@ -43,6 +43,7 @@ const MATCH_GAMES: { id: GameId; href: string; games: string[] }[] = [
   { id: "rps", href: "/piedra-papel-tijera", games: ["rps", "rpsls"] },
   { id: "pong", href: "/pong", games: ["pong"] },
   { id: "tron", href: "/tron", games: ["tron"] },
+  { id: "chess", href: "/ajedrez", games: ["chess"] },
 ];
 
 /** Tus récords: mejor marca y puesto en cada juego, Wordle y partidas contra amigos. */

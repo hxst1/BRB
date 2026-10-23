@@ -214,4 +214,22 @@ export const GAMES_ES = {
     ],
     faq: [{ q: "¿Tenemos que estar conectados a la vez?", a: "Sí. Tron se juega en directo." }],
   },
+  chess: {
+    name: "Ajedrez",
+    title: "Ajedrez online contra tus amigos",
+    description: "Juega al ajedrez online contra tus amigos, por turnos y sin reloj: cada uno mueve cuando puede y te avisamos cuando te toca. Gratis, en el navegador.",
+    tagline: "Por turnos, sin reloj",
+    genre: "Juego de estrategia",
+    howTo: [
+      "Reta a un amigo. Uno juega con blancas, que empiezan, y el otro con negras.",
+      "Por turnos, cada uno mueve una pieza. Toca una pieza tuya para ver adónde puede ir.",
+      "Gana quien dé jaque mate: el rey rival está amenazado y no tiene escapatoria.",
+      "Hay tablas por ahogado, por repetir tres veces la misma posición, por 50 jugadas sin capturas ni movimientos de peón y cuando no queda material para dar mate.",
+    ],
+    faq: [
+      { q: "¿Hay reloj?", a: "No. Es por turnos: cada uno mueve cuando puede y te avisamos cuando te toca." },
+      { q: "¿Se pueden enrocar, coronar y capturar al paso?", a: "Sí. Se aplican todas las reglas del ajedrez, y la app solo deja hacer jugadas legales." },
+      { q: "¿Hay que descargar algo?", a: NO_DOWNLOAD },
+    ],
+  },
 } satisfies Record<string, GameTexts>;

@@ -91,9 +91,9 @@ export function AvatarEditor({
       </h2>
 
       <div className="flex items-center gap-6 lg:flex-col lg:items-start">
-        <div className="grid size-40 shrink-0 lg:size-48 place-items-center rounded-[2rem] bg-surface shadow-soft">
-          {/* Cambiar la key reinicia el estado de ánimo "contento" tras cada cambio. */}
-          <CheeringAvatar key={cheer} seed={seed} parts={overrides} animate={cheer > 0} />
+        <div className="flex shrink-0 flex-col items-center gap-1.5">
+          <CheeringAvatar changes={cheer} seed={seed} parts={overrides} />
+          <p className="text-xs text-muted">{t.tapToGreet}</p>
         </div>
         <div className="flex flex-col items-start gap-2">
           <button
@@ -222,21 +222,32 @@ export function AvatarEditor({
   );
 }
 
-/** Se pone contento un momento tras cada cambio y vuelve a su cara normal. */
-function CheeringAvatar({ seed, parts, animate }: { seed: number; parts: Partial<MonsterParts>; animate: boolean }) {
-  const [happy, setHappy] = useState(animate);
+/**
+ * El monster del editor. Con cada cambio da un pequeño rebote sin cambiar de
+ * cara (así se ve al momento la parte nueva); al tocarlo, salta contento.
+ */
+function CheeringAvatar({ seed, parts, changes }: { seed: number; parts: Partial<MonsterParts>; changes: number }) {
   const m = useMessages();
+  const [happy, setHappy] = useState(0);
 
   useEffect(() => {
     if (!happy) return;
-    const timer = setTimeout(() => setHappy(false), 900);
+    const timer = setTimeout(() => setHappy(0), 900);
     return () => clearTimeout(timer);
   }, [happy]);
 
   return (
-    <span className={happy ? "monster-cheer" : undefined}>
-      <Avatar seed={seed} parts={parts} size={128} mood={happy ? "happy" : "neutral"} label={m.home.yourMonster} />
-    </span>
+    <button
+      type="button"
+      onClick={() => setHappy((n) => n + 1)}
+      aria-label={m.avatar.greet}
+      className="grid size-40 place-items-center rounded-[2rem] bg-surface shadow-soft transition-shadow hover:shadow-lift lg:size-48"
+    >
+      {/* La key reinicia la animación: el rebote con cada cambio y el salto con cada toque. */}
+      <span key={`${changes}:${happy}`} className={happy ? "monster-cheer" : changes ? "monster-pop" : undefined}>
+        <Avatar seed={seed} parts={parts} size={128} mood={happy ? "happy" : "neutral"} label={m.home.yourMonster} />
+      </span>
+    </button>
   );
 }
 

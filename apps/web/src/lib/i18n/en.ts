@@ -114,6 +114,11 @@ export const en: Messages = {
     gamesOf: (name: string) => `${name} games`,
   },
   news: {
+    inviteTitle: (game: string) => `${game}: play with your friends!`,
+    inviteBody: "Invite someone with your link: once they create an account you'll be friends and can play right away.",
+    invite: "Invite a friend",
+    inviteCopied: "Invite copied",
+    inviteText: (game: string, app: string) => `Up for a game of ${game.toLowerCase()} on ${app}? Join with my link and we'll be friends.`,
     sinceLastVisit: "Since your last visit",
     newGame: "New game!",
     newGames: (n: number) => `${n} new games`,
@@ -180,6 +185,7 @@ export const en: Messages = {
     retry: "Try again",
   },
   matchGames: {
+    chess: "Chess",
     tictactoe: "Tic-tac-toe",
     connect4: "Connect 4",
     battleship: "Battleship",
@@ -228,6 +234,7 @@ export const en: Messages = {
     noMatches: "No games in progress. Challenge someone.",
   },
   gameCards: {
+    chess: { title: "Chess", subtitle: "Turn by turn, no clock" },
     pinLimit: "6 at most",
     pinError: "That didn't work",
     pin: "Pin to your games",
@@ -430,6 +437,7 @@ export const en: Messages = {
     keyboard: "Keyboard: numbers to fill in, 0 or backspace to erase, arrows to move, N for notes and Z to undo.",
   },
   gamePages: {
+    chess: "Challenge your friends to chess. No clock: each of you moves whenever you can.",
     tictactoe: "Challenge your friends. Each of you plays whenever you can.",
     connect4: "Drop your pieces and line up four. Each of you plays whenever you can.",
     minesweeper: "Clear the board without hitting a single mine, as fast as you can.",
@@ -497,6 +505,7 @@ export const en: Messages = {
     yesResign: "Yes, I resign",
   },
   challengeMenu: {
+    chess: "Chess",
     challenge: "Challenge",
     error: "Couldn't create the challenge. Please try again.",
     tictactoe: "Tic-tac-toe",
@@ -754,6 +763,8 @@ export const en: Messages = {
     winRate: (pct: number) => `${pct}% won`,
   },
   avatar: {
+    tapToGreet: "Tap it to say hi",
+    greet: "Say hi",
     supporterOnly: "That part is for supporters only.",
     achievementOnly: "That part is unlocked with an achievement.",
     saveError: "Couldn't save it. Please try again.",
@@ -875,6 +886,7 @@ export const en: Messages = {
     next: "Next game",
     game: "Game",
     names: {
+      chess: "Chess",
       "2048": "2048",
       snake: "Snake",
       lightsout: "Lights Out",
@@ -889,6 +901,7 @@ export const en: Messages = {
     },
   },
   push: {
+    checkmated: (name: string) => `${name} checkmated you. Rematch?`,
     someone: "Someone",
     rival: "Your opponent",
     streakTitle: (days: number) => `${days} days in a row`,
@@ -934,5 +947,21 @@ export const en: Messages = {
     rankingDescription: "World and friends rankings: who has the highest level, the best at 2048, Snake, Sudoku and Minesweeper, and who wins the most games.",
     dailyTitle: "Daily challenge: a different mini-game every day",
     dailyDescription: "Every day, the same game for everyone and a single attempt: 2048, Snake, Minesweeper, Lights Out or Sudoku depending on the day. Play for free and keep your streak.",
+  },
+  chess: {
+    board: "Chessboard",
+    white: "White",
+    black: "Black",
+    pieces: { k: "King", q: "Queen", r: "Rook", b: "Bishop", n: "Knight", p: "Pawn" },
+    promote: "Promote the pawn",
+    yourTurnCheck: "Your turn: you're in check!",
+    youMated: "Checkmate! You won",
+    theyMated: (name: string) => `Checkmated by ${name}`,
+    draws: {
+      stalemate: "Draw by stalemate",
+      threefold: "Draw by repetition",
+      fifty: "Draw: 50 moves without captures or pawn moves",
+      material: "Draw: not enough material to checkmate",
+    },
   },
 };

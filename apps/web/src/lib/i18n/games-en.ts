@@ -195,4 +195,22 @@ export const GAMES_EN: Record<keyof typeof GAMES_ES, GameTexts> = {
     ],
     faq: [{ q: "Do we have to be online at the same time?", a: "Yes. Tron is played live." }],
   },
+  chess: {
+    name: "Chess",
+    title: "Online chess with your friends",
+    description: "Play online chess with your friends, turn by turn and without a clock: each of you moves when you can and we let you know when it's your turn. Free, in your browser.",
+    tagline: "Turn by turn, no clock",
+    genre: "Strategy game",
+    howTo: [
+      "Challenge a friend. One plays white, who moves first, and the other black.",
+      "Taking turns, each of you moves a piece. Tap one of your pieces to see where it can go.",
+      "Checkmate wins: the opponent's king is attacked and has no way out.",
+      "It's a draw by stalemate, by repeating the same position three times, after 50 moves without a capture or pawn move, and when there isn't enough material left to checkmate.",
+    ],
+    faq: [
+      { q: "Is there a clock?", a: "No. It's turn-based: each of you moves when you can and we let you know when it's your turn." },
+      { q: "Can you castle, promote and capture en passant?", a: "Yes. Every chess rule applies, and the app only lets you make legal moves." },
+      { q: "Do I need to download anything?", a: NO_DOWNLOAD },
+    ],
+  },
 };

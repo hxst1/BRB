@@ -313,8 +313,21 @@ body {
   }
 }
 
+/* Rebote corto al cambiar una parte: no cambia la cara, así la parte nueva se ve al momento. */
+.monster-pop {
+  display: inline-block;
+  animation: monster-pop 260ms ease-out;
+}
+
+@keyframes monster-pop {
+  40% {
+    transform: scale(0.94);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .monster-cheer {
+  .monster-cheer,
+  .monster-pop {
     animation: none;
   }
 }

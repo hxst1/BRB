@@ -164,6 +164,26 @@ const EYES = {
     `<path d="M${x - 19} ${y + 3}q6-9 12 0M${x + 7} ${y + 3}q6-9 12 0" stroke="${INK}" stroke-width="4" fill="none" stroke-linecap="round"/>`,
 } satisfies Record<string, EyeDrawer>;
 
+/** Un ojo cerrado de alegría (un arco) del tamaño de un ojo de radio `r`. */
+function joyArc(x: number, y: number, r: number): string {
+  const half = r * (2 / 3);
+  return `M${x - half} ${y + 3}q${half} ${-1.5 * half} ${2 * half} 0`;
+}
+
+function joyPath(d: string): string {
+  return `<path d="${d}" stroke="${INK}" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+}
+
+/** Contento: los ojos cerrados de alegría, uno por cada ojo y en su sitio (no siempre dos). */
+const JOY: Record<keyof typeof EYES, EyeDrawer> = {
+  two: (at) => EYES.joy(at),
+  cyclops: ({ x, y }) => joyPath(joyArc(x, y - 2, 14)),
+  three: ({ x, y }) => joyPath(joyArc(x - 16, y + 1, 6.5) + joyArc(x, y - 8, 7) + joyArc(x + 16, y + 1, 6.5)),
+  odd: ({ x, y }) => joyPath(joyArc(x - 12, y - 1, 11) + joyArc(x + 14, y + 1, 7)),
+  dots: (at) => EYES.joy(at),
+  joy: (at) => EYES.joy(at),
+};
+
 const stroke = `stroke="${INK}" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"`;
 
 type MouthDrawer = (y: number) => string;
@@ -431,7 +451,7 @@ export function renderMonsterSvg(parts: MonsterParts, mood: Mood = "neutral"): s
   const top: Top = TOPS[parts.top];
   const { x, y } = body.eyes;
 
-  const eyes = mood === "happy" ? EYES.joy(body.eyes) : EYES[parts.eyes](body.eyes);
+  const eyes = mood === "happy" ? JOY[parts.eyes](body.eyes) : EYES[parts.eyes](body.eyes);
   const mouth =
     mood === "happy"
       ? MOUTHS.tongue(body.mouthY)

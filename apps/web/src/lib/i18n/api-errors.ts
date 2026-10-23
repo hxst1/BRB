@@ -14,6 +14,7 @@ export const API_ERRORS_EN: Record<string, string> = {
   "Columna no válida": "Invalid column",
   "Esa columna está llena": "That column is full",
   "Ya has disparado ahí": "You've already fired there",
+  "Esa jugada no está permitida": "That move isn't allowed",
   "La partida ha cambiado, recarga": "The game has changed, reload",
   "Aún falta que los dos coloquéis la flota": "You both still need to place your fleets",
   "Elección no válida": "Invalid pick",

@@ -113,6 +113,11 @@ export const es = {
     gamesOf: (name: string) => `Juegos de ${name}`,
   },
   news: {
+    inviteTitle: (game: string) => `${game}: ¡juega con tus amigos!`,
+    inviteBody: "Invita a alguien con tu enlace: al crear su cuenta seréis amigos y podréis jugar al momento.",
+    invite: "Invitar a un amigo",
+    inviteCopied: "Invitación copiada",
+    inviteText: (game: string, app: string) => `¿Echamos una partida al ${game.toLowerCase()} en ${app}? Entra con mi enlace y ya seremos amigos.`,
     sinceLastVisit: "Desde tu última visita",
     newGame: "¡Juego nuevo!",
     newGames: (n: number) => `${n} juegos nuevos`,
@@ -179,6 +184,7 @@ export const es = {
     retry: "Probar otra vez",
   },
   matchGames: {
+    chess: "Ajedrez",
     tictactoe: "3 en raya",
     connect4: "4 en raya",
     battleship: "Hundir la flota",
@@ -227,6 +233,7 @@ export const es = {
     noMatches: "Ninguna partida en juego. Reta a alguien.",
   },
   gameCards: {
+    chess: { title: "Ajedrez", subtitle: "Por turnos, sin reloj" },
     pinLimit: "Como mucho 6",
     pinError: "No se ha podido",
     pin: "Fijar en tus juegos",
@@ -429,6 +436,7 @@ export const es = {
     keyboard: "Teclado: números para escribir, 0 o retroceso para borrar, flechas para moverte, N para las notas y Z para deshacer.",
   },
   gamePages: {
+    chess: "Reta a tus amigos al ajedrez. Sin reloj: cada uno mueve cuando puede.",
     tictactoe: "Reta a tus amigos. Cada uno juega cuando puede.",
     connect4: "Deja caer tus fichas y junta cuatro en línea. Cada uno juega cuando puede.",
     minesweeper: "Despeja el tablero sin pisar ninguna mina, lo más rápido que puedas.",
@@ -496,6 +504,7 @@ export const es = {
     yesResign: "Sí, me rindo",
   },
   challengeMenu: {
+    chess: "Ajedrez",
     challenge: "Retar",
     error: "No se ha podido crear el reto. Inténtalo otra vez.",
     tictactoe: "3 en raya",
@@ -753,6 +762,8 @@ export const es = {
     winRate: (pct: number) => `${pct} % ganadas`,
   },
   avatar: {
+    tapToGreet: "Tócalo para que salude",
+    greet: "Saludar",
     supporterOnly: "Esa parte es exclusiva de supporters.",
     achievementOnly: "Esa parte se desbloquea con un logro.",
     saveError: "No se ha podido guardar. Inténtalo otra vez.",
@@ -874,6 +885,7 @@ export const es = {
     next: "Juego siguiente",
     game: "Juego",
     names: {
+      chess: "Ajedrez",
       "2048": "2048",
       snake: "Snake",
       lightsout: "Lights Out",
@@ -888,6 +900,7 @@ export const es = {
     },
   },
   push: {
+    checkmated: (name: string) => `${name} te ha dado jaque mate. ¿Revancha?`,
     someone: "Alguien",
     rival: "Tu rival",
     streakTitle: (days: number) => `Llevas ${days} días seguidos`,
@@ -933,5 +946,21 @@ export const es = {
     rankingDescription: "Clasificación mundial y entre amigos: quién tiene más nivel, los mejores en 2048, Snake, Sudoku y Buscaminas, y quién gana más partidas.",
     dailyTitle: "Reto diario: un minijuego distinto cada día",
     dailyDescription: "Cada día, la misma partida para todo el mundo y un solo intento: 2048, Snake, Buscaminas, Lights Out o Sudoku según el día. Juega gratis y mantén tu racha.",
+  },
+  chess: {
+    board: "Tablero de ajedrez",
+    white: "Blancas",
+    black: "Negras",
+    pieces: { k: "Rey", q: "Dama", r: "Torre", b: "Alfil", n: "Caballo", p: "Peón" },
+    promote: "Corona el peón",
+    yourTurnCheck: "Te toca: ¡estás en jaque!",
+    youMated: "¡Jaque mate! Has ganado",
+    theyMated: (name: string) => `Jaque mate de ${name}`,
+    draws: {
+      stalemate: "Tablas por ahogado",
+      threefold: "Tablas por repetición",
+      fifty: "Tablas: 50 jugadas sin capturas ni peones",
+      material: "Tablas: no queda material para dar mate",
+    },
   },
 };
