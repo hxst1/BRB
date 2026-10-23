@@ -3,6 +3,7 @@ import type { DailySummary } from "@repo/db";
 import { dailyGameName, DAILY_GAMES, formatDailyScore } from "@/lib/daily";
 import type { Messages } from "@/lib/i18n";
 import { getLocale, getMessages } from "@/lib/i18n/server";
+import { InlinePicto } from "@/components/picto";
 
 /** "martes, 20 de octubre" a partir de la fecha del reto (AAAA-MM-DD). */
 export function formatDay(day: string, locale: string): string {
@@ -19,7 +20,7 @@ export async function StreakText({ summary }: { summary: DailySummary }) {
   const label = m.daily.streak(days);
   return (
     <span>
-      <span aria-hidden>🔥 </span>
+      <InlinePicto name="fire" className="mr-1" />
       <strong>{label}</strong>
       {!summary.played_today && <span className="text-muted">{m.daily.keepStreak}</span>}
     </span>

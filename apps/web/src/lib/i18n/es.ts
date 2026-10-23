@@ -1,4 +1,8 @@
 import { makeFormat } from "@/lib/format";
+import type { Picto } from "@/lib/pictos";
+
+/** Lista con un dibujito (lib/pictos) en cada elemento. */
+type PictoItem = { icon: Picto; title: string; detail: string };
 
 export const es = {
   format: makeFormat("es"),
@@ -61,7 +65,7 @@ export const es = {
     otherEmail: "¿Pagas con otro email? Escribe tu código en el mensaje de Ko-fi:",
     copied: "Copiado",
     copy: "Copiar",
-    codeTitle: "💻 ¿Sabes programar? Apoya con código",
+    codeTitle: "¿Sabes programar? Apoya con código",
     codeBefore: "El código es abierto. Abre una issue (un fallo o una idea) o propón un cambio en",
     withYourCode: "con tu código",
     withFriendCode: " con tu código de amigo",
@@ -69,12 +73,12 @@ export const es = {
     whereTitle: "¿A dónde va tu apoyo?",
     never: "Nunca habrá anuncios ni se venderán tus datos. Lo que se recibe se dedica solo a mantener y mejorar la app.",
     spending: [
-      { icon: "🌐", title: "Un dominio propio", detail: "Un nombre definitivo para la app y su renovación cada año." },
-      { icon: "🗄️", title: "Base de datos y servidores", detail: "Supabase (cuentas, partidas y rankings) y Vercel (la web), cuando se queden pequeños sus planes gratuitos." },
-      { icon: "✉️", title: "Emails y avisos", detail: "El servicio que envía los correos de confirmación y de recuperar la contraseña." },
-      { icon: "🤖", title: "Inteligencia artificial para desarrollar", detail: "Las herramientas de IA con las que se programan y se diseñan los juegos nuevos." },
-      { icon: "🚀", title: "Lo que viene", detail: "Publicar la app en las tiendas de iPhone y Android, la extensión de Chrome y nuevas integraciones." },
-    ],
+      { icon: "globe", title: "Un dominio propio", detail: "Un nombre definitivo para la app y su renovación cada año." },
+      { icon: "server", title: "Base de datos y servidores", detail: "Supabase (cuentas, partidas y rankings) y Vercel (la web), cuando se queden pequeños sus planes gratuitos." },
+      { icon: "mail", title: "Emails y avisos", detail: "El servicio que envía los correos de confirmación y de recuperar la contraseña." },
+      { icon: "robot", title: "Inteligencia artificial para desarrollar", detail: "Las herramientas de IA con las que se programan y se diseñan los juegos nuevos." },
+      { icon: "rocket", title: "Lo que viene", detail: "Publicar la app en las tiendas de iPhone y Android, la extensión de Chrome y nuevas integraciones." },
+    ] as PictoItem[],
     sticker: "¡Apóyanos!",
     supportApp: (name: string) => `Apoyar ${name}`,
     title: (name: string) => `Apoya ${name}`,
@@ -217,11 +221,11 @@ export const es = {
     perksIntro: "Se crea en un minuto, sin datos de pago. Solo un email y un nombre.",
     createMine: "Crear mi cuenta",
     perks: [
-      { icon: "🏆", title: "Tus récords, guardados", detail: "Y tu puesto en el ranking mundial y entre tus amigos." },
-      { icon: "👋", title: "Juega con tus amigos", detail: "Rétalos a 3 en raya, Hundir la flota, Pong o Tron, y chatea." },
-      { icon: "🔥", title: "Reto diario y rachas", detail: "Un juego distinto cada día, la misma partida para todos." },
-      { icon: "🎨", title: "Tu propio monster", detail: "Personalízalo y gana ropa nueva con los logros." },
-    ],
+      { icon: "trophy", title: "Tus récords, guardados", detail: "Y tu puesto en el ranking mundial y entre tus amigos." },
+      { icon: "wave", title: "Juega con tus amigos", detail: "Rétalos a 3 en raya, Hundir la flota, Pong o Tron, y chatea." },
+      { icon: "fire", title: "Reto diario y rachas", detail: "Un juego distinto cada día, la misma partida para todos." },
+      { icon: "palette", title: "Tu propio monster", detail: "Personalízalo y gana ropa nueva con los logros." },
+    ] as PictoItem[],
   },
   home: {
     hello: (name: string) => `Hola, ${name}`,
@@ -899,7 +903,7 @@ export const es = {
   rankingBoard: {
     podium: "Podio",
     rankingOf: "Ranking de",
-    level: "⭐ Nivel",
+    level: "Nivel",
     games: "Juegos",
     global: "Global",
     emptyFriends: "Ni tú ni tus amigos aparecéis aquí todavía. Echad unas partidas.",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMessages } from "@/lib/i18n/client";
+import { pictoSrc } from "@/lib/pictos";
 
 /**
  * A dónde va el dinero de los apoyos, para ser transparentes. Si cambia en
@@ -16,8 +17,9 @@ export function WhereItGoes({ compact = false }: { compact?: boolean }) {
       <ul className="flex flex-col gap-2">
         {m.support.spending.map((item) => (
           <li key={item.title} className="flex gap-3">
-            <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-xl text-lg" style={{ background: "var(--cell)" }}>
-              {item.icon}
+            <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-xl" style={{ background: "var(--cell)" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={pictoSrc(item.icon)} alt="" className="size-6" />
             </span>
             <span className="flex flex-col">
               <span className="text-sm font-semibold">{item.title}</span>

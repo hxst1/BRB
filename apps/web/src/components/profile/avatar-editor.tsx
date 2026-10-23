@@ -11,6 +11,7 @@ import { achievementById } from "@/lib/achievements";
 import { useLocale, useMessages } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 import { InlinePicto } from "@/components/picto";
+import { pictoSrc } from "@/lib/pictos";
 
 type Slot = "body" | "palette" | "eyes" | "mouth" | "top";
 
@@ -170,10 +171,11 @@ export function AvatarEditor({
                   {locked && (
                     <span
                       aria-hidden
-                      className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full text-[10px]"
-                      style={{ background: supporterOnly ? "var(--t256)" : "var(--ink)", color: supporterOnly ? "#15171c" : "var(--bg)" }}
+                      className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full text-[10px] shadow-soft"
+                      style={{ background: supporterOnly ? "var(--t256)" : "var(--surface)", color: "#15171c" }}
                     >
-                      {supporterOnly ? "✦" : "🔒"}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      {supporterOnly ? "✦" : <img src={pictoSrc("lock")} alt="" className="size-3.5" />}
                     </span>
                   )}
                 </button>

@@ -9,6 +9,8 @@ import type { Messages } from "@/lib/i18n";
 import { useMessages } from "@/lib/i18n/client";
 import { levelFromXp } from "@repo/games/level";
 import { createClient } from "@/lib/supabase/client";
+import { InlinePicto } from "@/components/picto";
+import type { Picto } from "@/lib/pictos";
 
 type GameId = "2048" | "snake" | "lightsout" | "minesweeper" | "sudoku" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron" | "chess";
 type Category = "level" | GameId;
@@ -174,8 +176,8 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
         value={category === "level" ? "level" : "games"}
         onChange={(value) => setCategory(value === "level" ? "level" : lastGame)}
         options={[
-          { value: "level", label: t.level },
-          { value: "games", label: t.games },
+          { value: "level", label: t.level, icon: "star" },
+          { value: "games", label: t.games, icon: "gamepad" },
         ]}
         wide
       />
@@ -427,7 +429,7 @@ function Toggle<T extends string>({
   label: string;
   value: T;
   onChange: (value: T) => void;
-  options: { value: T; label: string }[];
+  options: { value: T; label: string; icon?: Picto }[];
   /** Ocupa todo el ancho, con las opciones repartidas. */
   wide?: boolean;
 }) {
@@ -444,6 +446,7 @@ function Toggle<T extends string>({
             value === option.value ? "bg-surface font-medium shadow-soft" : "text-muted hover:text-ink"
           }`}
         >
+          {option.icon && <InlinePicto name={option.icon} className="mr-1.5" />}
           {option.label}
         </button>
       ))}

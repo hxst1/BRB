@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { SUPPORT_LINKS } from "@/lib/support";
 import { createClient } from "@/lib/supabase/client";
 import { useMessages } from "@/lib/i18n/client";
+import { InlinePicto } from "@/components/picto";
 
 /**
  * Botones para apoyar el proyecto (Ko-fi y, cuando esté aprobado, GitHub
@@ -88,7 +89,10 @@ export function SupportOptions() {
         </div>
       )}
       <div className="flex flex-col gap-1 rounded-2xl border border-line p-3 text-sm">
-        <p className="font-semibold">{t.codeTitle}</p>
+        <p className="font-semibold">
+          <InlinePicto name="laptop" className="mr-1.5" />
+          {t.codeTitle}
+        </p>
         <p className="text-muted">
           {t.codeBefore}{" "}
           <a href={SUPPORT_LINKS.githubRepo} target="_blank" rel="noopener noreferrer" className="font-medium text-ink underline underline-offset-4">

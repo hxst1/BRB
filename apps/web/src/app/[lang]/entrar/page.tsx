@@ -7,6 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { AuthForm } from "./auth-form";
 import { PRIVATE_PAGE } from "@/lib/seo";
 import { getMessages } from "@/lib/i18n/server";
+import { InlinePicto } from "@/components/picto";
 
 export async function generateMetadata(): Promise<Metadata> {
   const m = await getMessages();
@@ -36,7 +37,8 @@ async function AuthFormForRequest({ searchParams }: { searchParams: PageProps<"/
     <>
       {inviter && (
         <p className="mb-4 rounded-2xl p-3 text-sm" style={{ background: "var(--cell)" }}>
-          👋 <strong>{inviter}</strong>
+          <InlinePicto name="wave" className="mr-1.5" />
+          <strong>{inviter}</strong>
           {m.auth.invitedBy}
         </p>
       )}

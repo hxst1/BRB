@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { signupHref } from "@/lib/signup";
 import { getMessages } from "@/lib/i18n/server";
+import { pictoSrc } from "@/lib/pictos";
 
 
 /** Botones para crear cuenta o entrar, para el principio de la portada sin sesión. */
@@ -32,8 +33,9 @@ export async function SignupPerks() {
       <ul className="grid gap-4 sm:grid-cols-2">
         {m.signup.perks.map((perk) => (
           <li key={perk.title} className="flex gap-3">
-            <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-2xl text-xl" style={{ background: "var(--cell)" }}>
-              {perk.icon}
+            <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-2xl" style={{ background: "var(--cell)" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={pictoSrc(perk.icon)} alt="" className="size-7" />
             </span>
             <span className="flex flex-col">
               <span className="font-semibold">{perk.title}</span>
