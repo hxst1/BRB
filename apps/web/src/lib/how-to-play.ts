@@ -30,6 +30,7 @@ const HOW_TO_PLAY_ES: Record<string, HowToPlay> = {
     goal: "Apaga todas las luces del tablero.",
     steps: [
       { icon: "💡", text: "Al tocar una casilla, cambia ella y las de arriba, abajo, izquierda y derecha." },
+      { icon: "👀", text: "Antes de tocar, mantén el dedo encima (o pasa el ratón en el ordenador) y verás qué casillas cambiarán." },
       { icon: "🔁", text: "Las que estaban encendidas se apagan, y las apagadas se encienden." },
       { icon: "✋", text: "Tienes pocas pulsaciones: piensa antes de tocar." },
       { icon: "⬆️", text: "Si lo apagas todo, pasas de nivel y el tablero crece." },
@@ -141,6 +142,7 @@ const HOW_TO_PLAY_EN: Record<string, HowToPlay> = {
     goal: "Switch off every light on the board.",
     steps: [
       { icon: "💡", text: "Tapping a square toggles it and the ones above, below, left and right." },
+      { icon: "👀", text: "Before tapping, hold your finger on a square (or hover with the mouse on a computer) to see which squares will change." },
       { icon: "🔁", text: "The ones that were on go off, and the ones that were off come on." },
       { icon: "✋", text: "You only have a few taps: think before you tap." },
       { icon: "⬆️", text: "Switch them all off and you level up, and the board grows." },
