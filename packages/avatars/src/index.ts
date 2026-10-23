@@ -103,7 +103,7 @@ interface Palette {
   achievement?: string;
 }
 
-const PALETTES = {
+export const PALETTES = {
   coral: { body: "#ff8a73", shade: "#e2604a", accent: "#ffd8b0" },
   amber: { body: "#ffc94a", shade: "#e89d1c", accent: "#ff7a59" },
   mint: { body: "#7edda0", shade: "#46b878", accent: "#f8f3df" },
