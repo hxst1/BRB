@@ -37,6 +37,15 @@ export function AvatarEditor({
   const locale = useLocale();
   const [seed, setSeed] = useState(initialSeed);
   const [overrides, setOverrides] = useState<Partial<MonsterParts>>(() => sanitizeParts(initialParts));
+  // Si el monster guardado cambia (al guardar aquí, o fuera, p. ej. al estrenar un
+  // logro), se toma el nuevo sin reiniciar el editor: así no se pierde la pestaña abierta.
+  const savedKey = `${initialSeed}:${JSON.stringify(initialParts)}`;
+  const [syncedKey, setSyncedKey] = useState(savedKey);
+  if (savedKey !== syncedKey) {
+    setSyncedKey(savedKey);
+    setSeed(initialSeed);
+    setOverrides(sanitizeParts(initialParts));
+  }
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [cheer, setCheer] = useState(0);
   const [activeSlot, setActiveSlot] = useState<Slot>("body");

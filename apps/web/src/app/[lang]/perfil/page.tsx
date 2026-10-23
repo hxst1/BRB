@@ -90,8 +90,6 @@ async function MonsterSection({ viewer }: { viewer: Viewer }) {
   const unlocked = (achievements ?? []).filter((a) => a.unlocked_at).map((a) => a.achievement);
   return (
     <AvatarEditor
-      // Si el avatar cambia fuera del editor (p. ej. al estrenar un logro), empieza de nuevo con el guardado.
-      key={`${viewer.avatar_seed}:${JSON.stringify(viewer.avatar_parts)}`}
       userId={viewer.id}
       initialSeed={viewer.avatar_seed}
       initialParts={viewer.avatar_parts}
