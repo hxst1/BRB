@@ -132,6 +132,15 @@ export const es = {
     gamesOf: (name: string) => `Juegos de ${name}`,
   },
   news: {
+    tints: {
+      kicker: "Novedad",
+      title: "Colores para la app",
+      body: "Ahora los logros también dan colores para toda la app. Consíguelos jugando.",
+      yours: (name: string) => `Ya es tuyo, por el logro «${name}».`,
+      use: "Usar",
+      inUse: "Puesto",
+      seeAchievements: "Ver logros",
+    },
     inviteTitle: (game: string) => `${game}: ¡juega con tus amigos!`,
     inviteBody: "Invita a alguien con tu enlace: al crear su cuenta seréis amigos y podréis jugar al momento.",
     invite: "Invitar a un amigo",

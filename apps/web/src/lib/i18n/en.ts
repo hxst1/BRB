@@ -129,6 +129,15 @@ export const en: Messages = {
     gamesOf: (name: string) => `${name} games`,
   },
   news: {
+    tints: {
+      kicker: "New",
+      title: "Colours for the app",
+      body: "Achievements now also unlock colours for the whole app. Earn them by playing.",
+      yours: (name: string) => `Already yours, from the “${name}” achievement.`,
+      use: "Use it",
+      inUse: "Done",
+      seeAchievements: "See achievements",
+    },
     inviteTitle: (game: string) => `${game}: play with your friends!`,
     inviteBody: "Invite someone with your link: once they create an account you'll be friends and can play right away.",
     invite: "Invite a friend",
