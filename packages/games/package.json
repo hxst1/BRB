@@ -22,7 +22,8 @@
     "./minesweeper": "./src/minesweeper/index.ts",
     "./minesweeper/verify": "./src/minesweeper/verify.ts",
     "./sudoku": "./src/sudoku/index.ts",
-    "./sudoku/verify": "./src/sudoku/verify.ts"
+    "./sudoku/verify": "./src/sudoku/verify.ts",
+    "./chess": "./src/chess/index.ts"
   },
   "scripts": {
     "test": "vitest run",
