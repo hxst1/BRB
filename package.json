@@ -13,6 +13,7 @@
     "db:reset": "supabase db reset",
     "db:migration": "supabase migration new",
     "db:types": "supabase gen types typescript --local > packages/db/src/database.types.ts",
+    "db:email-templates": "node scripts/email-templates.mjs",
     "test:db": "supabase test db"
   },
   "devDependencies": {

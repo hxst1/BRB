@@ -45,10 +45,10 @@ async function notifyFirstShooter(admin: ReturnType<typeof createAdminClient>, m
     admin.from("battleship_fleets").select("player_id", { count: "exact", head: true }).eq("match_id", matchId),
   ]);
   if (!match || count !== 2 || match.player_x === userId) return;
-  await sendPush(match.player_x, {
-    title: "Te toca disparar",
-    body: `${match.o.username} ya ha colocado su flota. ¡Empieza la batalla!`,
+  await sendPush(match.player_x, (m) => ({
+    title: m.battleship.yourShot,
+    body: m.push.fleetReady(match.o.username),
     url: `/hundir-la-flota/${matchId}`,
     tag: `match:${matchId}`,
-  }).catch((pushError) => console.error("fleet: no se pudo avisar", pushError));
+  })).catch((pushError) => console.error("fleet: no se pudo avisar", pushError));
 }

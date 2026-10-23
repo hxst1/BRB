@@ -1,0 +1,11 @@
+{{ if eq (printf "%v" .Data.locale) "en" }}
+<h2>Confirm your email</h2>
+<p>Hi {{ .Data.username }}, thanks for signing up. Tap the button to confirm your email and start playing.</p>
+<p><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 20px;border-radius:999px;background:#15171c;color:#ffffff;text-decoration:none;font-weight:600">Confirm my email</a></p>
+<p style="color:#6b7280;font-size:14px">If you didn't create an account, you can ignore this email.</p>
+{{ else }}
+<h2>Confirma tu email</h2>
+<p>Hola, {{ .Data.username }}. Gracias por registrarte. Pulsa el botón para confirmar tu email y empezar a jugar.</p>
+<p><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 20px;border-radius:999px;background:#15171c;color:#ffffff;text-decoration:none;font-weight:600">Confirmar mi email</a></p>
+<p style="color:#6b7280;font-size:14px">Si no has creado ninguna cuenta, puedes ignorar este email.</p>
+{{ end }}

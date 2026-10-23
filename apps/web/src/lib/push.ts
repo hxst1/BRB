@@ -1,5 +1,7 @@
 import "server-only";
 import webpush from "web-push";
+import { messagesFor, type Messages } from "@/lib/i18n";
+import { isLocale } from "@/lib/i18n/locales";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export type PushMessage = {
@@ -33,13 +35,17 @@ async function isWatching(admin: ReturnType<typeof createAdminClient>, userId: s
 }
 
 /**
- * Envía la notificación a todos los dispositivos del usuario, salvo que esté
+ * Envía la notificación (`compose` la redacta con los textos del idioma del
+ * usuario) a todos sus dispositivos, salvo que esté
  * mirando justo esa pantalla (la partida o el chat): ahí el aviso sobra. Las
  * suscripciones que el navegador ya ha dado de baja (404/410) se borran.
  */
-export async function sendPush(userId: string, message: PushMessage): Promise<number> {
+export async function sendPush(userId: string, compose: (m: Messages) => PushMessage): Promise<number> {
   if (!configure()) return 0;
   const admin = createAdminClient();
+  // El texto, en el idioma de quien lo recibe (profiles.locale).
+  const { data: profile } = await admin.from("profiles").select("locale").eq("id", userId).maybeSingle();
+  const message = compose(messagesFor(isLocale(profile?.locale) ? profile.locale : "es"));
   if (await isWatching(admin, userId, message.url)) return 0;
   const { data: subscriptions } = await admin
     .from("push_subscriptions")

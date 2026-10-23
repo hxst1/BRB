@@ -4,7 +4,7 @@ import { cache } from "react";
 import type { Profile } from "@repo/db";
 import { createClient } from "@/lib/supabase/server";
 
-export type Viewer = Pick<Profile, "id" | "username" | "avatar_seed" | "avatar_parts" | "xp" | "supporter_tier">;
+export type Viewer = Pick<Profile, "id" | "username" | "avatar_seed" | "avatar_parts" | "xp" | "supporter_tier" | "locale">;
 
 /**
  * Id del usuario con sesión iniciada, o null. No hace llamadas de red: el token
@@ -27,7 +27,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, username, avatar_seed, avatar_parts, xp, supporter_tier")
+    .select("id, username, avatar_seed, avatar_parts, xp, supporter_tier, locale")
     .eq("id", userId)
     .maybeSingle();
 

@@ -1,8 +1,9 @@
 import { timingSafeEqual } from "node:crypto";
 import { decodeShot } from "@repo/games/battleship";
-import { replay as replayRps, CHOICE_NAMES, type Variant } from "@repo/games/rps";
+import { replay as replayRps, type Variant } from "@repo/games/rps";
 import type { Tables } from "@repo/db";
-import { matchGame, matchHref } from "@/lib/games";
+import { matchGame, matchGameKey, matchHref } from "@/lib/games";
+import type { Messages } from "@/lib/i18n";
 import { sendPush, type PushMessage } from "@/lib/push";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -18,7 +19,8 @@ type Change =
   | { table: "matches"; type: "UPDATE"; record: Tables<"matches">; old_record: Tables<"matches"> }
   | { table: "streaks"; type: "REMINDER"; records: { user_id: string; streak_days: number }[] };
 
-type Notification = { userId: string; message: PushMessage };
+/** `message` redacta el aviso con los textos del idioma de quien lo recibe. */
+type Notification = { userId: string; message: (m: Messages) => PushMessage };
 
 /** Los retos pendientes caducan a los 3 días (un poco menos, por si el trabajo se adelanta). */
 const EXPIRY_MS = 3 * 24 * 60 * 60 * 1000 - 5 * 60 * 1000;
@@ -44,28 +46,22 @@ async function notificationsFor(change: Change): Promise<Notification[]> {
   if (change.table === "streaks") {
     return change.records.map((r) => ({
       userId: r.user_id,
-      message: {
-        title: `Llevas ${r.streak_days} días seguidos`,
-        body: "Juega hoy antes de medianoche para no perder la racha. El reto diario te espera.",
-        url: "/reto-diario",
-        tag: "streak",
-      },
+      message: (m) => ({ title: m.push.streakTitle(r.streak_days), body: m.push.streakBody, url: "/reto-diario", tag: "streak" }),
     }));
   }
 
   if (change.table === "messages") {
-    const m = change.record;
-    const names = await usernames([m.sender_id]);
-    const sender = names[m.sender_id] ?? "Alguien";
+    const msg = change.record;
+    const names = await usernames([msg.sender_id]);
     return [
       {
-        userId: m.recipient_id,
-        message: {
-          title: sender,
-          body: m.kind === "sticker" ? `Te ha enviado un sticker ${m.body}` : truncate(m.body),
-          url: `/chat/${m.sender_id}`,
-          tag: `chat:${m.sender_id}`,
-        },
+        userId: msg.recipient_id,
+        message: (m) => ({
+          title: names[msg.sender_id] ?? m.push.someone,
+          body: msg.kind === "sticker" ? m.push.sticker(msg.body) : truncate(msg.body),
+          url: `/chat/${msg.sender_id}`,
+          tag: `chat:${msg.sender_id}`,
+        }),
       },
     ];
   }
@@ -77,120 +73,118 @@ async function notificationsFor(change: Change): Promise<Notification[]> {
     return [
       {
         userId: f.addressee_id,
-        message: {
-          title: "Solicitud de amistad",
-          body: `${names[f.requester_id] ?? "Alguien"} quiere añadirte como amigo.`,
+        message: (m) => ({
+          title: m.push.friendTitle,
+          body: m.push.friendBody(names[f.requester_id] ?? m.push.someone),
           url: "/amigos",
           tag: `friend:${f.requester_id}`,
-        },
+        }),
       },
     ];
   }
 
   // Partidas
-  const { record: m, old_record: old } = change;
-  const names = await usernames([m.player_x, m.player_o]);
-  const name = (id: string) => names[id] ?? "Tu rival";
-  const other = (id: string) => (id === m.player_x ? m.player_o : m.player_x);
-  const url = matchHref(m);
-  const tag = `match:${m.id}`;
-  const game = matchGame(m.game).name;
-  const notify = (userId: string, title: string, body: string): Notification => ({
+  const { record: match, old_record: old } = change;
+  const names = await usernames([match.player_x, match.player_o]);
+  const name = (m: Messages, id: string) => names[id] ?? m.push.rival;
+  const other = (id: string) => (id === match.player_x ? match.player_o : match.player_x);
+  const url = matchHref(match);
+  const tag = `match:${match.id}`;
+  const game = (m: Messages) => m.matchGames[matchGameKey(match.game)];
+  const notify = (userId: string, title: (m: Messages) => string, body: (m: Messages) => string): Notification => ({
     userId,
-    message: { title, body, url, tag },
+    message: (m) => ({ title: title(m), body: body(m), url, tag }),
   });
+  const resigned = (winner: string) =>
+    notify(winner, (m) => m.push.finished, (m) => m.push.resigned(name(m, other(winner))));
 
   // El reto (pendiente) ya llega como mensaje del chat; aquí, sus respuestas.
-  if (old.status === "pending" && m.status === "active") {
-    return [notify(m.created_by, "Reto aceptado", `${name(other(m.created_by))} ha aceptado tu reto: ${game.toLowerCase()}.`)];
+  if (old.status === "pending" && match.status === "active") {
+    return [notify(match.created_by, (m) => m.push.acceptedTitle, (m) => m.push.accepted(name(m, other(match.created_by)), game(m)))];
   }
-  if (old.status === "pending" && m.status === "declined") {
-    return [notify(m.created_by, "Reto rechazado", `${name(other(m.created_by))} ha rechazado tu reto.`)];
+  if (old.status === "pending" && match.status === "declined") {
+    return [notify(match.created_by, (m) => m.push.declinedTitle, (m) => m.push.declined(name(m, other(match.created_by))))];
   }
-  if (old.status === "pending" && m.status === "cancelled") {
+  if (old.status === "pending" && match.status === "cancelled") {
     // Lo retira quien retó (no hace falta avisar) o caduca a los 3 días (ver expire_challenges).
-    const expired = Date.now() - new Date(m.created_at).getTime() >= EXPIRY_MS;
+    const expired = Date.now() - new Date(match.created_at).getTime() >= EXPIRY_MS;
     if (!expired) return [];
     return [
       {
-        userId: m.created_by,
-        message: {
-          title: "Reto caducado",
-          body: `${name(other(m.created_by))} no ha respondido a tu reto (${game.toLowerCase()}) en 3 días.`,
-          url: matchGame(m.game).path,
+        userId: match.created_by,
+        message: (m) => ({
+          title: m.push.expiredTitle,
+          body: m.push.expired(name(m, other(match.created_by)), game(m)),
+          url: matchGame(match.game).path,
           tag,
-        },
+        }),
       },
     ];
   }
 
-  if (m.game === "tictactoe" || m.game === "connect4") {
+  if (match.game === "tictactoe" || match.game === "connect4") {
     // Quien acaba de mover no necesita aviso: se notifica al otro.
-    const lastMover = m.moves.length % 2 === 1 ? m.player_x : m.player_o;
-    const target = m.end_reason === "resign"
-      ? (m.winner === "x" ? m.player_x : m.player_o)
+    const lastMover = match.moves.length % 2 === 1 ? match.player_x : match.player_o;
+    const target = match.end_reason === "resign"
+      ? (match.winner === "x" ? match.player_x : match.player_o)
       : other(lastMover);
-    if (m.status === "finished") {
-      const body =
-        m.end_reason === "resign"
-          ? `${name(other(target))} se ha rendido. ¡Ganas tú!`
-          : !m.winner
-            ? `Empate con ${name(other(target))}.`
-            : `${name(other(target))} ha ganado esta vez. ¿Revancha?`;
-      return [notify(target, "Partida terminada", body)];
+    if (match.status === "finished") {
+      if (match.end_reason === "resign") return [resigned(target)];
+      return [
+        notify(
+          target,
+          (m) => m.push.finished,
+          (m) => (!match.winner ? m.push.draw(name(m, other(target))) : m.push.theyWonRematch(name(m, other(target)))),
+        ),
+      ];
     }
-    return [notify(target, "Te toca", `${name(other(target))} ha movido. Tu turno en el ${game.toLowerCase()}.`)];
+    return [notify(target, (m) => m.push.yourTurn, (m) => m.push.moved(name(m, other(target)), game(m)))];
   }
 
-  if (m.game === "battleship") {
-    if (m.end_reason === "resign") {
-      const winner = m.winner === "x" ? m.player_x : m.player_o;
-      return [notify(winner, "Partida terminada", `${name(other(winner))} se ha rendido. ¡Ganas tú!`)];
-    }
+  if (match.game === "battleship") {
+    if (match.end_reason === "resign") return [resigned(match.winner === "x" ? match.player_x : match.player_o)];
     // Solo los disparos avisan (colocar la flota no cambia los movimientos).
-    const shot = m.moves.length > old.moves.length ? decodeShot(m.moves.at(-1)!) : null;
+    const shot = match.moves.length > old.moves.length ? decodeShot(match.moves.at(-1)!) : null;
     if (!shot) return [];
-    const shooter = m.moves.length % 2 === 1 ? m.player_x : m.player_o;
+    const shooter = match.moves.length % 2 === 1 ? match.player_x : match.player_o;
     const target = other(shooter);
-    if (m.status === "finished") {
-      return [notify(target, "Partida terminada", `${name(shooter)} ha hundido toda tu flota. ¿Revancha?`)];
+    if (match.status === "finished") {
+      return [notify(target, (m) => m.push.finished, (m) => m.push.fleetSunk(name(m, shooter)))];
     }
-    const outcome = shot.result === "sunk" ? "¡te ha hundido un barco!" : shot.result === "hit" ? "¡tocado!" : "agua.";
-    return [notify(target, "Te toca", `${name(shooter)} ha disparado: ${outcome} Tu turno.`)];
+    return [notify(target, (m) => m.push.yourTurn, (m) => m.push.shot(name(m, shooter), m.push.shotResult[shot.result]))];
   }
 
-  if (m.game === "pong" || m.game === "tron") {
-    if (m.status !== "finished") return [];
-    if (m.end_reason === "disputed") {
-      return [m.player_x, m.player_o].map((id) => notify(id, `${game} sin ganador`, "Los marcadores no coincidían."));
+  if (match.game === "pong" || match.game === "tron") {
+    if (match.status !== "finished") return [];
+    if (match.end_reason === "disputed") {
+      return [match.player_x, match.player_o].map((id) => notify(id, (m) => m.push.noWinner(game(m)), (m) => m.push.disputed));
     }
-    const winner = m.winner === "x" ? m.player_x : m.player_o;
-    if (m.end_reason === "resign") return [notify(winner, "Partida terminada", `${name(other(winner))} se ha rendido. ¡Ganas tú!`)];
+    if (match.end_reason === "resign") return [resigned(match.winner === "x" ? match.player_x : match.player_o)];
     return [];
   }
 
   // Piedra, papel o tijera: las rondas se resuelven para los dos a la vez.
-  const state = replayRps(m.game as Variant, m.moves);
+  const state = replayRps(match.game as Variant, match.moves);
   const last = state?.rounds.at(-1);
-  if (m.status === "finished") {
-    if (m.end_reason === "resign") {
-      const winner = m.winner === "x" ? m.player_x : m.player_o;
-      return [notify(winner, "Partida terminada", `${name(other(winner))} se ha rendido. ¡Ganas tú!`)];
-    }
-    return [m.player_x, m.player_o].map((id) => {
-      const mine = id === m.player_x ? "x" : "o";
-      const body = !m.winner ? `Empate con ${name(other(id))}.` : m.winner === mine ? `¡Has ganado a ${name(other(id))}!` : `${name(other(id))} te ha ganado.`;
-      return notify(id, "Partida terminada", body);
+  if (match.status === "finished") {
+    if (match.end_reason === "resign") return [resigned(match.winner === "x" ? match.player_x : match.player_o)];
+    return [match.player_x, match.player_o].map((id) => {
+      const mine = id === match.player_x ? "x" : "o";
+      return notify(
+        id,
+        (m) => m.push.finished,
+        (m) => (!match.winner ? m.push.draw(name(m, other(id))) : match.winner === mine ? m.push.youBeat(name(m, other(id))) : m.push.beatYou(name(m, other(id)))),
+      );
     });
   }
   if (!last) return [];
-  return [m.player_x, m.player_o].map((id) => {
-    const mine = id === m.player_x ? "x" : "o";
-    const result = !last.winner ? "Empate" : last.winner === mine ? "Ronda para ti" : `Ronda para ${name(other(id))}`;
+  return [match.player_x, match.player_o].map((id) => {
+    const mine = id === match.player_x ? "x" : "o";
+    const theirs = mine === "x" ? "o" : "x";
     return notify(
       id,
-      `${CHOICE_NAMES[last[mine]]} contra ${CHOICE_NAMES[last[mine === "x" ? "o" : "x"]].toLowerCase()}`,
-      `${result}. Elige para la siguiente.`,
+      (m) => m.push.rpsVersus(m.rps.choices[last[mine]], m.rps.choices[last[theirs]].toLowerCase()),
+      (m) => m.push.rpsNext(!last.winner ? m.match.draw : last.winner === mine ? m.push.roundYours : m.push.roundTheirs(name(m, other(id)))),
     );
   });
 }

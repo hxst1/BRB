@@ -6,6 +6,7 @@ import { FeedbackDialog } from "@/components/feedback/feedback-dialog";
 import { NewGamesPopup } from "@/components/news/new-games-popup";
 import { GuestBar } from "@/components/guest-bar";
 import { LiveRefresh } from "@/components/live-refresh";
+import { LocaleSync } from "@/components/locale-sync";
 import { PresenceReporter } from "@/components/presence-reporter";
 import { PersonalIcons } from "@/components/pwa/personal-icons";
 import { TintGuard } from "@/components/pwa/tint-picker";
@@ -68,6 +69,7 @@ async function Navigation() {
   return (
     <>
       <LiveRefresh viewerId={viewer.id} />
+      <LocaleSync userId={viewer.id} saved={viewer.locale} />
       <PresenceReporter />
       <TintGuard isSupporter={viewer.supporter_tier !== null} />
       <PersonalIcons avatarSeed={viewer.avatar_seed} avatarParts={viewer.avatar_parts} />

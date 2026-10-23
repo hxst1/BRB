@@ -1,0 +1,11 @@
+{{ if eq (printf "%v" .Data.locale) "en" }}
+<h2>Choose a new password</h2>
+<p>We received a request to reset the password for {{ .Email }}. Tap the button to choose a new one. The link expires in an hour and can only be used once.</p>
+<p><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 20px;border-radius:999px;background:#15171c;color:#ffffff;text-decoration:none;font-weight:600">Choose a new password</a></p>
+<p style="color:#6b7280;font-size:14px">If you didn't ask for this, ignore this email: your password stays the same.</p>
+{{ else }}
+<h2>Elige una contraseña nueva</h2>
+<p>Hemos recibido una petición para cambiar la contraseña de {{ .Email }}. Pulsa el botón para elegir una nueva. El enlace caduca en una hora y solo se puede usar una vez.</p>
+<p><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 20px;border-radius:999px;background:#15171c;color:#ffffff;text-decoration:none;font-weight:600">Elegir una contraseña nueva</a></p>
+<p style="color:#6b7280;font-size:14px">Si no lo has pedido tú, ignora este email: tu contraseña sigue siendo la misma.</p>
+{{ end }}
