@@ -97,6 +97,21 @@ export const es = {
     terms: "Términos",
     privacy: "Privacidad",
     cookies: "Cookies",
+    credits: "Créditos",
+  },
+  credits: {
+    intro: "Los dibujos y el código de otros que usamos en la app, de quién son y con qué licencia. Gracias a todos.",
+    chessTitle: "Piezas de ajedrez",
+    chessBody: "Piezas «kiwen suwi», de neverRare, tal como las publica Lichess. Las hemos recoloreado: rojas y azules, con el contorno oscuro.",
+    openmojiTitle: "Manos e iconos",
+    openmojiBody:
+      "Las manos de piedra, papel o tijera y algunos iconos (la pala de pimpón, la bomba del buscaminas y la mano que saluda) son de OpenMoji, el proyecto de emojis e iconos de código abierto. Los hemos recoloreado y les hemos puesto el contorno más grueso; estas versiones se comparten con la misma licencia.",
+    ownTitle: "El resto",
+    ownBody: "Los demás iconos, los monstruos y los tableros están hechos para la app.",
+    codeTitle: "Código",
+    chessJs: "Las reglas del ajedrez usan chess.js, de Jeff Hlywa.",
+    license: "Licencia",
+    files: "Qué hemos cambiado",
   },
   howTo: {
     howToPlay: "¿Cómo se juega?",

@@ -98,6 +98,21 @@ export const en: Messages = {
     terms: "Terms",
     privacy: "Privacy",
     cookies: "Cookies",
+    credits: "Credits",
+  },
+  credits: {
+    intro: "The artwork and code by others that we use in the app, who made them and under which licence. Thanks to all of them.",
+    chessTitle: "Chess pieces",
+    chessBody: "The “kiwen suwi” pieces by neverRare, as published by Lichess. We recoloured them: red and blue, with a dark outline.",
+    openmojiTitle: "Hands and icons",
+    openmojiBody:
+      "The rock paper scissors hands and some icons (the ping-pong paddle, the minesweeper bomb and the waving hand) are from OpenMoji, the open-source emoji and icon project. We recoloured them and gave them a thicker outline; these versions are shared under the same licence.",
+    ownTitle: "Everything else",
+    ownBody: "The other icons, the monsters and the boards are made for the app.",
+    codeTitle: "Code",
+    chessJs: "The chess rules use chess.js, by Jeff Hlywa.",
+    license: "Licence",
+    files: "What we changed",
   },
   howTo: {
     howToPlay: "How do you play?",

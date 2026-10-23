@@ -3,11 +3,12 @@ import { brand } from "@repo/brand";
 import { getViewerId } from "@/lib/session";
 import { getMessages } from "@/lib/i18n/server";
 
-/** `label`: clave de m.legal. */
+/** `label`: clave de m.legal. Van con los textos legales también los créditos (las licencias de los dibujos). */
 export const LEGAL_LINKS = [
   { href: "/legal/terminos", label: "terms" },
   { href: "/legal/privacidad", label: "privacy" },
   { href: "/legal/cookies", label: "cookies" },
+  { href: "/creditos", label: "credits" },
 ] as const;
 
 /** Pie con los textos legales, para quien no ha iniciado sesión (con sesión, están en Ajustes). En el móvil deja sitio a la barra de crear cuenta. */
