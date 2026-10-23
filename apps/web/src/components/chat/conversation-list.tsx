@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { Functions } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { useLocale, useMessages } from "@/lib/i18n/client";
+import { stickerFromEmoji } from "@/lib/stickers";
 
 export type ConversationSummary = Functions<"get_conversations">["Returns"][number];
 
@@ -13,6 +14,11 @@ export function ConversationList({ items, activeId }: { items: ConversationSumma
   if (items === null) {
     return <div className="h-40 animate-pulse rounded-3xl bg-line/40" />;
   }
+  // Un sticker se guarda como su emoji; en la lista se nombra en vez de enseñar el emoji.
+  const preview = (body: string) => {
+    const sticker = stickerFromEmoji(body);
+    return sticker ? `Sticker: ${m.stickers[sticker.id]}` : body;
+  };
   if (items.length === 0) {
     return (
       <p className="text-sm text-muted">
@@ -52,7 +58,7 @@ export function ConversationList({ items, activeId }: { items: ConversationSumma
                 </span>
                 <span className="flex items-center justify-between gap-2">
                   <span className={`truncate text-sm ${unread ? "font-medium text-ink" : "text-muted"}`}>
-                    {item.last_body ? `${item.last_from_me ? m.chat.youPrefix : ""}${item.last_body}` : m.chat.noMessages}
+                    {item.last_body ? `${item.last_from_me ? m.chat.youPrefix : ""}${preview(item.last_body)}` : m.chat.noMessages}
                   </span>
                   {unread && (
                     <span
