@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  // En desarrollo, Next escribe cada server action con sus argumentos en la
+  // terminal: aquí pasan contraseñas (entrar, cambiarla, borrar la cuenta).
+  logging: { serverFunctions: false },
   async headers() {
     return [
       {
