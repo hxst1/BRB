@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Conversation } from "./conversation";
 import { ConversationList, type ConversationSummary } from "./conversation-list";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
+import { useMessages } from "@/lib/i18n/client";
 
 /**
  * Lista de conversaciones + conversación abierta. En el móvil se ve una cosa
@@ -53,6 +54,7 @@ export function ChatShell({
 
   const friend = items?.find((item) => item.friend_id === friendId) ?? null;
 
+  const m = useMessages();
   return (
     <div className="grid h-[calc(100dvh-13.5rem-env(safe-area-inset-bottom))] min-h-80 gap-8 sm:h-[calc(100dvh-11rem)] lg:grid-cols-[18rem_minmax(0,1fr)]">
       <div className={`min-h-0 overflow-y-auto ${friendId ? "hidden lg:block" : ""}`}>
@@ -60,7 +62,7 @@ export function ChatShell({
       </div>
       <div className={`min-h-0 ${friendId ? "" : "hidden lg:block"}`}>
         {friendId === null ? (
-          <p className="grid h-full place-items-center text-muted">Elige una conversación.</p>
+          <p className="grid h-full place-items-center text-muted">{m.chat.pick}</p>
         ) : items === null ? null : friend ? (
           <Conversation
             key={friend.friend_id}
@@ -71,7 +73,7 @@ export function ChatShell({
           />
         ) : (
           <p className="grid h-full place-items-center text-center text-muted">
-            Solo puedes chatear con tus amigos.
+            {m.chat.onlyFriends}
           </p>
         )}
       </div>

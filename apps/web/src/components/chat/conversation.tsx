@@ -14,6 +14,8 @@ import { STICKER_LIST, stickerFromEmoji } from "@/lib/stickers";
 import { ChallengeEmbed } from "./embed";
 import { StickerImage } from "./sticker";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
+import { useLocale, useMessages } from "@/lib/i18n/client";
+import type { Messages } from "@/lib/i18n";
 
 type Message = Tables<"messages">;
 /** Mensaje propio aún sin confirmar por el servidor (o que ha fallado). */
@@ -22,11 +24,10 @@ type Outgoing = { id: string; body: string; created_at: string; failed?: boolean
 const PAGE = 50;
 const BUBBLE = "max-w-[80%] rounded-2xl px-3.5 py-2 text-left whitespace-pre-wrap [overflow-wrap:anywhere]";
 
-const SEND_ERRORS: Record<string, string> = {
-  rate_limited: "Vas muy rápido. Espera un momento.",
-  not_friends: "Ya no sois amigos, así que no puedes escribirle.",
-  too_long: "El mensaje es demasiado largo (máximo 1.000 caracteres).",
-};
+/** Errores de envío que tienen texto propio (m.chat.sendErrors). */
+function sendErrorText(m: Messages, hint: string | undefined): string | undefined {
+  return hint === "rate_limited" || hint === "not_friends" || hint === "too_long" ? m.chat.sendErrors[hint] : undefined;
+}
 
 function pairFilter(viewerId: string, friendId: string): string {
   return `and(sender_id.eq.${viewerId},recipient_id.eq.${friendId}),and(sender_id.eq.${friendId},recipient_id.eq.${viewerId})`;
@@ -44,6 +45,8 @@ export function Conversation({
   onActivity: () => void;
 }) {
   const router = useRouter();
+  const m = useMessages();
+  const locale = useLocale();
   const [messages, setMessages] = useState<Message[] | null>(null);
   const [outgoing, setOutgoing] = useState<Outgoing[]>([]);
   const [hasMore, setHasMore] = useState(false);
@@ -202,7 +205,7 @@ export function Conversation({
     const { data, error: sendError } = await createClient().rpc("send_message", { recipient: friend.id, body: text });
     if (sendError || !data) {
       setOutgoing((current) => current.map((m) => (m.id === id ? { ...m, failed: true } : m)));
-      setError(SEND_ERRORS[sendError?.hint ?? ""] ?? "No se ha podido enviar. Toca el mensaje para reintentarlo.");
+      setError(sendErrorText(m, sendError?.hint) ?? m.chat.sendError);
       return;
     }
     setOutgoing((current) => current.filter((m) => m.id !== id));
@@ -216,7 +219,7 @@ export function Conversation({
     stickToBottom.current = true;
     const { data, error: sendError } = await createClient().rpc("send_sticker", { recipient: friend.id, sticker });
     if (sendError || !data) {
-      setError(SEND_ERRORS[sendError?.hint ?? ""] ?? "No se ha podido enviar el sticker.");
+      setError(sendErrorText(m, sendError?.hint) ?? m.chat.stickerError);
       return;
     }
     setMessages((current) => (current && !current.some((m) => m.id === data.id) ? [...current, data] : current));
@@ -264,7 +267,7 @@ export function Conversation({
 
   return (
     <section
-      aria-label={`Conversación con ${friend.username}`}
+      aria-label={m.chat.with(friend.username)}
       // En el móvil, a pantalla completa y del alto de lo visible (sin el teclado), como una app de mensajes.
       style={mobile.style}
       className={
@@ -276,7 +279,7 @@ export function Conversation({
       <header className="flex items-center gap-3 border-b border-line pb-3">
         <Link
           href="/chat"
-          aria-label="Volver a los chats"
+          aria-label={m.chat.back}
           className="-ml-2 grid size-10 shrink-0 place-items-center rounded-full text-muted hover:bg-line/60 hover:text-ink lg:hidden"
         >
           <svg viewBox="0 0 24 24" className="size-6" aria-hidden fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -300,28 +303,28 @@ export function Conversation({
         <div ref={content} className="flex min-h-full flex-col justify-end gap-1.5">
         {hasMore && (
           <button type="button" onClick={() => void loadOlder()} className="mb-2 self-center text-sm text-muted hover:text-ink">
-            Cargar mensajes anteriores
+            {m.chat.loadOlder}
           </button>
         )}
         {messages === null && <div className="m-auto h-6 w-32 animate-pulse rounded-full bg-line/60" />}
         {messages !== null && items.length === 0 && (
           <p className="m-auto max-w-xs text-center text-sm text-muted">
-            Aún no os habéis escrito. Rompe el hielo, o directamente rétale a una partida.
+            {m.chat.empty}
           </p>
         )}
         {items.map((item, index) => {
-          const day = dayLabel(item.created_at);
-          const showDay = index === 0 || dayLabel(items[index - 1]!.created_at) !== day;
+          const day = dayLabel(item.created_at, locale, m);
+          const showDay = index === 0 || dayLabel(items[index - 1]!.created_at, locale, m) !== day;
           return (
             <div key={item.id} className="flex flex-col">
               {showDay && <p className="my-2 self-center text-xs text-muted">{day}</p>}
               {item.kind === "sticker" && stickerFromEmoji(item.body) ? (
-                <span title={formatTime(item.created_at)} className={item.mine ? "self-end" : "self-start"}>
+                <span title={formatTime(item.created_at, locale)} className={item.mine ? "self-end" : "self-start"}>
                   <StickerImage
                     sticker={stickerFromEmoji(item.body)!.id}
                     seed={item.mine ? viewerAvatar.seed : friend.avatar_seed}
                     parts={item.mine ? viewerAvatar.parts : friend.avatar_parts}
-                    label={`Sticker: ${stickerFromEmoji(item.body)!.label}`}
+                    label={`Sticker: ${m.stickers[stickerFromEmoji(item.body)!.id]}`}
                   />
                 </span>
               ) : (item.kind === "match" || item.kind === "challenge") && item.ref_id ? (
@@ -345,7 +348,7 @@ export function Conversation({
                 </button>
               ) : (
                 <p
-                  title={formatTime(item.created_at)}
+                  title={formatTime(item.created_at, locale)}
                   className={`${BUBBLE} ${
                     item.mine
                       ? `self-end rounded-br-md bg-ink text-bg ${item.pending ? "opacity-60" : ""}`
@@ -375,7 +378,7 @@ export function Conversation({
               type="button"
               onClick={() => void sendSticker(sticker.id)}
               className="grid place-items-center rounded-2xl p-1 transition-transform hover:bg-surface active:scale-90"
-              aria-label={`Enviar sticker: ${sticker.label}`}
+              aria-label={m.chat.sendSticker(m.stickers[sticker.id])}
             >
               <StickerImage sticker={sticker.id} seed={viewerAvatar.seed} parts={viewerAvatar.parts} label="" size={52} />
             </button>
@@ -393,7 +396,7 @@ export function Conversation({
           type="button"
           onClick={() => setStickersOpen((open) => !open)}
           aria-expanded={stickersOpen}
-          aria-label={stickersOpen ? "Cerrar stickers" : "Stickers"}
+          aria-label={stickersOpen ? m.chat.closeStickers : m.chat.stickers}
           className={`grid size-11 shrink-0 place-items-center rounded-2xl transition-colors ${stickersOpen ? "bg-ink text-bg" : "text-muted hover:bg-surface hover:text-ink"}`}
         >
           <svg viewBox="0 0 24 24" className="size-6" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -404,7 +407,7 @@ export function Conversation({
           </svg>
         </button>
         <label htmlFor="message" className="sr-only">
-          Mensaje para {friend.username}
+          {m.chat.messageFor(friend.username)}
         </label>
         <textarea
           ref={textarea}
@@ -415,7 +418,7 @@ export function Conversation({
           onKeyDown={onKeyDown}
           rows={1}
           maxLength={1000}
-          placeholder={`Escribe a ${friend.username}…`}
+          placeholder={m.chat.placeholder(friend.username)}
           className="max-h-32 min-h-11 flex-1 resize-none rounded-2xl border border-line bg-surface px-3.5 py-2.5 outline-none [field-sizing:content] focus:border-focus"
         />
         <button
@@ -425,25 +428,25 @@ export function Conversation({
           disabled={!draft.trim()}
           className="h-11 rounded-2xl bg-ink px-4 font-semibold text-bg disabled:opacity-40"
         >
-          Enviar
+          {m.feedback.send}
         </button>
       </form>
     </section>
   );
 }
 
-function dayLabel(iso: string): string {
+function dayLabel(iso: string, locale: string, m: Messages): string {
   const date = new Date(iso);
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
-  if (date.toDateString() === today.toDateString()) return "Hoy";
-  if (date.toDateString() === yesterday.toDateString()) return "Ayer";
-  return date.toLocaleDateString("es", { day: "numeric", month: "long", year: date.getFullYear() === today.getFullYear() ? undefined : "numeric" });
+  if (date.toDateString() === today.toDateString()) return m.chat.today;
+  if (date.toDateString() === yesterday.toDateString()) return m.chat.yesterdayTitle;
+  return date.toLocaleDateString(locale, { day: "numeric", month: "long", year: date.getFullYear() === today.getFullYear() ? undefined : "numeric" });
 }
 
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
+function formatTime(iso: string, locale: string): string {
+  return new Date(iso).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
 }
 
 /**

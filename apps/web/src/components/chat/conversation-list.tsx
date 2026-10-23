@@ -3,19 +3,22 @@
 import Link from "next/link";
 import type { Functions } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
+import { useLocale, useMessages } from "@/lib/i18n/client";
 
 export type ConversationSummary = Functions<"get_conversations">["Returns"][number];
 
 export function ConversationList({ items, activeId }: { items: ConversationSummary[] | null; activeId: string | null }) {
+  const m = useMessages();
+  const locale = useLocale();
   if (items === null) {
     return <div className="h-40 animate-pulse rounded-3xl bg-line/40" />;
   }
   if (items.length === 0) {
     return (
       <p className="text-sm text-muted">
-        Para chatear necesitas amigos.{" "}
+        {m.chat.needFriends}{" "}
         <Link href="/amigos" className="font-medium text-ink underline underline-offset-4">
-          Añade a alguien con su código
+          {m.matchList.addSomeone}
         </Link>
         .
       </p>
@@ -43,19 +46,19 @@ export function ConversationList({ items, activeId }: { items: ConversationSumma
                   <span className={`truncate ${unread ? "font-bold" : "font-semibold"}`}>{item.username}</span>
                   {item.last_body && (
                     <span className={`shrink-0 text-xs ${unread ? "font-semibold" : "text-muted"}`} style={unread ? { color: "var(--mark-x)" } : undefined}>
-                      {lastAt(item.last_at)}
+                      {lastAt(item.last_at, locale, m.chat.yesterday)}
                     </span>
                   )}
                 </span>
                 <span className="flex items-center justify-between gap-2">
                   <span className={`truncate text-sm ${unread ? "font-medium text-ink" : "text-muted"}`}>
-                    {item.last_body ? `${item.last_from_me ? "Tú: " : ""}${item.last_body}` : "Sin mensajes todavía"}
+                    {item.last_body ? `${item.last_from_me ? m.chat.youPrefix : ""}${item.last_body}` : m.chat.noMessages}
                   </span>
                   {unread && (
                     <span
                       className="tabular grid h-5 min-w-5 shrink-0 place-items-center rounded-full px-1 text-[11px] font-bold text-white"
                       style={{ background: "var(--mark-x)" }}
-                      aria-label={`${item.unread} sin leer`}
+                      aria-label={m.chat.unread(item.unread)}
                     >
                       {item.unread}
                     </span>
@@ -71,12 +74,12 @@ export function ConversationList({ items, activeId }: { items: ConversationSumma
 }
 
 /** Hora si es de hoy, "ayer", o la fecha corta, como en las apps de mensajes. */
-function lastAt(iso: string): string {
+function lastAt(iso: string, locale: string, yesterdayLabel: string): string {
   const date = new Date(iso);
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
-  if (date.toDateString() === today.toDateString()) return date.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
-  if (date.toDateString() === yesterday.toDateString()) return "ayer";
-  return date.toLocaleDateString("es", { day: "numeric", month: "short" });
+  if (date.toDateString() === today.toDateString()) return date.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  if (date.toDateString() === yesterday.toDateString()) return yesterdayLabel;
+  return date.toLocaleDateString(locale, { day: "numeric", month: "short" });
 }
