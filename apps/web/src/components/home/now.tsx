@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
+import { GameIcon, type IconName } from "@/components/game-icon";
 import { usePushNotifications } from "@/components/pwa/push";
 import { createClient } from "@/lib/supabase/client";
 import { useMessages } from "@/lib/i18n/client";
@@ -19,15 +20,15 @@ export type NowItem = {
   id: string;
   href: string;
   person: Person;
-  /** Icono del juego (emoji o texto corto). */
-  icon: string;
+  /** Icono del juego (o de la solicitud de amistad). */
+  icon: IconName;
   title: string;
   /** "hace 2 días", "caduca en 5 h"… (ya calculado en el servidor). */
   detail: string;
 };
 
 /** Un reto que has enviado y aún no han aceptado. */
-export type WaitingItem = { key: string; href: string; person: Person; icon: string; title: string; detail: string };
+export type WaitingItem = { key: string; href: string; person: Person; icon: IconName; title: string; detail: string };
 
 export function NowSection({ items, waiting }: { items: NowItem[]; waiting: WaitingItem[] }) {
   const m = useMessages();
@@ -60,9 +61,7 @@ export function NowSection({ items, waiting }: { items: NowItem[]; waiting: Wait
                 <Link href={item.href} className="flex items-center gap-3 border-b border-line py-2 hover:bg-surface/60">
                   <Avatar seed={item.person.avatar_seed} parts={item.person.avatar_parts} size={28} />
                   <span className="min-w-0 flex-1 truncate text-sm">
-                    <span aria-hidden className="mr-1.5">
-                      {item.icon}
-                    </span>
+                    <GameIcon name={item.icon} className="mr-1.5 inline size-4 align-[-3px]" />
                     {item.title}
                   </span>
                   <span className="shrink-0 text-xs text-muted">{item.detail}</span>
@@ -110,10 +109,10 @@ function NowCard({ item }: { item: NowItem }) {
           <Avatar seed={item.person.avatar_seed} parts={item.person.avatar_parts} size={44} />
           <span
             aria-hidden
-            className="absolute -right-1.5 -bottom-1 grid size-6 place-items-center rounded-lg text-xs font-bold"
+            className="absolute -right-1.5 -bottom-1 grid size-6 place-items-center rounded-lg"
             style={{ background: "var(--board)" }}
           >
-            {item.icon}
+            <GameIcon name={item.icon} className="size-4" />
           </span>
         </span>
         <span className="flex min-w-0 flex-col">

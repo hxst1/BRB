@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import type { Match } from "@repo/db";
 import { describeChallenge, type Challenge } from "@/components/game2048/challenge-text";
+import { GameIcon } from "@/components/game-icon";
 import { isTurnBased, markOf, turnOf } from "@/components/tictactoe/data";
 import { matchGameKey, matchHref } from "@/lib/games";
 import { useMessages } from "@/lib/i18n/client";
@@ -158,8 +159,8 @@ function EmbedIcon({ kind, game }: { kind: "match" | "challenge"; game?: string 
   }
   if (kind === "match" && game && game !== "tictactoe") {
     return (
-      <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-xl text-2xl" style={{ background: "var(--board)" }}>
-        {game === "pong" ? "🏓" : game === "tron" ? "🏍️" : game === "chess" ? "♞" : game === "battleship" ? "🚢" : game === "rpsls" ? "🖖" : "✂️"}
+      <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-xl" style={{ background: "var(--board)" }}>
+        <GameIcon name={matchGameKey(game)} className="size-7" />
       </span>
     );
   }

@@ -1,0 +1,9 @@
+Iconos de los juegos.
+
+pong.svg (🏓 1F3D3), minesweeper.svg (💣 1F4A3) y friend.svg (👋 1F44B) son de OpenMoji
+(https://openmoji.org, openmoji@17.0.0), con licencia Creative Commons Attribution-ShareAlike 4.0
+International (CC BY-SA 4.0), https://creativecommons.org/licenses/by-sa/4.0/
+Modificados para esta app: recoloreados y con el contorno más grueso y oscuro. Estas versiones
+se comparten con la misma licencia CC BY-SA 4.0.
+
+El resto están dibujados para esta app en el mismo estilo.

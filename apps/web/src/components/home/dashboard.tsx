@@ -7,7 +7,7 @@ import { Avatar } from "@repo/ui/avatar";
 import { DailyCard } from "@/components/daily/daily-summary";
 import { LevelBar } from "@/components/level-bar";
 import { battleshipMyTurn } from "@/components/tictactoe/data";
-import { CHALLENGE_EXPIRY_MS, matchGame, matchGameKey, matchHref } from "@/lib/games";
+import { CHALLENGE_EXPIRY_MS, matchGameKey, matchHref } from "@/lib/games";
 import { getLocale, getMessages } from "@/lib/i18n/server";
 import type { Messages } from "@/lib/i18n";
 import { MATCH_WITH_PLAYERS, PLAYER_COLUMNS } from "@/lib/queries";
@@ -110,8 +110,8 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
   };
   for (const match of matches ?? []) {
     const rival = match.player_x === viewer.id ? match.o : match.x;
-    const { icon } = matchGame(match.game);
-    const name = m.matchGames[matchGameKey(match.game)];
+    const icon = matchGameKey(match.game);
+    const name = m.matchGames[icon];
     const counts = tally[match.game === "rpsls" ? "rps" : (match.game as keyof typeof tally)] ?? tally.rps;
     if (match.status === "pending") {
       if (match.created_by !== viewer.id) {
@@ -165,7 +165,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
         avatar_seed: challenge.other_avatar_seed,
         avatar_parts: challenge.other_avatar_parts,
       },
-      icon: "🟧",
+      icon: "2048",
       title: m.home.challenge2048(challenge.other_username),
       detail: m.home.challenge2048Detail(number(challenge.target_score), capitalize(ago(challenge.created_at))),
     });
@@ -177,7 +177,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
       id: request.id,
       href: "/amigos",
       person: request.requester,
-      icon: "👋",
+      icon: "friend",
       title: m.home.wantsToBeFriends(request.requester.username),
       detail: capitalize(ago(request.created_at)),
     });

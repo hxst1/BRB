@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import type { Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { useDragScroll } from "@/components/drag-scroll";
+import { GameIcon } from "@/components/game-icon";
 import type { Messages } from "@/lib/i18n";
 import { useMessages } from "@/lib/i18n/client";
 import { levelFromXp } from "@repo/games/level";
@@ -39,7 +40,6 @@ const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard"];
 type RankedGame = {
   /** El nombre está en m.rankingBoard.games. */
   id: GameId;
-  icon: ReactNode;
   games?: string[];
   levels?: Record<Difficulty, string>;
   unit?: "points" | "levels";
@@ -50,73 +50,37 @@ type RankedGame = {
 const RANKED_GAMES: RankedGame[] = [
   {
     id: "2048",
-    icon: (
-      <span className="grid size-4 grid-cols-2 gap-px">
-        {[8, 64, 512, 2048].map((value) => (
-          <span key={value} className="rounded-[2px]" style={{ background: `var(--t${value})` }} />
-        ))}
-      </span>
-    ),
   },
   {
     id: "snake",
-    icon: (
-      <span className="flex gap-px">
-        {["var(--t512)", "var(--t512)", "var(--t1024)"].map((color, i) => (
-          <span key={i} className="size-[5px] rounded-[1.5px]" style={{ background: color }} />
-        ))}
-      </span>
-    ),
   },
   {
     id: "lightsout",
     unit: "levels",
-    icon: (
-      <span className="grid size-4 grid-cols-2 gap-px">
-        {[true, false, false, true].map((on, i) => (
-          <span key={i} className="rounded-[2px]" style={{ background: on ? "var(--t128)" : "var(--t4)" }} />
-        ))}
-      </span>
-    ),
   },
   {
     id: "minesweeper",
-    icon: "💣",
     levels: { easy: "minesweeper-easy", medium: "minesweeper-medium", hard: "minesweeper-hard" },
     time: true,
   },
   {
     id: "sudoku",
-    icon: "🔢",
     levels: { easy: "sudoku-easy", medium: "sudoku-medium", hard: "sudoku-hard" },
     time: true,
   },
   {
     id: "tictactoe",
     games: ["tictactoe"],
-    icon: (
-      <span className="font-bold">
-        <span style={{ color: "var(--mark-x)" }}>×</span>
-        <span style={{ color: "var(--mark-o)" }}>○</span>
-      </span>
-    ),
   },
   {
     id: "connect4",
     games: ["connect4"],
-    icon: (
-      <span className="flex gap-px">
-        {["var(--mark-x)", "var(--mark-o)"].map((color) => (
-          <span key={color} className="size-[7px] rounded-full" style={{ background: color }} />
-        ))}
-      </span>
-    ),
   },
-  { id: "battleship", games: ["battleship"], icon: "🚢" },
-  { id: "rps", games: ["rps", "rpsls"], icon: "✂️" },
-  { id: "pong", games: ["pong"], icon: "🏓" },
-  { id: "tron", games: ["tron"], icon: "🏍️" },
-  { id: "chess", games: ["chess"], icon: "♞" },
+  { id: "battleship", games: ["battleship"] },
+  { id: "rps", games: ["rps", "rpsls"] },
+  { id: "pong", games: ["pong"] },
+  { id: "tron", games: ["tron"] },
+  { id: "chess", games: ["chess"] },
 ];
 
 const MAX_ROWS = 50;
@@ -378,9 +342,7 @@ function GamePicker({ value, onChange }: { value: GameId; onChange: (id: GameId)
                 active ? "bg-ink text-bg" : "bg-surface text-muted shadow-soft hover:text-ink"
               }`}
             >
-              <span aria-hidden className="grid place-items-center leading-none">
-                {game.icon}
-              </span>
+              <GameIcon name={game.id} className="size-5" />
               {m.rankingBoard.names[game.id]}
             </button>
           );

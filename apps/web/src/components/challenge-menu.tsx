@@ -2,21 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { GameIcon } from "@/components/game-icon";
 import { challenge } from "@/components/tictactoe/data";
 import { matchHref, type MatchGame } from "@/lib/games";
 import { useMessages } from "@/lib/i18n/client";
 
 /** Las etiquetas están en m.challengeMenu. */
-const OPTIONS: { game: MatchGame; icon: string }[] = [
-  { game: "tictactoe", icon: "×○" },
-  { game: "connect4", icon: "🔴" },
-  { game: "battleship", icon: "🚢" },
-  { game: "rps", icon: "✂️" },
-  { game: "rpsls", icon: "🖖" },
-  { game: "pong", icon: "🏓" },
-  { game: "tron", icon: "🏍️" },
-  { game: "chess", icon: "♞" },
-];
+const OPTIONS: MatchGame[] = ["tictactoe", "connect4", "battleship", "rps", "rpsls", "pong", "tron", "chess"];
 
 /**
  * "Retar ▾": elige a qué juego retar a un amigo. Si ya tenéis una partida
@@ -76,19 +68,19 @@ export function ChallengeMenu({ friendId, className = "" }: { friendId: string; 
       </button>
       {open && (
         <div role="menu" className="absolute top-full right-0 z-30 mt-2 w-64 rounded-3xl bg-surface p-2 shadow-lift">
-          {OPTIONS.map((option) => (
+          {OPTIONS.map((game) => (
             <button
-              key={option.game}
+              key={game}
               type="button"
               role="menuitem"
               disabled={busy}
-              onClick={() => void pick(option.game)}
+              onClick={() => void pick(game)}
               className="flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left text-sm hover:bg-bg disabled:opacity-50"
             >
-              <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-lg text-base" style={{ background: "var(--board)" }}>
-                {option.icon}
+              <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-lg" style={{ background: "var(--board)" }}>
+                <GameIcon name={game} className="size-6" />
               </span>
-              {m.challengeMenu[option.game]}
+              {m.challengeMenu[game]}
             </button>
           ))}
           {error && <p className="px-3 pb-1 text-xs text-danger">{m.challengeMenu.error}</p>}
