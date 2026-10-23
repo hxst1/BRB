@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Bricolage_Grotesque } from "next/font/google";
 import { brand, siteUrl } from "@repo/brand";
 import { ErrorReporter } from "@/components/error-reporter";
+import { InlineScript } from "@/components/inline-script";
 import { SiteFooter } from "@/components/site-footer";
 import { THEME_SCRIPT } from "@/lib/theme";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
@@ -79,7 +80,7 @@ export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <InlineScript html={THEME_SCRIPT} />
       </head>
       <body className="flex min-h-full flex-col">
         <I18nProvider locale={locale}>

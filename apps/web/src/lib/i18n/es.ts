@@ -178,6 +178,9 @@ export const es = {
     ],
   },
   errors: {
+    notFoundTitle: "Esta página no existe",
+    notFoundBody: "Puede que el enlace esté mal escrito o que la partida ya no exista. Tu monster tampoco la encuentra.",
+    play: "Echar una partida",
     title: "Algo ha fallado",
     body: "Ya nos ha llegado el aviso. Prueba otra vez y, si sigue pasando, vuelve al inicio.",
     bodyShort: "Ya nos ha llegado el aviso. Prueba otra vez en un momento.",
@@ -472,10 +475,11 @@ export const es = {
     friendsToday: "Tus amigos hoy",
   },
   match: {
+    notFoundBody: "Puede que la hayan retirado, que caducara sin respuesta o que no sea una de tus partidas.",
     actionError: "No se ha podido completar. Recarga la página e inténtalo otra vez.",
     rematchError: "No se ha podido crear la revancha.",
     moveError: "No se ha podido hacer la jugada.",
-    notFound: "No encontramos esta partida.",
+    notFound: "No encontramos esta partida",
     seeYours: "Ver tus partidas",
     accept: "Aceptar el reto",
     withdraw: "Retirar el reto",

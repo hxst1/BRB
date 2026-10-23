@@ -13,6 +13,7 @@ import { createClient } from "@/lib/supabase/client";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import type { Messages } from "@/lib/i18n";
 import { useMessages } from "@/lib/i18n/client";
+import { MatchNotFound } from "@/components/match-not-found";
 
 export const CHOICE_EMOJI: Record<Choice, string> = {
   rock: "🪨",
@@ -87,14 +88,7 @@ export function RpsMatchView({ matchId, viewerId }: { matchId: string; viewerId:
 
   if (match === undefined) return <div className="h-80 w-full max-w-md animate-pulse rounded-3xl bg-line/40" />;
   if (match === null) {
-    return (
-      <p className="text-muted">
-        {m.match.notFound}{" "}
-        <Link href="/piedra-papel-tijera" className="font-medium text-ink underline underline-offset-4">
-          {m.match.seeYours}
-        </Link>
-      </p>
-    );
+    return <MatchNotFound path="/piedra-papel-tijera" />;
   }
 
   const variant = match.game as Variant;

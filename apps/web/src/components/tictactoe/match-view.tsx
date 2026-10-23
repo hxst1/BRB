@@ -16,6 +16,7 @@ import { challenge, fetchMatch, markOf, type MatchWithPlayers, type Player } fro
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import type { Messages } from "@/lib/i18n";
 import { useMessages } from "@/lib/i18n/client";
+import { MatchNotFound } from "@/components/match-not-found";
 
 export const MARK_COLOR: Record<Mark, string> = { x: "var(--mark-x)", o: "var(--mark-o)" };
 
@@ -87,14 +88,7 @@ export function MatchView({
 
   if (match === undefined) return <div className={`${game === "connect4" ? "c4-board aspect-[7/6]" : "ttt-board"} w-full max-w-md animate-pulse`} />;
   if (match === null || match.game !== game) {
-    return (
-      <p className="text-muted">
-        {m.match.notFound}{" "}
-        <Link href={path} className="font-medium text-ink underline underline-offset-4">
-          {m.match.seeYours}
-        </Link>
-      </p>
-    );
+    return <MatchNotFound path={path} />;
   }
 
   const me = markOf(match, viewerId);

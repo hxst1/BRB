@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "@repo/ui/theme.css";
+/* Las clases de los componentes compartidos (p. ej. Avatar) también cuentan: Tailwind solo escanea la app. */
+@source "../../../../packages/ui/src";
 
 /* Lo propio de la web (el tema común está en packages/ui/src/theme.css). */
 
@@ -496,4 +498,34 @@ body {
 :root {
   --chess-light: #dde6ec;
   --chess-dark: #7f9fb1;
+}
+
+/* Páginas de error: las fichas del código caen una a una y el monster asoma después. */
+.error-tile {
+  animation: error-tile 520ms cubic-bezier(0.3, 1.5, 0.5, 1) backwards;
+}
+
+@keyframes error-tile {
+  from {
+    transform: translateY(-60%) scale(0.6);
+    opacity: 0;
+  }
+}
+
+.error-monster {
+  animation: error-monster 500ms ease-out 380ms backwards;
+}
+
+@keyframes error-monster {
+  from {
+    transform: translateY(18px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .error-tile,
+  .error-monster {
+    animation: none;
+  }
 }

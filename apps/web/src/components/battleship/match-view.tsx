@@ -14,6 +14,7 @@ import { createClient } from "@/lib/supabase/client";
 import { SeaBoard } from "./board";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import { useMessages } from "@/lib/i18n/client";
+import { MatchNotFound } from "@/components/match-not-found";
 
 const PATH = MATCH_GAMES.battleship.path;
 
@@ -122,14 +123,7 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
     return <div className="sea-board aspect-square w-full max-w-md animate-pulse" />;
   }
   if (match === null || match.game !== "battleship") {
-    return (
-      <p className="text-muted">
-        {m.match.notFound}{" "}
-        <Link href={PATH} className="font-medium text-ink underline underline-offset-4">
-          {m.match.seeYours}
-        </Link>
-      </p>
-    );
+    return <MatchNotFound path={PATH} />;
   }
 
   const me = markOf(match, viewerId);

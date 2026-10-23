@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/client";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import type { Messages } from "@/lib/i18n";
 import { useMessages } from "@/lib/i18n/client";
+import { MatchNotFound } from "@/components/match-not-found";
 
 type Mark = "x" | "o";
 
@@ -81,14 +82,7 @@ export function LiveMatchShell({
 
   if (match === undefined) return <div className="aspect-[1/1.6] w-full max-w-sm animate-pulse rounded-3xl bg-line/40" />;
   if (match === null || match.game !== game) {
-    return (
-      <p className="text-muted">
-        {m.match.notFound}{" "}
-        <Link href={path} className="font-medium text-ink underline underline-offset-4">
-          {m.match.seeYours}
-        </Link>
-      </p>
-    );
+    return <MatchNotFound path={path} />;
   }
 
   const me = markOf(match, viewerId);

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ErrorScreen } from "@/components/error-screen";
 import { useEffect } from "react";
 import { useMessages } from "@/lib/i18n/client";
 import { reportError } from "@/lib/report-error";
@@ -18,17 +19,19 @@ export default function ErrorPage({ error, retry }: { error: unknown; retry: () 
   }, [error]);
 
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-col items-start gap-4 px-4 pt-10 pb-16 sm:px-6">
-      <h1 className="display text-5xl font-bold">{m.errors.title}</h1>
-      <p className="text-muted">{m.errors.body}</p>
-      <div className="flex flex-wrap items-center gap-3">
-        <button type="button" onClick={() => retry()} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-          {m.errors.retry}
-        </button>
-        <Link href="/" className="text-sm text-muted hover:text-ink">
-          {m.common.backHome}
-        </Link>
-      </div>
-    </main>
+    <ErrorScreen
+      code="500"
+      monster={{ body: "ghost", palette: "sky", eyes: "two", mouth: "wobbly", top: "antenna" }}
+      mood="sad"
+      title={m.errors.title}
+      body={m.errors.body}
+    >
+      <button type="button" onClick={() => retry()} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
+        {m.errors.retry}
+      </button>
+      <Link href="/" className="rounded-full border border-line px-5 py-2.5 font-semibold hover:border-muted">
+        {m.common.backHome}
+      </Link>
+    </ErrorScreen>
   );
 }

@@ -13,6 +13,7 @@ import { useMessages } from "@/lib/i18n/client";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import { createClient } from "@/lib/supabase/client";
 import { ChessBoard, pieceSrc } from "./board";
+import { MatchNotFound } from "@/components/match-not-found";
 
 const PATH = "/ajedrez";
 
@@ -67,14 +68,7 @@ export function ChessMatchView({ matchId, viewerId }: { matchId: string; viewerI
 
   if (match === undefined) return <div className="aspect-square w-full max-w-lg animate-pulse rounded-[18px] bg-line/40" />;
   if (match === null || match.game !== "chess") {
-    return (
-      <p className="text-muted">
-        {m.match.notFound}{" "}
-        <Link href={PATH} className="font-medium text-ink underline underline-offset-4">
-          {m.match.seeYours}
-        </Link>
-      </p>
-    );
+    return <MatchNotFound path={PATH} />;
   }
 
   const me = markOf(match, viewerId);

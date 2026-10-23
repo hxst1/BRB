@@ -179,6 +179,9 @@ export const en: Messages = {
     ],
   },
   errors: {
+    notFoundTitle: "This page doesn't exist",
+    notFoundBody: "The link might be mistyped or the game might be gone. Your monster can't find it either.",
+    play: "Play a game",
     title: "Something went wrong",
     body: "We've been notified. Try again and, if it keeps happening, go back to the home page.",
     bodyShort: "We've been notified. Try again in a moment.",
@@ -473,10 +476,11 @@ export const en: Messages = {
     friendsToday: "Your friends today",
   },
   match: {
+    notFoundBody: "It might have been withdrawn, expired without an answer, or it isn't one of your games.",
     actionError: "That didn't work. Reload the page and try again.",
     rematchError: "Couldn't create the rematch.",
     moveError: "Couldn't make the move.",
-    notFound: "We couldn't find this game.",
+    notFound: "We couldn't find this game",
     seeYours: "See your games",
     accept: "Accept the challenge",
     withdraw: "Withdraw the challenge",
