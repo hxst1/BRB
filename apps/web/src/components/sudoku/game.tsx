@@ -168,7 +168,7 @@ export function SudokuGame({
         })
         .catch(() => setSave({ status: "error", message: m.run.offlineSave }));
     },
-    [difficulty, daily, puzzle, onSaved],
+    [difficulty, daily, puzzle, onSaved, m],
   );
 
   /** Escribe (o quita, con 0) un número en la casilla seleccionada. */

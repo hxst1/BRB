@@ -274,7 +274,6 @@ export function MinesweeperGame({
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
-  const m = useMessages();
   return (
     <div className="flex flex-col">
       <span className="text-xs text-muted">{label}</span>

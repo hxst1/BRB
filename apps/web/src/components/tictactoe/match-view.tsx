@@ -82,7 +82,7 @@ export function MatchView({
       if (actionError) setError(m.match.actionError);
       else setMatch(await fetchMatch(matchId));
     },
-    [matchId],
+    [matchId, m],
   );
 
   if (match === undefined) return <div className={`${game === "connect4" ? "c4-board aspect-[7/6]" : "ttt-board"} w-full max-w-md animate-pulse`} />;

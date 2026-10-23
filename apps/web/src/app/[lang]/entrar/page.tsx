@@ -6,6 +6,7 @@ import { safeNext } from "@/lib/safe-next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AuthForm } from "./auth-form";
 import { PRIVATE_PAGE } from "@/lib/seo";
+import { getMessages } from "@/lib/i18n/server";
 
 export const metadata: Metadata = { title: "Entrar", robots: PRIVATE_PAGE };
 
@@ -25,13 +26,14 @@ export default function SignInPage({ searchParams }: PageProps<"/[lang]/entrar">
  */
 async function AuthFormForRequest({ searchParams }: { searchParams: PageProps<"/[lang]/entrar">["searchParams"] }) {
   const { next, modo } = await searchParams;
-  const inviter = await invitedBy();
+  const [inviter, m] = await Promise.all([invitedBy(), getMessages()]);
   // /entrar?modo=registro abre directamente "Crear cuenta" (los botones de registro de la portada y los juegos).
   return (
     <>
       {inviter && (
         <p className="mb-4 rounded-2xl p-3 text-sm" style={{ background: "var(--cell)" }}>
-          👋 <strong>{inviter}</strong> te ha invitado. Al crear tu cuenta seréis amigos.
+          👋 <strong>{inviter}</strong>
+          {m.auth.invitedBy}
         </p>
       )}
       <AuthForm next={safeNext(next)} initialMode={modo === "registro" ? "signup" : "signin"} />

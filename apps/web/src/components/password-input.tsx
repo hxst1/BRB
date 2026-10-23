@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, type InputHTMLAttributes } from "react";
+import { useMessages } from "@/lib/i18n/client";
 
 /** Campo de contraseña con un ojo para mostrarla u ocultarla. */
 export function PasswordInput({ className = "", ...props }: Omit<InputHTMLAttributes<HTMLInputElement>, "type">) {
+  const m = useMessages();
   const [visible, setVisible] = useState(false);
   return (
     <span className="relative block">
@@ -11,7 +13,7 @@ export function PasswordInput({ className = "", ...props }: Omit<InputHTMLAttrib
       <button
         type="button"
         onClick={() => setVisible((value) => !value)}
-        aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
+        aria-label={visible ? m.auth.hidePassword : m.auth.showPassword}
         aria-pressed={visible}
         className="absolute inset-y-0 right-0 grid w-11 place-items-center rounded-r-xl text-muted hover:text-ink"
       >

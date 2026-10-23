@@ -7,14 +7,15 @@ import { GAME_IDS as SUDOKU_IDS, type Difficulty as SudokuDifficulty } from "@re
 import { verifyRun as verifySudoku } from "@repo/games/sudoku/verify";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClientForRequest } from "@/lib/supabase/server";
+import { apiJson } from "@/lib/i18n/api";
 
 const MAX_MOVES_LENGTH = 100_000;
 
 /** Código que lanzan finish_run/reject_run cuando la partida ya no está en curso. */
 const RUN_NOT_PLAYING = "P0002";
 
-const alreadyClosed = () => Response.json({ error: "La partida ya está cerrada" }, { status: 409 });
-const serverError = () => Response.json({ error: "Error interno" }, { status: 500 });
+const alreadyClosed = () => apiJson({ error: "La partida ya está cerrada" }, { status: 409 });
+const serverError = () => apiJson({ error: "Error interno" }, { status: 500 });
 
 type Verified = { valid: true; score: number; detail: number } | { valid: false; reason: string };
 
@@ -61,12 +62,12 @@ export async function POST(request: Request, { params }: RouteContext<"/api/runs
   const body: unknown = await request.json().catch(() => null);
   const moves = (body as { moves?: unknown } | null)?.moves;
   if (typeof moves !== "string" || moves.length > MAX_MOVES_LENGTH) {
-    return Response.json({ error: "Movimientos no válidos" }, { status: 400 });
+    return apiJson({ error: "Movimientos no válidos" }, { status: 400 });
   }
 
   const { supabase, userId } = await createClientForRequest(request);
   if (!userId) {
-    return Response.json({ error: "Hay que iniciar sesión" }, { status: 401 });
+    return apiJson({ error: "Hay que iniciar sesión" }, { status: 401 });
   }
 
   // Con el cliente del usuario: RLS garantiza que la partida es suya.
@@ -81,7 +82,7 @@ export async function POST(request: Request, { params }: RouteContext<"/api/runs
     return serverError();
   }
   if (!run) {
-    return Response.json({ error: "Partida no encontrada" }, { status: 404 });
+    return apiJson({ error: "Partida no encontrada" }, { status: 404 });
   }
   if (run.status !== "playing") {
     return alreadyClosed();
@@ -90,7 +91,7 @@ export async function POST(request: Request, { params }: RouteContext<"/api/runs
   const elapsedMs = Date.now() - new Date(run.started_at).getTime();
   const result = verify(run.game, run.seed, moves, elapsedMs);
   if (!result) {
-    return Response.json({ error: "Juego desconocido" }, { status: 404 });
+    return apiJson({ error: "Juego desconocido" }, { status: 404 });
   }
   const admin = createAdminClient();
 

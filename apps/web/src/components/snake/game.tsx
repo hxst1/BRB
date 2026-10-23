@@ -218,7 +218,7 @@ export function SnakeGame({
         }
       })
       .catch(() => setSave({ status: "error", message: m.run.offlineSave }));
-  }, [over, state, onSaved]);
+  }, [over, state, onSaved, m]);
 
   return (
     <section className="flex w-full max-w-[30rem] flex-col gap-4">
@@ -270,7 +270,7 @@ export function SnakeGame({
 
       {!signedIn && <GuestNotice next="/snake" />}
 
-      <p className="hidden text-sm text-muted sm:block">Usa las flechas o W A S D. En el móvil, desliza.</p>
+      <p className="hidden text-sm text-muted sm:block">{m.game2048.controls}</p>
     </section>
   );
 }

@@ -6,6 +6,7 @@ import { Avatar } from "@repo/ui/avatar";
 import { SupportOptions } from "@/components/support/support-options";
 import { WhereItGoes } from "@/components/support/where-it-goes";
 import { getViewer } from "@/lib/session";
+import { getMessages } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
   title: "Apoyar",
@@ -13,23 +14,13 @@ export const metadata: Metadata = {
   alternates: { canonical: "/apoyar" },
 };
 
-const PERKS = [
-  { title: "Corona", detail: "Para el monster que se lo merece." },
-  { title: "Gafas de sol", detail: "Para ganar con estilo." },
-  { title: "Color arcoíris", detail: "Un monster de todos los colores." },
-  { title: "Color galaxia", detail: "Morado de otro planeta." },
-  { title: "Colores dorado y nocturno", detail: "Que se note en el ranking." },
-  { title: "Color de la app", detail: "Tiñe toda la app de uva, mar, bosque o atardecer." },
-  { title: "Insignia ✦", detail: "Junto a tu nombre en rankings y perfil." },
-];
-
-export default function SupportPage() {
+export default async function SupportPage() {
+  const m = await getMessages();
   return (
     <main className="mx-auto w-full max-w-2xl px-4 pt-4 pb-16 sm:px-6">
-      <h1 className="display mb-3 text-5xl font-bold text-balance sm:text-6xl">Apoya {brand.name}</h1>
+      <h1 className="display mb-3 text-5xl font-bold text-balance sm:text-6xl">{m.support.title(brand.name)}</h1>
       <p className="mb-10 max-w-lg text-lg text-muted">
-        Lo hacemos por gusto y sin anuncios. Si te entretiene, puedes ayudar a mantenerlo. A cambio, tu monster estrena
-        ropa: solo cosméticos, nunca ventajas en las partidas.
+        {m.support.pageIntro}
       </p>
       <Suspense fallback={<div className="h-64 animate-pulse rounded-3xl bg-line/40" />}>
         <SupportForViewer />
@@ -39,7 +30,7 @@ export default function SupportPage() {
 }
 
 async function SupportForViewer() {
-  const viewer = await getViewer();
+  const [viewer, m] = await Promise.all([getViewer(), getMessages()]);
   const seed = viewer?.avatar_seed ?? 7;
   const parts = viewer?.avatar_parts ?? {};
 
@@ -53,7 +44,7 @@ async function SupportForViewer() {
       </div>
 
       <ul className="grid gap-3 sm:grid-cols-2">
-        {PERKS.map((perk) => (
+        {m.support.perks.map((perk) => (
           <li key={perk.title} className="rounded-2xl border border-line p-4">
             <p className="font-semibold">{perk.title}</p>
             <p className="text-sm text-muted">{perk.detail}</p>
@@ -65,9 +56,9 @@ async function SupportForViewer() {
 
       {viewer?.supporter_tier ? (
         <div className="flex flex-col items-start gap-2">
-          <p className="display text-3xl font-bold">¡Gracias! Ya apoyas el proyecto ✦</p>
+          <p className="display text-3xl font-bold">{m.support.thanks}</p>
           <Link href="/perfil" className="font-medium underline underline-offset-4">
-            Ponle la corona a tu monster
+            {m.support.wearCrown}
           </Link>
         </div>
       ) : (

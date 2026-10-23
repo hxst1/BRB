@@ -141,7 +141,7 @@ export function LightsOutGame({
         }
       })
       .catch(() => setSave({ status: "error", message: m.run.offlineSave }));
-  }, [ended, state, onSaved]);
+  }, [ended, state, onSaved, m]);
 
   const left = state?.pressesLeft ?? 0;
   const lit = state?.lights.filter(Boolean).length ?? 0;

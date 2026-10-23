@@ -10,7 +10,7 @@ export function LanguagePicker() {
 
   function choose(next: Locale) {
     if (next === locale) return;
-    document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
+    saveLocale(next);
     // Recarga completa: las páginas ya generadas en el otro idioma las sirve el servidor.
     window.location.reload();
   }
@@ -37,4 +37,8 @@ export function LanguagePicker() {
       </div>
     </div>
   );
+}
+
+function saveLocale(locale: Locale) {
+  document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
 }

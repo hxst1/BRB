@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Avatar } from "@repo/ui/avatar";
 import { fetchFriends, type Friend } from "@/lib/friends";
-import { MATCH_GAMES, matchHref, type MatchGame } from "@/lib/games";
+import { matchHref, type MatchGame } from "@/lib/games";
 import { createClient } from "@/lib/supabase/client";
 import { challenge, fetchChosen, fetchMyMatches, isMyTurn, markOf, opponentOf, type MatchWithPlayers } from "./data";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";

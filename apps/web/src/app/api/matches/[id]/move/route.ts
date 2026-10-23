@@ -5,6 +5,7 @@ import { play, replay, type MoveError } from "@repo/games/tictactoe";
 import type { Match } from "@repo/db";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClientForRequest } from "@/lib/supabase/server";
+import { apiJson } from "@/lib/i18n/api";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -23,7 +24,7 @@ const MOVE_ERRORS: Record<MoveError | Connect4Error | ShotError, string> = {
 
 type MatchRow = Pick<Match, "id" | "game" | "status" | "moves" | "player_x" | "player_o">;
 
-const json = (body: unknown, status = 200) => Response.json(body, { status });
+const json = (body: unknown, status = 200) => apiJson(body, { status });
 const serverError = (context: string, error: unknown) => {
   console.error(`move: ${context}`, error);
   return json({ error: "Error interno" }, 500);

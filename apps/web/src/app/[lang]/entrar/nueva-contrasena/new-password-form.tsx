@@ -3,11 +3,14 @@
 import { useActionState, useState } from "react";
 import { PasswordInput } from "@/components/password-input";
 import { updatePassword } from "../recovery-actions";
+import { useMessages } from "@/lib/i18n/client";
 
 const inputClass =
   "w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-base outline-none transition-colors focus:border-focus";
 
 export function NewPasswordForm({ username }: { username: string }) {
+  const m = useMessages();
+  const t = m.recover;
   const [state, action, pending] = useActionState(updatePassword, { error: null });
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -15,11 +18,11 @@ export function NewPasswordForm({ username }: { username: string }) {
 
   return (
     <form action={action} className="flex flex-col gap-4">
-      <h1 className="display mb-2 text-4xl font-bold text-balance">Elige una contraseña nueva</h1>
-      <p className="-mt-2 text-muted">Para la cuenta de {username}.</p>
+      <h1 className="display mb-2 text-4xl font-bold text-balance">{t.newTitle}</h1>
+      <p className="-mt-2 text-muted">{t.forAccount(username)}</p>
 
       <label className="flex flex-col gap-1.5 text-sm font-medium">
-        Contraseña nueva
+        {t.newPassword}
         <PasswordInput
           name="password"
           required
@@ -29,11 +32,11 @@ export function NewPasswordForm({ username }: { username: string }) {
           onChange={(event) => setPassword(event.target.value)}
           className={inputClass}
         />
-        <span className="text-xs font-normal text-muted">Al menos 8 caracteres.</span>
+        <span className="text-xs font-normal text-muted">{m.auth.atLeast8}</span>
       </label>
 
       <label className="flex flex-col gap-1.5 text-sm font-medium">
-        Repite la contraseña
+        {m.auth.repeat}
         <PasswordInput
           name="password_confirm"
           required
@@ -43,7 +46,7 @@ export function NewPasswordForm({ username }: { username: string }) {
           aria-invalid={mismatch}
           className={inputClass}
         />
-        {mismatch && <span className="text-xs font-normal text-danger">Las contraseñas no coinciden.</span>}
+        {mismatch && <span className="text-xs font-normal text-danger">{m.auth.mismatch}</span>}
       </label>
 
       {state.error && (
@@ -53,7 +56,7 @@ export function NewPasswordForm({ username }: { username: string }) {
       )}
 
       <button type="submit" disabled={pending || mismatch} className="mt-2 rounded-xl bg-ink py-3 font-semibold text-bg disabled:opacity-50">
-        {pending ? "Guardando…" : "Guardar contraseña"}
+        {pending ? m.common.saving : t.save}
       </button>
     </form>
   );

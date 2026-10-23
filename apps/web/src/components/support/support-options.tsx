@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { SUPPORT_LINKS } from "@/lib/support";
 import { createClient } from "@/lib/supabase/client";
+import { useMessages } from "@/lib/i18n/client";
 
 /**
  * Botones para apoyar el proyecto (Ko-fi y, cuando esté aprobado, GitHub
@@ -10,6 +11,8 @@ import { createClient } from "@/lib/supabase/client";
  */
 export function SupportOptions() {
   // Tu código de amigo (solo se ve el propio): en el mensaje de Ko-fi asigna el pago aunque el email sea otro.
+  const m = useMessages();
+  const t = m.support;
   const [code, setCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -48,8 +51,8 @@ export function SupportOptions() {
       >
         <KofiIcon />
         <span className="flex flex-col">
-          Invítame a un café en Ko-fi
-          <span className="text-xs font-normal opacity-70">Tarjeta o PayPal, sin crear cuenta. Una vez o cada mes.</span>
+          {t.kofi}
+          <span className="text-xs font-normal opacity-70">{t.kofiHint}</span>
         </span>
       </a>
       {SUPPORT_LINKS.githubSponsors && (
@@ -61,18 +64,18 @@ export function SupportOptions() {
         >
           <GithubIcon />
           <span className="flex flex-col">
-            Patrocinar en GitHub
-            <span className="text-xs font-normal text-muted">Si ya tienes cuenta en GitHub.</span>
+            {t.sponsor}
+            <span className="text-xs font-normal text-muted">{t.sponsorHint}</span>
           </span>
         </a>
       )}
       <p className="text-sm text-muted">
-        En Ko-fi, usa el mismo email que en tu cuenta de aquí: la insignia ✦ y las partes exclusivas se desbloquean solas.
+        {t.sameEmail}
       </p>
       {code && (
         <div className="flex items-center justify-between gap-3 rounded-2xl p-3" style={{ background: "var(--cell)" }}>
           <p className="text-sm">
-            ¿Pagas con otro email? Escribe tu código en el mensaje de Ko-fi:{" "}
+            {t.otherEmail}{" "}
             <strong className="tabular tracking-wider">{code}</strong>
           </p>
           <button
@@ -80,26 +83,26 @@ export function SupportOptions() {
             onClick={() => void copy()}
             className="shrink-0 rounded-full border border-line bg-surface px-3 py-1.5 text-sm font-medium hover:border-muted"
           >
-            {copied ? "Copiado" : "Copiar"}
+            {copied ? t.copied : t.copy}
           </button>
         </div>
       )}
       <div className="flex flex-col gap-1 rounded-2xl border border-line p-3 text-sm">
-        <p className="font-semibold">💻 ¿Sabes programar? Apoya con código</p>
+        <p className="font-semibold">{t.codeTitle}</p>
         <p className="text-muted">
-          El código es abierto. Abre una issue (un fallo o una idea) o propón un cambio en{" "}
+          {t.codeBefore}{" "}
           <a href={SUPPORT_LINKS.githubRepo} target="_blank" rel="noopener noreferrer" className="font-medium text-ink underline underline-offset-4">
             GitHub
           </a>
           {code ? (
             <>
               {" "}
-              con tu código <strong className="tabular tracking-wider text-ink">{code}</strong>
+              {t.withYourCode} <strong className="tabular tracking-wider text-ink">{code}</strong>
             </>
           ) : (
-            " con tu código de amigo"
+            t.withFriendCode
           )}{" "}
-          en el texto, y ganas el logro «Colaborador» y un color exclusivo.
+          {t.codeAfter}
         </p>
       </div>
     </div>

@@ -3,7 +3,7 @@
  * (private.achievement_progress) y la ropa que da cada uno en packages/avatars
  * (`achievement`); achievements.test.ts comprueba que los tres coinciden.
  */
-import type { Locale } from "@/lib/i18n/locales";
+import type { Locale } from "./i18n/locales";
 
 export type Achievement = {
   id: string;

@@ -3,22 +3,8 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { PasswordInput } from "@/components/password-input";
+import { useMessages } from "@/lib/i18n/client";
 import { authenticate, type AuthState } from "./actions";
-
-const COPY = {
-  signin: {
-    title: "Entra para guardar tus puntuaciones",
-    submit: "Entrar",
-    switchText: "¿Aún no tienes cuenta?",
-    switchAction: "Crear una",
-  },
-  signup: {
-    title: "Crea tu cuenta",
-    submit: "Crear cuenta",
-    switchText: "¿Ya tienes cuenta?",
-    switchAction: "Entrar",
-  },
-} as const;
 
 const inputClass =
   "w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-base outline-none transition-colors focus:border-focus";
@@ -26,7 +12,9 @@ const inputClass =
 export function AuthForm({ next, initialMode = "signin" }: { next: string; initialMode?: AuthState["mode"] }) {
   const [mode, setMode] = useState<AuthState["mode"]>(initialMode);
   const [state, action, pending] = useActionState(authenticate, { error: null, mode });
-  const copy = COPY[mode];
+  const m = useMessages();
+  const t = m.auth;
+  const copy = t[mode];
   const error = state.mode === mode ? state.error : null;
 
   const [password, setPassword] = useState("");
@@ -37,10 +25,11 @@ export function AuthForm({ next, initialMode = "signin" }: { next: string; initi
   if (state.confirmEmail) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="display text-4xl font-bold text-balance">Confirma tu email</h1>
+        <h1 className="display text-4xl font-bold text-balance">{t.confirmTitle}</h1>
         <p className="text-muted">
-          Te hemos enviado un enlace a <strong className="text-ink">{state.confirmEmail}</strong>. Ábrelo para activar la
-          cuenta y entrarás directamente. Puede tardar un par de minutos; mira también en spam.
+          {t.confirmBefore}
+          <strong className="text-ink">{state.confirmEmail}</strong>
+          {t.confirmAfter}
         </p>
       </div>
     );
@@ -55,7 +44,7 @@ export function AuthForm({ next, initialMode = "signin" }: { next: string; initi
 
       {mode === "signup" && (
         <label className="flex flex-col gap-1.5 text-sm font-medium">
-          Nombre de jugador
+          {t.playerName}
           <input
             name="username"
             required
@@ -65,7 +54,7 @@ export function AuthForm({ next, initialMode = "signin" }: { next: string; initi
             autoComplete="username"
             className={inputClass}
           />
-          <span className="text-xs font-normal text-muted">Es lo que verán tus amigos y el ranking.</span>
+          <span className="text-xs font-normal text-muted">{t.playerNameHint}</span>
         </label>
       )}
 
@@ -75,7 +64,7 @@ export function AuthForm({ next, initialMode = "signin" }: { next: string; initi
       </label>
 
       <label className="flex flex-col gap-1.5 text-sm font-medium">
-        Contraseña
+        {m.account.password}
         <PasswordInput
           name="password"
           required
@@ -85,12 +74,12 @@ export function AuthForm({ next, initialMode = "signin" }: { next: string; initi
           onChange={(event) => setPassword(event.target.value)}
           className={inputClass}
         />
-        {mode === "signup" && <span className="text-xs font-normal text-muted">Al menos 8 caracteres.</span>}
+        {mode === "signup" && <span className="text-xs font-normal text-muted">{t.atLeast8}</span>}
       </label>
 
       {mode === "signup" && (
         <label className="flex flex-col gap-1.5 text-sm font-medium">
-          Repite la contraseña
+          {t.repeat}
           <PasswordInput
             name="password_confirm"
             required
@@ -103,7 +92,7 @@ export function AuthForm({ next, initialMode = "signin" }: { next: string; initi
           />
           {mismatch && (
             <span id="confirm-hint" className="text-xs font-normal text-danger">
-              Las contraseñas no coinciden.
+              {t.mismatch}
             </span>
           )}
         </label>
@@ -114,13 +103,13 @@ export function AuthForm({ next, initialMode = "signin" }: { next: string; initi
         <label className="flex items-start gap-3 text-sm">
           <input type="checkbox" name="accept" required className="mt-0.5 size-4 shrink-0 accent-ink" />
           <span>
-            Tengo 14 años o más y acepto los{" "}
+            {t.acceptBefore}{" "}
             <Link href="/legal/terminos" target="_blank" className="font-medium underline underline-offset-4">
-              términos
+              {t.terms}
             </Link>{" "}
-            y la{" "}
+            {t.acceptAnd}{" "}
             <Link href="/legal/privacidad" target="_blank" className="font-medium underline underline-offset-4">
-              política de privacidad
+              {t.privacy}
             </Link>
             .
           </span>
@@ -129,7 +118,7 @@ export function AuthForm({ next, initialMode = "signin" }: { next: string; initi
 
       {mode === "signin" && (
         <Link href="/entrar/recuperar" className="-mt-2 self-end text-sm text-muted underline-offset-4 hover:text-ink hover:underline">
-          ¿Has olvidado tu contraseña?
+          {t.forgot}
         </Link>
       )}
 
@@ -144,7 +133,7 @@ export function AuthForm({ next, initialMode = "signin" }: { next: string; initi
         disabled={pending || mismatch}
         className="mt-2 rounded-xl bg-ink py-3 font-semibold text-bg transition-opacity disabled:opacity-50"
       >
-        {pending ? "Un momento…" : copy.submit}
+        {pending ? t.wait : copy.submit}
       </button>
 
       <p className="text-center text-sm text-muted">

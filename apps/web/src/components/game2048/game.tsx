@@ -228,7 +228,7 @@ export function Game2048({
         }
       })
       .catch(() => setSave({ status: "error", message: m.run.offlineSave }));
-  }, [over, state, onSaved]);
+  }, [over, state, onSaved, m]);
 
   const challengeLive = special && challenge !== null;
   const dailyLive = special && daily;

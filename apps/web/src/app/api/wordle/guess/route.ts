@@ -2,6 +2,7 @@ import { MAX_GUESSES, scoreGuess } from "@repo/games/wordle";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClientForRequest } from "@/lib/supabase/server";
 import { parseGuess, wordleToday } from "@/lib/wordle/server";
+import { apiJson } from "@/lib/i18n/api";
 
 /**
  * Puntúa un intento del Wordle. La palabra se queda en el servidor: solo se
@@ -9,19 +10,19 @@ import { parseGuess, wordleToday } from "@/lib/wordle/server";
  */
 export async function POST(request: Request) {
   const { userId } = await createClientForRequest(request);
-  if (!userId) return Response.json({ error: "Hay que iniciar sesión" }, { status: 401 });
+  if (!userId) return apiJson({ error: "Hay que iniciar sesión" }, { status: 401 });
 
   const body = (await request.json().catch(() => null)) as { day?: unknown; guess?: unknown } | null;
   if (typeof body?.guess !== "string" || typeof body.day !== "string") {
-    return Response.json({ error: "Intento no válido" }, { status: 400 });
+    return apiJson({ error: "Intento no válido" }, { status: 400 });
   }
 
   const guess = parseGuess(body.guess);
-  if (!guess) return Response.json({ error: "No está en la lista de palabras" }, { status: 422 });
+  if (!guess) return apiJson({ error: "No está en la lista de palabras" }, { status: 422 });
 
   const today = await wordleToday();
   if (body.day !== today.day) {
-    return Response.json({ error: "Ha cambiado el día: recarga para jugar la palabra nueva", code: "day_changed" }, { status: 409 });
+    return apiJson({ error: "Ha cambiado el día: recarga para jugar la palabra nueva", code: "day_changed" }, { status: 409 });
   }
 
   const pattern = scoreGuess(guess, today.word);
@@ -33,10 +34,10 @@ export async function POST(request: Request) {
     pattern,
   });
 
-  if (error?.hint === "finished") return Response.json({ error: "Ya has terminado la palabra de hoy" }, { status: 409 });
+  if (error?.hint === "finished") return apiJson({ error: "Ya has terminado la palabra de hoy" }, { status: 409 });
   if (error || !game) {
     console.error("wordle: error guardando el intento", error);
-    return Response.json({ error: "Error interno" }, { status: 500 });
+    return apiJson({ error: "Error interno" }, { status: 500 });
   }
 
   const finished = game.finished_at !== null;

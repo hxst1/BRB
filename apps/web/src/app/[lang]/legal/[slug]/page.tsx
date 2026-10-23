@@ -4,12 +4,13 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { renderMarkdown } from "@/lib/markdown";
 import { createClient } from "@/lib/supabase/server";
+import { getLocale, getMessages } from "@/lib/i18n/server";
 
 /** Los tres textos legales, en este orden en las pestañas. */
 const DOCUMENTS = [
-  { slug: "terminos", label: "Términos" },
-  { slug: "privacidad", label: "Privacidad" },
-  { slug: "cookies", label: "Cookies" },
+  { slug: "terminos", label: "Términos", key: "terms" },
+  { slug: "privacidad", label: "Privacidad", key: "privacy" },
+  { slug: "cookies", label: "Cookies", key: "cookies" },
 ] as const;
 
 export function generateStaticParams() {
@@ -33,16 +34,16 @@ export default function LegalPage({ params }: PageProps<"/[lang]/legal/[slug]">)
 }
 
 async function LegalDocument({ params }: { params: PageProps<"/[lang]/legal/[slug]">["params"] }) {
-  const { slug } = await params;
+  const [{ slug }, m, locale] = await Promise.all([params, getMessages(), getLocale()]);
   if (!DOCUMENTS.some((doc) => doc.slug === slug)) notFound();
   const { data: doc } = await (await createClient()).from("legal_documents").select("title, body, updated_at").eq("slug", slug).maybeSingle();
   if (!doc) notFound();
 
   return (
     <article className="flex flex-col gap-6">
-      <nav aria-label="Textos legales" className="flex flex-col gap-4">
+      <nav aria-label={m.legal.title} className="flex flex-col gap-4">
         <Link href="/" className="self-start text-sm text-muted underline-offset-4 hover:text-ink hover:underline">
-          ← Volver al inicio
+          ← {m.common.backHome}
         </Link>
         <div className="grid grid-flow-col auto-cols-fr rounded-full bg-line/60 p-1">
           {DOCUMENTS.map((item) => (
@@ -54,7 +55,7 @@ async function LegalDocument({ params }: { params: PageProps<"/[lang]/legal/[slu
                 item.slug === slug ? "bg-surface font-medium shadow-soft" : "text-muted hover:text-ink"
               }`}
             >
-              {item.label}
+              {m.legal[item.key]}
             </Link>
           ))}
         </div>
@@ -63,8 +64,10 @@ async function LegalDocument({ params }: { params: PageProps<"/[lang]/legal/[slu
       <header>
         <h1 className="display text-4xl font-bold text-balance sm:text-5xl">{doc.title}</h1>
         <p className="mt-2 text-sm text-muted">
-          Última actualización: {new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "long", year: "numeric" }).format(new Date(doc.updated_at))}
+          {m.legal.updated(new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" }).format(new Date(doc.updated_at)))}
         </p>
+        {/* Los textos legales solo existen en español por ahora. */}
+        {locale !== "es" && <p className="mt-3 rounded-2xl p-3 text-sm" style={{ background: "var(--cell)" }}>{m.legal.onlySpanish}</p>}
       </header>
 
       {/* Texto del panel de admin, pasado por un Markdown que escapa todo el HTML (lib/markdown.ts). */}

@@ -1,0 +1,31 @@
+/**
+ * Errores que las rutas de /api devuelven al usuario, en inglés. Las rutas los
+ * escriben en español; apiJson los traduce si la petición viene en inglés.
+ */
+export const API_ERRORS_EN: Record<string, string> = {
+  "Hay que iniciar sesión": "You need to sign in",
+  "Error interno": "Internal error",
+  "Partida no encontrada": "Game not found",
+  "Partida no encontrada o no está en juego": "Game not found or not in progress",
+  "La partida ya ha terminado": "The game is already over",
+  "No es tu turno": "It's not your turn",
+  "Casilla no válida": "Invalid square",
+  "Esa casilla ya está ocupada": "That square is already taken",
+  "Columna no válida": "Invalid column",
+  "Esa columna está llena": "That column is full",
+  "Ya has disparado ahí": "You've already fired there",
+  "La partida ha cambiado, recarga": "The game has changed, reload",
+  "Aún falta que los dos coloquéis la flota": "You both still need to place your fleets",
+  "Elección no válida": "Invalid pick",
+  "Ya has elegido en esta ronda": "You've already picked this round",
+  "Flota no válida": "Invalid fleet",
+  "Ya has colocado tu flota": "You've already placed your fleet",
+  "La partida ya ha empezado": "The game has already started",
+  "La partida ya está cerrada": "The game is already closed",
+  "Movimientos no válidos": "Invalid moves",
+  "Juego desconocido": "Unknown game",
+  "Intento no válido": "Invalid guess",
+  "No está en la lista de palabras": "Not in the word list",
+  "Ha cambiado el día: recarga para jugar la palabra nueva": "It's a new day: reload to play the new word",
+  "Ya has terminado la palabra de hoy": "You've already finished today's word",
+};

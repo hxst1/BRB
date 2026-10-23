@@ -3,7 +3,7 @@
  * cortas, un dibujito por paso y el objetivo primero. Las reglas completas
  * están en lib/seo.ts (sección "Cómo se juega" de cada página).
  */
-import type { Locale } from "@/lib/i18n/locales";
+import type { Locale } from "./i18n/locales";
 
 export type HowToPlay = { goal: string; steps: { icon: string; text: string }[] };
 

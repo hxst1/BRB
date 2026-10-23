@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { brand, siteUrl } from "@repo/brand";
-import { GAMES_EN } from "@/lib/i18n/games-en";
-import { GAMES_ES, type GameTexts } from "@/lib/i18n/games-es";
-import type { Locale } from "@/lib/i18n/locales";
+import { GAMES_EN } from "./i18n/games-en";
+import { GAMES_ES, type GameTexts } from "./i18n/games-es";
+import type { Locale } from "./i18n/locales";
 
 /**
  * Textos para buscadores y asistentes (Google, Bing, ChatGPT, Perplexity…):

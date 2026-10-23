@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { siteUrl } from "@repo/brand";
+import { getRequestMessages } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 
 export type RecoveryState = { error: string | null; sent: boolean };
@@ -11,15 +12,16 @@ export type RecoveryState = { error: string | null; sent: boolean };
  * exista o no la cuenta, para no revelar qué emails están registrados.
  */
 export async function requestPasswordReset(_prev: RecoveryState, formData: FormData): Promise<RecoveryState> {
+  const t = (await getRequestMessages()).auth;
   const email = String(formData.get("email") ?? "").trim();
-  if (!email) return { sent: false, error: "Escribe el email de tu cuenta." };
+  if (!email) return { sent: false, error: t.needEmail };
 
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${siteUrl()}/auth/callback?next=/entrar/nueva-contrasena`,
   });
   if (error?.code === "over_email_send_rate_limit") {
-    return { sent: false, error: "Hemos enviado demasiados emails seguidos. Espera un poco y vuelve a intentarlo." };
+    return { sent: false, error: t.emailRateLimit };
   }
   return { sent: true, error: null };
 }
@@ -27,9 +29,10 @@ export async function requestPasswordReset(_prev: RecoveryState, formData: FormD
 export type NewPasswordState = { error: string | null };
 
 export async function updatePassword(_prev: NewPasswordState, formData: FormData): Promise<NewPasswordState> {
+  const t = (await getRequestMessages()).auth;
   const password = String(formData.get("password") ?? "");
-  if (password.length < 8) return { error: "La contraseña necesita al menos 8 caracteres." };
-  if (password !== String(formData.get("password_confirm") ?? "")) return { error: "Las contraseñas no coinciden." };
+  if (password.length < 8) return { error: t.tooShort };
+  if (password !== String(formData.get("password_confirm") ?? "")) return { error: t.mismatch };
 
   const supabase = await createClient();
   const { error } = await supabase.auth.updateUser({ password });
@@ -37,10 +40,10 @@ export async function updatePassword(_prev: NewPasswordState, formData: FormData
     return {
       error:
         error.code === "same_password"
-          ? "Esa ya es tu contraseña. Elige otra distinta."
+          ? t.samePassword
           : error.code === "session_not_found" || error.code === "no_authorization"
-            ? "El enlace ha caducado. Pide uno nuevo."
-            : "No se ha podido cambiar la contraseña. Inténtalo otra vez.",
+            ? t.linkExpired
+            : t.changeError,
     };
   }
   redirect("/");

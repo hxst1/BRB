@@ -99,7 +99,7 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
       if (actionError) setError(m.match.actionError);
       else await refresh();
     },
-    [refresh],
+    [refresh, m],
   );
 
   async function post(path: "fleet" | "move", body: unknown) {

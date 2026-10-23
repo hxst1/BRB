@@ -82,7 +82,7 @@ export function RpsMatchView({ matchId, viewerId }: { matchId: string; viewerId:
       if (actionError) setError(m.match.actionError);
       else setMatch(await fetchMatch(matchId));
     },
-    [matchId],
+    [matchId, m],
   );
 
   if (match === undefined) return <div className="h-80 w-full max-w-md animate-pulse rounded-3xl bg-line/40" />;

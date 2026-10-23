@@ -2,19 +2,20 @@ import { isValidFleet } from "@repo/games/battleship";
 import { sendPush } from "@/lib/push";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClientForRequest } from "@/lib/supabase/server";
+import { apiJson } from "@/lib/i18n/api";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Hundir la flota: valida la flota del jugador y la guarda (el rival no la verá hasta el final). */
 export async function POST(request: Request, { params }: RouteContext<"/api/matches/[id]/fleet">) {
   const { id } = await params;
-  if (!UUID.test(id)) return Response.json({ error: "Partida no encontrada" }, { status: 404 });
+  if (!UUID.test(id)) return apiJson({ error: "Partida no encontrada" }, { status: 404 });
 
   const { userId } = await createClientForRequest(request);
-  if (!userId) return Response.json({ error: "Hay que iniciar sesión" }, { status: 401 });
+  if (!userId) return apiJson({ error: "Hay que iniciar sesión" }, { status: 401 });
 
   const body = (await request.json().catch(() => null)) as { ships?: unknown } | null;
-  if (!isValidFleet(body?.ships)) return Response.json({ error: "Flota no válida" }, { status: 400 });
+  if (!isValidFleet(body?.ships)) return apiJson({ error: "Flota no válida" }, { status: 400 });
 
   const admin = createAdminClient();
   const { error } = await admin.rpc("submit_battleship_fleet", {
@@ -22,12 +23,12 @@ export async function POST(request: Request, { params }: RouteContext<"/api/matc
     player_id: userId,
     ships: body.ships,
   });
-  if (error?.hint === "already_placed") return Response.json({ error: "Ya has colocado tu flota" }, { status: 409 });
-  if (error?.hint === "started") return Response.json({ error: "La partida ya ha empezado" }, { status: 409 });
-  if (error?.code === "P0002") return Response.json({ error: "Partida no encontrada o no está en juego" }, { status: 404 });
+  if (error?.hint === "already_placed") return apiJson({ error: "Ya has colocado tu flota" }, { status: 409 });
+  if (error?.hint === "started") return apiJson({ error: "La partida ya ha empezado" }, { status: 409 });
+  if (error?.code === "P0002") return apiJson({ error: "Partida no encontrada o no está en juego" }, { status: 404 });
   if (error) {
     console.error("fleet: error guardando la flota", error);
-    return Response.json({ error: "Error interno" }, { status: 500 });
+    return apiJson({ error: "Error interno" }, { status: 500 });
   }
   await notifyFirstShooter(admin, id, userId);
   return Response.json({ ok: true });

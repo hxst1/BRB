@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 
 import type { Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { useDragScroll } from "@/components/drag-scroll";
-import { formatNumber, formatTime } from "@/lib/format";
+import type { Messages } from "@/lib/i18n";
+import { useMessages } from "@/lib/i18n/client";
 import { levelFromXp } from "@repo/games/level";
 import { createClient } from "@/lib/supabase/client";
 
@@ -27,11 +28,7 @@ type Row = {
   detail?: string;
 };
 
-const DIFFICULTIES: { value: Difficulty; label: string }[] = [
-  { value: "easy", label: "Fácil" },
-  { value: "medium", label: "Medio" },
-  { value: "hard", label: "Difícil" },
-];
+const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard"];
 
 /**
  * Juegos con ranking. Para añadir uno nuevo basta una entrada aquí: `games`
@@ -40,20 +37,19 @@ const DIFFICULTIES: { value: Difficulty; label: string }[] = [
  * `levels` da el id del ranking de cada dificultad (un ranking por cada una).
  */
 type RankedGame = {
+  /** El nombre está en m.rankingBoard.games. */
   id: GameId;
-  label: string;
   icon: ReactNode;
   games?: string[];
   levels?: Record<Difficulty, string>;
-  unit?: string;
-  /** Si la puntuación es un tiempo (gana el menor), cómo mostrarla. */
-  format?: (score: number) => string;
+  unit?: "points" | "levels";
+  /** Si la puntuación es un tiempo (gana el menor). */
+  time?: boolean;
 };
 
 const RANKED_GAMES: RankedGame[] = [
   {
     id: "2048",
-    label: "2048",
     icon: (
       <span className="grid size-4 grid-cols-2 gap-px">
         {[8, 64, 512, 2048].map((value) => (
@@ -64,7 +60,6 @@ const RANKED_GAMES: RankedGame[] = [
   },
   {
     id: "snake",
-    label: "Snake",
     icon: (
       <span className="flex gap-px">
         {["var(--t512)", "var(--t512)", "var(--t1024)"].map((color, i) => (
@@ -75,8 +70,7 @@ const RANKED_GAMES: RankedGame[] = [
   },
   {
     id: "lightsout",
-    label: "Lights Out",
-    unit: "niveles",
+    unit: "levels",
     icon: (
       <span className="grid size-4 grid-cols-2 gap-px">
         {[true, false, false, true].map((on, i) => (
@@ -87,21 +81,18 @@ const RANKED_GAMES: RankedGame[] = [
   },
   {
     id: "minesweeper",
-    label: "Buscaminas",
     icon: "💣",
     levels: { easy: "minesweeper-easy", medium: "minesweeper-medium", hard: "minesweeper-hard" },
-    format: formatTime,
+    time: true,
   },
   {
     id: "sudoku",
-    label: "Sudoku",
     icon: "🔢",
     levels: { easy: "sudoku-easy", medium: "sudoku-medium", hard: "sudoku-hard" },
-    format: formatTime,
+    time: true,
   },
   {
     id: "tictactoe",
-    label: "3 en raya",
     games: ["tictactoe"],
     icon: (
       <span className="font-bold">
@@ -112,7 +103,6 @@ const RANKED_GAMES: RankedGame[] = [
   },
   {
     id: "connect4",
-    label: "4 en raya",
     games: ["connect4"],
     icon: (
       <span className="flex gap-px">
@@ -122,15 +112,16 @@ const RANKED_GAMES: RankedGame[] = [
       </span>
     ),
   },
-  { id: "battleship", label: "Hundir la flota", games: ["battleship"], icon: "🚢" },
-  { id: "rps", label: "Piedra, papel o tijera", games: ["rps", "rpsls"], icon: "✂️" },
-  { id: "pong", label: "Pong", games: ["pong"], icon: "🏓" },
-  { id: "tron", label: "Tron", games: ["tron"], icon: "🏍️" },
+  { id: "battleship", games: ["battleship"], icon: "🚢" },
+  { id: "rps", games: ["rps", "rpsls"], icon: "✂️" },
+  { id: "pong", games: ["pong"], icon: "🏓" },
+  { id: "tron", games: ["tron"], icon: "🏍️" },
 ];
 
 const MAX_ROWS = 50;
 
-async function loadRows(category: Category, difficulty: Difficulty, scope: Scope, period: Period): Promise<Row[]> {
+async function loadRows(m: Messages, category: Category, difficulty: Difficulty, scope: Scope, period: Period): Promise<Row[]> {
+  const { number, time } = m.format;
   const supabase = createClient();
 
   if (category === "level") {
@@ -142,8 +133,8 @@ async function loadRows(category: Category, difficulty: Difficulty, scope: Scope
       avatarSeed: r.avatar_seed,
       avatarParts: r.avatar_parts,
       supporter: r.supporter_tier !== null,
-      value: `Nivel ${levelFromXp(r.xp).level}`,
-      detail: `${formatNumber(r.xp)} XP`,
+      value: m.level.level(levelFromXp(r.xp).level),
+      detail: `${number(r.xp)} XP`,
     }));
   }
 
@@ -158,8 +149,8 @@ async function loadRows(category: Category, difficulty: Difficulty, scope: Scope
       avatarSeed: r.avatar_seed,
       avatarParts: r.avatar_parts,
       supporter: r.supporter_tier !== null,
-      value: ranked.format ? ranked.format(r.score) : formatNumber(r.score),
-      detail: ranked.format ? "" : (ranked.unit ?? "puntos"),
+      value: ranked.time ? time(r.score) : number(r.score),
+      detail: ranked.time ? "" : m.records[ranked.unit ?? "points"],
     }));
   }
 
@@ -172,12 +163,14 @@ async function loadRows(category: Category, difficulty: Difficulty, scope: Scope
     avatarSeed: r.avatar_seed,
     avatarParts: r.avatar_parts,
     supporter: r.supporter_tier !== null,
-    value: r.wins === 1 ? "1 victoria" : `${formatNumber(r.wins)} victorias`,
-    detail: `${r.played} ${r.played === 1 ? "partida" : "partidas"} · ${Math.round((r.wins / r.played) * 100)} %`,
+    value: m.records.wins(number(r.wins), r.wins),
+    detail: m.rankingBoard.played(r.played, Math.round((r.wins / r.played) * 100)),
   }));
 }
 
 export function RankingBoard({ viewerId }: { viewerId: string | null }) {
+  const m = useMessages();
+  const t = m.rankingBoard;
   const [category, setCategory] = useState<Category>("level");
   // Al volver a "Juegos" se recupera el último juego elegido.
   const [lastGame, setLastGame] = useState<GameId>("2048");
@@ -194,13 +187,13 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
 
   useEffect(() => {
     let cancelled = false;
-    loadRows(category, difficulty, scope, effectivePeriod).then((rows) => {
+    loadRows(m, category, difficulty, scope, effectivePeriod).then((rows) => {
       if (!cancelled) setResult({ key, rows });
     });
     return () => {
       cancelled = true;
     };
-  }, [category, difficulty, scope, effectivePeriod, key]);
+  }, [m, category, difficulty, scope, effectivePeriod, key]);
 
   const rows = result?.key === key ? result.rows : null;
   // El usuario puede venir al final aunque no esté en el top.
@@ -212,12 +205,12 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
   return (
     <div className="flex flex-col gap-6">
       <Toggle
-        label="Ranking de"
+        label={t.rankingOf}
         value={category === "level" ? "level" : "games"}
         onChange={(value) => setCategory(value === "level" ? "level" : lastGame)}
         options={[
-          { value: "level", label: "⭐ Nivel" },
-          { value: "games", label: "Juegos" },
+          { value: "level", label: t.level },
+          { value: "games", label: t.games },
         ]}
         wide
       />
@@ -234,7 +227,7 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
 
       {hasLevels && (
         <div className="-mt-2 flex justify-center">
-          <Toggle label="Dificultad" value={difficulty} onChange={setDifficulty} options={DIFFICULTIES} />
+          <Toggle label={m.levels.label} value={difficulty} onChange={setDifficulty} options={DIFFICULTIES.map((value) => ({ value, label: m.levels[value] }))} />
         </div>
       )}
 
@@ -242,12 +235,12 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
         <div className="flex items-center justify-between gap-2">
           {viewerId ? (
             <Toggle
-              label="Jugadores"
+              label={m.ranking.players}
               value={scope}
               onChange={setScope}
               options={[
-                { value: "global", label: "Global" },
-                { value: "friends", label: "Amigos" },
+                { value: "global", label: t.global },
+                { value: "friends", label: m.ranking.friends },
               ]}
             />
           ) : (
@@ -255,12 +248,12 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
           )}
           {hasPeriod && (
             <Toggle
-              label="Periodo"
+              label={m.ranking.period}
               value={period}
               onChange={setPeriod}
               options={[
-                { value: "all", label: "Siempre" },
-                { value: "week", label: "Semana" },
+                { value: "all", label: m.ranking.allTime },
+                { value: "week", label: m.ranking.week },
               ]}
             />
           )}
@@ -272,10 +265,10 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
       ) : top.length === 0 ? (
         <p className="py-10 text-center text-muted">
           {scope === "friends"
-            ? "Ni tú ni tus amigos aparecéis aquí todavía. Echad unas partidas."
+            ? t.emptyFriends
             : effectivePeriod === "week"
-              ? "Nadie ha jugado esta semana. El primer puesto está libre."
-              : "Aún no hay nadie en este ranking. Estrénalo."}
+              ? t.emptyWeek
+              : t.empty}
         </p>
       ) : (
         <>
@@ -309,6 +302,7 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
  * pestañas). El juego elegido siempre queda a la vista.
  */
 function GamePicker({ value, onChange }: { value: GameId; onChange: (id: GameId) => void }) {
+  const m = useMessages();
   const list = useRef<HTMLDivElement>(null);
   // Qué lados tienen más juegos por ver (solo esos se difuminan).
   const [edges, setEdges] = useState({ left: false, right: false });
@@ -356,13 +350,13 @@ function GamePicker({ value, onChange }: { value: GameId; onChange: (id: GameId)
 
   return (
     <div className="flex items-center gap-2">
-      <button type="button" aria-label="Juego anterior" disabled={index === 0} onClick={() => select(index - 1, false)} className={arrow}>
+      <button type="button" aria-label={m.rankingBoard.previous} disabled={index === 0} onClick={() => select(index - 1, false)} className={arrow}>
         <Chevron direction="left" />
       </button>
       <div
         ref={list}
         role="tablist"
-        aria-label="Juego"
+        aria-label={m.rankingBoard.game}
         onKeyDown={onKeyDown}
         {...dragHandlers}
         onScroll={updateEdges}
@@ -386,12 +380,12 @@ function GamePicker({ value, onChange }: { value: GameId; onChange: (id: GameId)
               <span aria-hidden className="grid place-items-center leading-none">
                 {game.icon}
               </span>
-              {game.label}
+              {m.rankingBoard.names[game.id]}
             </button>
           );
         })}
       </div>
-      <button type="button" aria-label="Juego siguiente" disabled={index === last} onClick={() => select(index + 1, false)} className={arrow}>
+      <button type="button" aria-label={m.rankingBoard.next} disabled={index === last} onClick={() => select(index + 1, false)} className={arrow}>
         <Chevron direction="right" />
       </button>
     </div>
@@ -408,11 +402,12 @@ function Chevron({ direction }: { direction: "left" | "right" }) {
 
 /** Los tres primeros, con sus monstruos (el primero en el centro y más alto). */
 function Podium({ rows, viewerId }: { rows: Row[]; viewerId: string | null }) {
+  const m = useMessages();
   const order = [rows[1], rows[0], rows[2]].filter((row): row is Row => row !== undefined);
   const height: Record<number, string> = { 1: "h-28", 2: "h-20", 3: "h-14" };
 
   return (
-    <ol aria-label="Podio" className="grid grid-cols-3 items-end gap-2 sm:gap-4">
+    <ol aria-label={m.rankingBoard.podium} className="grid grid-cols-3 items-end gap-2 sm:gap-4">
       {order.map((row) => {
         const first = row.rank === 1;
         return (
@@ -441,6 +436,7 @@ function Podium({ rows, viewerId }: { rows: Row[]; viewerId: string | null }) {
 }
 
 function RankRow({ row, isViewer }: { row: Row; isViewer: boolean }) {
+  const m = useMessages();
   return (
     <li className={`flex items-center gap-3 border-b border-line py-2.5 ${isViewer ? "-mx-3 rounded-2xl border-transparent bg-surface px-3 shadow-soft" : ""}`}>
       <span className="tabular w-8 text-right text-sm text-muted">{row.rank}º</span>
@@ -448,7 +444,7 @@ function RankRow({ row, isViewer }: { row: Row; isViewer: boolean }) {
       <span className="min-w-0 flex-1 truncate font-medium">
         {row.username}
         {row.supporter && <SupporterMark />}
-        {isViewer && <span className="ml-2 text-xs font-normal text-muted">tú</span>}
+        {isViewer && <span className="ml-2 text-xs font-normal text-muted">{m.common.you}</span>}
       </span>
       <span className="flex flex-col items-end">
         <span className="tabular font-semibold">{row.value}</span>
@@ -493,8 +489,9 @@ function Toggle<T extends string>({
 }
 
 function SupporterMark() {
+  const m = useMessages();
   return (
-    <span title="Apoya el proyecto" aria-label="(apoya el proyecto)" className="ml-1 text-[0.8em]" style={{ color: "var(--t256)" }}>
+    <span title={m.common.supporter} aria-label={`(${m.common.supporter.toLowerCase()})`} className="ml-1 text-[0.8em]" style={{ color: "var(--t256)" }}>
       ✦
     </span>
   );
