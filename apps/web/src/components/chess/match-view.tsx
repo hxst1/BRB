@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { replay, type ChessState, type Mark } from "@repo/games/chess";
 import type { Mood } from "@repo/avatars";
 import type { Match } from "@repo/db";
@@ -14,6 +14,7 @@ import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import { createClient } from "@/lib/supabase/client";
 import { ChessBoard, pieceSrc } from "./board";
 import { MatchNotFound } from "@/components/match-not-found";
+import { PIECE_MARK_COLORS } from "@/lib/piece-colors";
 
 const PATH = "/ajedrez";
 
@@ -115,8 +116,7 @@ export function ChessMatchView({ matchId, viewerId }: { matchId: string; viewerI
   );
 
   return (
-    // Los aros de turno (PlayerBadge) toman el color de las piezas.
-    <div className="flex w-full max-w-lg flex-col gap-5" style={{ "--mark-x": "var(--chess-red)", "--mark-o": "var(--chess-blue)" } as CSSProperties}>
+    <div className="flex w-full max-w-lg flex-col gap-5" style={PIECE_MARK_COLORS}>
       <div className="flex items-center justify-between gap-4">
         <PlayerBadge player={players[me]} mark={me} label={m.match.you} active={myTurn} mood={moodOf(me)} detail={side(me)} />
         <span className="text-sm text-muted">{m.match.versus}</span>

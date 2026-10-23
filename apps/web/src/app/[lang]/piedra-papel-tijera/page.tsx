@@ -25,6 +25,17 @@ export default async function RpsPage() {
         <ListForViewer />
       </Suspense>
       <GameGuideSection id="rps" />
+      <p className="mt-8 text-xs text-muted">
+        {m.rps.credits}{" "}
+        <a href="https://openmoji.org" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-ink">
+          OpenMoji
+        </a>{" "}
+        (
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-ink">
+          CC BY-SA 4.0
+        </a>
+        ){m.rps.creditsChanges}
+      </p>
     </main>
   );
 }

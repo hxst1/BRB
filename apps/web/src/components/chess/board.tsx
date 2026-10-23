@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { encodeMove, legalMoves, type ChessState, type Mark, type Promotion } from "@repo/games/chess";
 import { useMessages } from "@/lib/i18n/client";
+import { PIECE_COLOR } from "@/lib/piece-colors";
 
 const FILES = "abcdefgh";
 
@@ -11,8 +12,6 @@ export function pieceSrc(mark: Mark, type: string): string {
   return `/chess/${mark === "x" ? "r" : "b"}${type}.svg`;
 }
 
-/** Color de las piezas de cada jugador; la última jugada se marca con él, más claro. */
-export const PIECE_COLOR: Record<Mark, string> = { x: "var(--chess-red)", o: "var(--chess-blue)" };
 
 /**
  * Tablero de ajedrez. Se toca una pieza propia (se marcan sus jugadas
@@ -71,6 +70,7 @@ export function ChessBoard({
           const piece = state.board[square];
           const target = targets.find((t) => t.to === square);
           const lastMove = state.last && (state.last.from === square || state.last.to === square);
+          // La última jugada, con el color de quien la hizo, más claro.
           const mover = state.last ? state.board[state.last.to]?.mark : undefined;
           const background = selected === square
             ? "color-mix(in srgb, var(--t128) 65%, var(--cell))"

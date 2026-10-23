@@ -14,14 +14,9 @@ import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import type { Messages } from "@/lib/i18n";
 import { useMessages } from "@/lib/i18n/client";
 import { MatchNotFound } from "@/components/match-not-found";
+import { PIECE_MARK_COLORS } from "@/lib/piece-colors";
+import { ChoiceWheel, choiceSrc } from "./choice-wheel";
 
-export const CHOICE_EMOJI: Record<Choice, string> = {
-  rock: "🪨",
-  paper: "📄",
-  scissors: "✂️",
-  lizard: "🦎",
-  spock: "🖖",
-};
 
 export function RpsMatchView({ matchId, viewerId }: { matchId: string; viewerId: string }) {
   const router = useRouter();
@@ -142,7 +137,7 @@ export function RpsMatchView({ matchId, viewerId }: { matchId: string; viewerId:
   );
 
   return (
-    <div className="flex w-full max-w-md flex-col gap-6">
+    <div className="flex w-full max-w-md flex-col gap-6" style={PIECE_MARK_COLORS}>
       <p className="text-center text-sm text-muted">{matchGame(match.game).name}</p>
 
       <div className="flex items-center justify-between gap-4">
@@ -159,9 +154,9 @@ export function RpsMatchView({ matchId, viewerId }: { matchId: string; viewerId:
         <section aria-label={m.rps.round(state!.rounds.length)} className="flex flex-col items-center gap-2 rounded-3xl bg-surface p-5 shadow-soft">
           <p className="text-xs text-muted">{m.rps.round(state!.rounds.length)}</p>
           <div className="flex items-center gap-6">
-            <RevealedChoice choice={lastRound[me]} label={m.match.you} key={`me-${state!.rounds.length}`} />
+            <RevealedChoice choice={lastRound[me]} mark={me} label={m.match.you} key={`me-${state!.rounds.length}`} />
             <span className="text-sm text-muted">vs</span>
-            <RevealedChoice choice={lastRound[rival]} label={rivalName} key={`rival-${state!.rounds.length}`} />
+            <RevealedChoice choice={lastRound[rival]} mark={rival} label={rivalName} key={`rival-${state!.rounds.length}`} />
           </div>
           <p className="text-center font-medium">
             {verdict(m, lastRound)}
@@ -171,28 +166,7 @@ export function RpsMatchView({ matchId, viewerId }: { matchId: string; viewerId:
       )}
 
       {match.status === "active" && (
-        <div role="group" aria-label={m.rps.choose} className={`grid gap-2 ${variant === "rps" ? "grid-cols-3" : "grid-cols-5"}`}>
-          {CHOICES[variant].map((choice, index) => {
-            const selected = myChoice === index;
-            return (
-              <button
-                key={choice}
-                type="button"
-                disabled={!canChoose}
-                aria-pressed={selected}
-                onClick={() => void choose(index)}
-                className={`flex flex-col items-center gap-1 rounded-2xl bg-surface py-3 transition-[transform,box-shadow] ${
-                  selected ? "ring-2 ring-ink" : canChoose ? "shadow-soft hover:-translate-y-0.5 hover:shadow-lift" : "opacity-40"
-                }`}
-              >
-                <span aria-hidden className={variant === "rps" ? "text-4xl" : "text-3xl"}>
-                  {CHOICE_EMOJI[choice]}
-                </span>
-                <span className="text-xs font-medium">{m.rps.choices[choice]}</span>
-              </button>
-            );
-          })}
-        </div>
+        <ChoiceWheel variant={variant} me={me} picked={myChoice} canChoose={canChoose} onChoose={(index) => void choose(index)} />
       )}
 
       {error && (
@@ -249,13 +223,12 @@ export function RpsMatchView({ matchId, viewerId }: { matchId: string; viewerId:
 }
 
 /** Elección revelada, con una pequeña animación de aparición. */
-function RevealedChoice({ choice, label }: { choice: Choice; label: string }) {
+function RevealedChoice({ choice, mark, label }: { choice: Choice; mark: Mark; label: string }) {
   const m = useMessages();
   return (
     <div className="flex flex-col items-center gap-1">
-      <span aria-hidden className="rps-reveal text-5xl">
-        {CHOICE_EMOJI[choice]}
-      </span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={choiceSrc(choice, mark)} alt="" draggable={false} className="rps-reveal size-16" />
       <span className="text-xs text-muted">
         {label}: {m.rps.choices[choice]}
       </span>

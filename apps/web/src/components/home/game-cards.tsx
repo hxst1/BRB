@@ -250,13 +250,14 @@ const GAMES: Game[] = [
     href: "/piedra-papel-tijera",
     preview: (
         <div aria-hidden className="grid aspect-[4/3] grid-cols-3 place-items-center gap-1 rounded-xl p-1 sm:aspect-square sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
-          {["🪨", "📄", "✂️", "🦎", "🖖", "🪨"].map((emoji, i) => (
+          {["rock-x", "paper-o", "scissors-x", "lizard-o", "spock-x", "rock-o"].map((hand, i) => (
             <span
               key={i}
-              className="grid size-full place-items-center rounded-md text-2xl transition-transform duration-300 group-hover:scale-95 sm:rounded-lg sm:text-4xl"
+              className="grid size-full place-items-center rounded-md transition-transform duration-300 group-hover:scale-95 sm:rounded-lg"
               style={{ background: "var(--cell)", transitionDelay: `${(i % 3) * 25}ms` }}
             >
-              {emoji}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`/rps/${hand}.svg`} alt="" className="size-[80%]" />
             </span>
           ))}
         </div>

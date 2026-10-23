@@ -1,0 +1,7 @@
+Manos de OpenMoji (https://openmoji.org), el proyecto de emojis e iconos de código abierto:
+✊ 270A, ✋ 270B, ✌ 270C, 🤌 1F90C y 🖖 1F596 (openmoji@17.0.0).
+Licencia: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0),
+https://creativecommons.org/licenses/by-sa/4.0/
+
+Modificadas para esta app: recoloreadas (rojas y azul claro, una por jugador), con el contorno más
+grueso y oscuro. Estas versiones modificadas se comparten con la misma licencia CC BY-SA 4.0.

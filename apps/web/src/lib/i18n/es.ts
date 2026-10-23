@@ -559,6 +559,8 @@ export const es = {
     afloat: (n: number): string => (n === 1 ? "1 barco a flote" : `${n} barcos a flote`),
   },
   rps: {
+    credits: "Manos de",
+    creditsChanges: ", con los colores de la app.",
     chooseError: "No se ha podido enviar tu elección.",
     round: (n: number) => `Ronda ${n}`,
     tie: "Empate: se repite la ronda",
@@ -566,6 +568,7 @@ export const es = {
     roundTheirs: (name: string) => `. Ronda para ${name}.`,
     choose: "Elige",
     pickSecret: "Elige en secreto",
+    arrowsHint: "Cada flecha va de la mano que gana a la que pierde.",
     picked: (choice: string, name: string) => `Has elegido ${choice}. Esperando a ${name}…`,
     choices: { rock: "Piedra", paper: "Papel", scissors: "Tijera", lizard: "Lagarto", spock: "Spock" },
     beats: {
