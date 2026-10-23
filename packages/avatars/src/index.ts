@@ -132,7 +132,14 @@ export const PALETTES = {
   ultra: { body: "#845ef7", shade: "#6741d9", accent: "#ffd43b", achievement: "tile-2048" },
   ice: { body: "#a5e8f2", shade: "#66c5d9", accent: "#4c6ef5", achievement: "minesweeper-hard" },
   jungle: { body: "#40c057", shade: "#2b8a3e", accent: "#ffe066", achievement: "snake-30" },
-  terminal: { body: "#1f2a24", shade: "#69db7c", accent: "#69db7c", achievement: "contributor" },
+  // El id es «terminal» por la primera versión (oscura); ahora son franjas como el código coloreado de un editor.
+  terminal: {
+    body: "url(#brb-syntax)",
+    shade: "#5f3dc4",
+    accent: "#ffffff",
+    achievement: "contributor",
+    defs: `<linearGradient id="brb-syntax" gradientUnits="userSpaceOnUse" x1="15" y1="20" x2="85" y2="90"><stop offset="0" stop-color="#ff6b6b"/><stop offset=".33" stop-color="#ff6b6b"/><stop offset=".33" stop-color="#ffd43b"/><stop offset=".55" stop-color="#ffd43b"/><stop offset=".55" stop-color="#74c0fc"/><stop offset=".78" stop-color="#74c0fc"/><stop offset=".78" stop-color="#b197fc"/><stop offset="1" stop-color="#b197fc"/></linearGradient>`,
+  },
   neon: {
     body: "url(#brb-neon)",
     shade: "#e64980",

@@ -97,7 +97,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     name: "Colaborador",
     description: "Abre una issue o haz un pull request en GitHub con tu código de amigo.",
     icon: "laptop",
-    reward: { slot: "palette", id: "terminal", label: "Color terminal" },
+    reward: { slot: "palette", id: "terminal", label: "Color sintaxis" },
   },
   {
     id: "referrals-5",
@@ -121,7 +121,7 @@ const EN: Record<string, { name: string; description: string; reward: string }> 
   "sudoku-hard": { name: "Brainiac", description: "Solve a hard sudoku.", reward: "Wizard hat" },
   "wordle-3": { name: "Third time lucky", description: "Guess the Wordle in 3 tries or fewer.", reward: "Bow" },
   "winner-5": { name: "One to beat", description: "Beat 5 different people in games against friends.", reward: "Party hat" },
-  contributor: { name: "Contributor", description: "Open an issue or make a pull request on GitHub with your friend code.", reward: "Terminal colour" },
+  contributor: { name: "Contributor", description: "Open an issue or make a pull request on GitHub with your friend code.", reward: "Syntax colour" },
   "referrals-5": { name: "Ambassador", description: "Invite 5 friends with your link: they have to sign up and play at least one game.", reward: "Neon colour" },
 };
 
