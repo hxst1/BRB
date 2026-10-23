@@ -248,11 +248,14 @@ otp_expiry = 3600
 # Las genera `pnpm emails:build` (scripts/emails/build.mjs); en producción se
 # suben con `pnpm db:email-templates`.
 [auth.email.template.confirmation]
-subject = "{{ if eq (printf \"%v\" .Data.locale) \"en\" }}Confirm your email{{ else }}Confirma tu email{{ end }}"
+# Cada asunto lleva 4 caracteres del token (sin el prefijo pkce_): así cada email es
+# distinto y Gmail no los agrupa en una conversación, donde se acababa abriendo uno
+# viejo ya gastado. No sirven para entrar (el código de 6 cifras sí: no va aquí).
+subject = "{{ if eq (printf \"%v\" .Data.locale) \"en\" }}Confirm your email (link {{ slice .TokenHash 5 9 }}){{ else }}Confirma tu email (enlace {{ slice .TokenHash 5 9 }}){{ end }}"
 content_path = "./supabase/templates/confirmation.html"
 
 [auth.email.template.recovery]
-subject = "{{ if eq (printf \"%v\" .Data.locale) \"en\" }}Choose a new password{{ else }}Elige una contraseña nueva{{ end }}"
+subject = "{{ if eq (printf \"%v\" .Data.locale) \"en\" }}Choose a new password (link {{ slice .TokenHash 5 9 }}){{ else }}Elige una contraseña nueva (enlace {{ slice .TokenHash 5 9 }}){{ end }}"
 content_path = "./supabase/templates/recovery.html"
 
 # Uncomment to customize email template
