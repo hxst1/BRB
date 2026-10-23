@@ -30,7 +30,15 @@ function tileStrip() {
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 28px"><tr>${cells}</tr></table>`;
 }
 
-function layout({ preheader, title, intro, button, note }) {
+/**
+ * Enlace a nuestra web con el token, en vez de {{ .ConfirmationURL }}: ese
+ * lleva a un código que solo se puede canjear en el mismo navegador donde se
+ * pidió (PKCE), y fallaba al abrir el email en otro dispositivo o en el
+ * navegador de la app de correo. /auth/confirm vale en cualquiera.
+ */
+const link = (type, next) => `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=${type}&next=${encodeURIComponent(next)}`;
+
+function layout({ preheader, title, intro, button, note, url }) {
   return `{{ $en := eq (printf "%v" .Data.locale) "en" }}<!doctype html>
 <html lang="${t("es", "en")}">
 <head>
@@ -60,10 +68,10 @@ ${tileStrip()}
 <p style="margin:0 0 28px;font-size:16px;line-height:1.55;color:${C.body}">${intro}</p>
 <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
 <td bgcolor="${C.ink}" style="background:${C.ink};border-radius:999px">
-<a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:15px 30px;font-size:16px;font-weight:800;color:${C.bg};text-decoration:none;border-radius:999px">${button}</a>
+<a href="${url}" style="display:inline-block;padding:15px 30px;font-size:16px;font-weight:800;color:${C.bg};text-decoration:none;border-radius:999px">${button}</a>
 </td></tr></table>
 <p style="margin:28px 0 0;font-size:13px;line-height:1.5;color:${C.muted}">${t("¿El botón no funciona? Copia este enlace en el navegador:", "Button not working? Copy this link into your browser:")}<br>
-<a href="{{ .ConfirmationURL }}" style="color:${C.muted};word-break:break-all">{{ .ConfirmationURL }}</a></p>
+<a href="${url}" style="color:${C.muted};word-break:break-all">${url}</a></p>
 <div style="height:1px;background:${C.line};margin:24px 0 18px;font-size:0;line-height:0">&nbsp;</div>
 <p style="margin:0;font-size:13px;line-height:1.5;color:${C.muted}">${note}</p>
 </td></tr>
@@ -89,6 +97,7 @@ const TEMPLATES = {
       "Hi, <strong style=\"color:#f1f2f5\">{{ .Data.username }}</strong>. Confirm your email and your monster will be waiting: rankings, the daily challenge and games against your friends.",
     ),
     button: t("Confirmar mi email", "Confirm my email"),
+    url: link("email", "/"),
     note: t("Si no has creado ninguna cuenta, ignora este email: no pasará nada.", "If you didn't create an account, ignore this email: nothing will happen."),
   }),
   recovery: layout({
@@ -99,6 +108,7 @@ const TEMPLATES = {
       "Someone (hopefully you) asked to change the password for <strong style=\"color:#f1f2f5\">{{ .Email }}</strong>. Tap the button to choose a new one. The link expires in an hour and only works once.",
     ),
     button: t("Elegir contraseña", "Choose a password"),
+    url: link("recovery", "/entrar/nueva-contrasena"),
     note: t("Si no lo has pedido tú, ignora este email: tu contraseña sigue siendo la misma.", "If you didn't ask for this, ignore this email: your password stays the same."),
   }),
 };

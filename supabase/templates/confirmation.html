@@ -27,10 +27,10 @@
 <p style="margin:0 0 28px;font-size:16px;line-height:1.55;color:#c3c7d1">{{ if $en }}Hi, <strong style="color:#f1f2f5">{{ .Data.username }}</strong>. Confirm your email and your monster will be waiting: rankings, the daily challenge and games against your friends.{{ else }}Hola, <strong style="color:#f1f2f5">{{ .Data.username }}</strong>. Confirma tu email y tu monster te estará esperando: rankings, reto diario y partidas contra tus amigos.{{ end }}</p>
 <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
 <td bgcolor="#f1f2f5" style="background:#f1f2f5;border-radius:999px">
-<a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:15px 30px;font-size:16px;font-weight:800;color:#111318;text-decoration:none;border-radius:999px">{{ if $en }}Confirm my email{{ else }}Confirmar mi email{{ end }}</a>
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=%2F" style="display:inline-block;padding:15px 30px;font-size:16px;font-weight:800;color:#111318;text-decoration:none;border-radius:999px">{{ if $en }}Confirm my email{{ else }}Confirmar mi email{{ end }}</a>
 </td></tr></table>
 <p style="margin:28px 0 0;font-size:13px;line-height:1.5;color:#959bab">{{ if $en }}Button not working? Copy this link into your browser:{{ else }}¿El botón no funciona? Copia este enlace en el navegador:{{ end }}<br>
-<a href="{{ .ConfirmationURL }}" style="color:#959bab;word-break:break-all">{{ .ConfirmationURL }}</a></p>
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=%2F" style="color:#959bab;word-break:break-all">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=%2F</a></p>
 <div style="height:1px;background:#2a2e38;margin:24px 0 18px;font-size:0;line-height:0">&nbsp;</div>
 <p style="margin:0;font-size:13px;line-height:1.5;color:#959bab">{{ if $en }}If you didn't create an account, ignore this email: nothing will happen.{{ else }}Si no has creado ninguna cuenta, ignora este email: no pasará nada.{{ end }}</p>
 </td></tr>

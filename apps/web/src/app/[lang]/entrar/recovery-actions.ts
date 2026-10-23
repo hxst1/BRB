@@ -1,8 +1,10 @@
 "use server";
 
+import type { EmailOtpType } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { siteUrl } from "@repo/brand";
 import { getRequestMessages } from "@/lib/i18n/server";
+import { safeNext } from "@/lib/safe-next";
 import { createClient } from "@/lib/supabase/server";
 
 export type RecoveryState = { error: string | null; sent: boolean };
@@ -24,6 +26,27 @@ export async function requestPasswordReset(_prev: RecoveryState, formData: FormD
     return { sent: false, error: t.emailRateLimit };
   }
   return { sent: true, error: null };
+}
+
+/** Tipos de enlace que se aceptan (ver app/auth/confirm). */
+const LINK_TYPES: readonly EmailOtpType[] = ["recovery", "email", "signup"];
+
+/**
+ * Botón de /entrar/confirmar: verifica el token del email, deja la sesión
+ * iniciada y lleva a `next`. Vale en cualquier navegador o dispositivo.
+ */
+export async function verifyEmailLink(formData: FormData): Promise<void> {
+  const tokenHash = String(formData.get("token_hash") ?? "");
+  const type = String(formData.get("type") ?? "") as EmailOtpType;
+  const recovery = type === "recovery";
+
+  if (tokenHash && LINK_TYPES.includes(type)) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
+    if (!error) redirect(safeNext(String(formData.get("next") ?? "/")));
+  }
+  // Uno de confirmar la cuenta que ya no vale suele ser porque ya se usó: a entrar.
+  redirect(recovery ? "/entrar/recuperar?error=enlace" : "/entrar");
 }
 
 export type NewPasswordState = { error: string | null };

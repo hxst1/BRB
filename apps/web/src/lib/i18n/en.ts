@@ -910,6 +910,13 @@ export const en: Messages = {
     newPassword: "New password",
     save: "Save password",
   },
+  confirmLink: {
+    title: "One last step",
+    recovery: "Tap the button to choose your new password.",
+    email: "Tap the button to confirm your email and sign in.",
+    choosePassword: "Choose a password",
+    continue: "Confirm and sign in",
+  },
   signInPrompt: {
     title: "Sign in to challenge your friends",
     body: "With a free account you add friends with their code, challenge them, and we let you know when it's your turn.",

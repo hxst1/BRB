@@ -27,10 +27,10 @@
 <p style="margin:0 0 28px;font-size:16px;line-height:1.55;color:#c3c7d1">{{ if $en }}Someone (hopefully you) asked to change the password for <strong style="color:#f1f2f5">{{ .Email }}</strong>. Tap the button to choose a new one. The link expires in an hour and only works once.{{ else }}Alguien (esperamos que tú) ha pedido cambiar la contraseña de <strong style="color:#f1f2f5">{{ .Email }}</strong>. Pulsa el botón para elegir una nueva. El enlace caduca en una hora y solo sirve una vez.{{ end }}</p>
 <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
 <td bgcolor="#f1f2f5" style="background:#f1f2f5;border-radius:999px">
-<a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:15px 30px;font-size:16px;font-weight:800;color:#111318;text-decoration:none;border-radius:999px">{{ if $en }}Choose a password{{ else }}Elegir contraseña{{ end }}</a>
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=%2Fentrar%2Fnueva-contrasena" style="display:inline-block;padding:15px 30px;font-size:16px;font-weight:800;color:#111318;text-decoration:none;border-radius:999px">{{ if $en }}Choose a password{{ else }}Elegir contraseña{{ end }}</a>
 </td></tr></table>
 <p style="margin:28px 0 0;font-size:13px;line-height:1.5;color:#959bab">{{ if $en }}Button not working? Copy this link into your browser:{{ else }}¿El botón no funciona? Copia este enlace en el navegador:{{ end }}<br>
-<a href="{{ .ConfirmationURL }}" style="color:#959bab;word-break:break-all">{{ .ConfirmationURL }}</a></p>
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=%2Fentrar%2Fnueva-contrasena" style="color:#959bab;word-break:break-all">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=%2Fentrar%2Fnueva-contrasena</a></p>
 <div style="height:1px;background:#2a2e38;margin:24px 0 18px;font-size:0;line-height:0">&nbsp;</div>
 <p style="margin:0;font-size:13px;line-height:1.5;color:#959bab">{{ if $en }}If you didn't ask for this, ignore this email: your password stays the same.{{ else }}Si no lo has pedido tú, ignora este email: tu contraseña sigue siendo la misma.{{ end }}</p>
 </td></tr>

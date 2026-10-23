@@ -913,6 +913,13 @@ export const es = {
     newPassword: "Contraseña nueva",
     save: "Guardar contraseña",
   },
+  confirmLink: {
+    title: "Un último paso",
+    recovery: "Pulsa el botón para elegir tu contraseña nueva.",
+    email: "Pulsa el botón para confirmar tu email y entrar.",
+    choosePassword: "Elegir contraseña",
+    continue: "Confirmar y entrar",
+  },
   signInPrompt: {
     title: "Entra para retar a tus amigos",
     body: "Con una cuenta gratuita añades amigos con su código, los retas y te avisamos cuando te toca.",
