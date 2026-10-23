@@ -122,6 +122,8 @@ async function acceptedVersions(supabase: Awaited<ReturnType<typeof createClient
 
 export async function signOut() {
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  // Solo este dispositivo: sin `scope`, Supabase cierra la sesión en todos (salir
+  // en el móvil te echaba también del ordenador).
+  await supabase.auth.signOut({ scope: "local" });
   redirect("/");
 }
