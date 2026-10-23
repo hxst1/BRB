@@ -32,10 +32,10 @@ export function DashboardSkeleton() {
       <div className="mt-14">
         <div className={`h-7 w-32 rounded-lg ${block}`} />
         <div className={`mt-2 mb-4 h-4 w-56 rounded-md ${block}`} />
-        {/* Como la fila de juegos: deslizable en el móvil (asoma la tercera), en cuadrícula después. */}
+        {/* Como la fila de juegos: deslizable en el móvil (asoma la siguiente), en cuadrícula después. */}
         <div className="-mx-4 flex gap-3 overflow-hidden px-4 pt-1 pb-3 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:p-0 lg:grid-cols-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className={`h-80 w-[clamp(9.5rem,42%,11rem)] shrink-0 rounded-3xl sm:w-auto ${block}`} />
+            <div key={i} className={`h-44 w-[clamp(16rem,78%,20rem)] shrink-0 rounded-3xl sm:h-80 sm:w-auto ${block}`} />
           ))}
         </div>
       </div>

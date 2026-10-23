@@ -29,10 +29,10 @@ const PREVIEW_CHESS = ["bk", "", "", "br", "", "bp", "", "", "", "", "rn", "", "
 const PREVIEW_WORDLE = ["bybbb", "gbygb", "ggggg"];
 
 /**
- * En el móvil, fila deslizable: cada tarjeta mide algo menos de la mitad del
- * ancho para que asome la siguiente y se vea que hay más juegos al lado.
+ * En el móvil, fila deslizable de tarjetas apaisadas: cada una ocupa unas tres
+ * cuartas partes del ancho para que asome la siguiente y se vea que hay más.
  */
-const ITEM = "w-[clamp(9.5rem,42%,11rem)] shrink-0 snap-start sm:w-auto";
+const ITEM = "w-[clamp(16rem,78%,20rem)] shrink-0 snap-start sm:w-auto";
 
 export type GameId =
   | "2048"
@@ -374,12 +374,14 @@ function GameSection({ title, description, children }: { title: string; descript
 /**
  * `pinned` undefined: sin chincheta (sin sesión). El enlace cubre toda la
  * tarjeta (con ::after) y la chincheta queda por encima, junto al título.
+ * En el móvil, apaisada (dibujo a la izquierda, nombre a la derecha y tus
+ * datos debajo); desde `sm`, en vertical.
  */
 function GameCard({ game, texts, stats, pinned }: { game: Game; texts: { title: string; subtitle: string }; stats?: ReactNode; pinned?: boolean }) {
   return (
-    <div className="group relative flex h-full flex-col gap-3 rounded-3xl bg-surface p-3.5 shadow-soft transition-shadow hover:shadow-lift sm:gap-5 sm:p-5">
-      {game.preview}
-      <div className="flex items-start justify-between gap-2">
+    <div className="group relative grid h-full grid-cols-[6rem_minmax(0,1fr)] grid-rows-[auto_1fr] gap-x-3.5 gap-y-3 rounded-3xl bg-surface p-3.5 shadow-soft transition-shadow hover:shadow-lift sm:flex sm:flex-col sm:gap-5 sm:p-5">
+      <div className="self-center sm:self-auto">{game.preview}</div>
+      <div className="flex items-start justify-between gap-2 self-center sm:self-auto">
         <div className="min-w-0">
           <Link href={game.href} className="display block text-2xl font-bold after:absolute after:inset-0 after:rounded-3xl sm:text-3xl">
             {texts.title}
@@ -388,7 +390,7 @@ function GameCard({ game, texts, stats, pinned }: { game: Game; texts: { title: 
         </div>
         {pinned !== undefined && <PinButton game={game.id} title={texts.title} pinned={pinned} />}
       </div>
-      {stats && <div className="mt-auto border-t border-line pt-2.5 text-xs sm:pt-3 sm:text-sm">{stats}</div>}
+      {stats && <div className="col-span-2 self-end border-t border-line pt-2.5 text-xs sm:mt-auto sm:self-stretch sm:pt-3 sm:text-sm">{stats}</div>}
     </div>
   );
 }
