@@ -245,7 +245,8 @@ otp_expiry = 3600
 # sender_name = "Admin"
 
 # Emails en el idioma de la cuenta (metadato `locale`; español si no hay).
-# En producción se suben con `pnpm db:email-templates`.
+# Las genera `pnpm emails:build` (scripts/emails/build.mjs); en producción se
+# suben con `pnpm db:email-templates`.
 [auth.email.template.confirmation]
 subject = "{{ if eq (printf \"%v\" .Data.locale) \"en\" }}Confirm your email{{ else }}Confirma tu email{{ end }}"
 content_path = "./supabase/templates/confirmation.html"

@@ -1,11 +1,46 @@
-{{ if eq (printf "%v" .Data.locale) "en" }}
-<h2>Confirm your email</h2>
-<p>Hi {{ .Data.username }}, thanks for signing up. Tap the button to confirm your email and start playing.</p>
-<p><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 20px;border-radius:999px;background:#15171c;color:#ffffff;text-decoration:none;font-weight:600">Confirm my email</a></p>
-<p style="color:#6b7280;font-size:14px">If you didn't create an account, you can ignore this email.</p>
-{{ else }}
-<h2>Confirma tu email</h2>
-<p>Hola, {{ .Data.username }}. Gracias por registrarte. Pulsa el botón para confirmar tu email y empezar a jugar.</p>
-<p><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 20px;border-radius:999px;background:#15171c;color:#ffffff;text-decoration:none;font-weight:600">Confirmar mi email</a></p>
-<p style="color:#6b7280;font-size:14px">Si no has creado ninguna cuenta, puedes ignorar este email.</p>
-{{ end }}
+{{ $en := eq (printf "%v" .Data.locale) "en" }}<!doctype html>
+<html lang="{{ if $en }}en{{ else }}es{{ end }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="supported-color-schemes" content="dark">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,800&display=swap" rel="stylesheet">
+<title>{{ if $en }}You're almost in!{{ else }}¡Ya casi estás!{{ end }}</title>
+</head>
+<body style="margin:0;padding:0;background:#111318">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#111318">{{ if $en }}One click and you're in.{{ else }}Un clic y empiezas a jugar.{{ end }}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#111318" style="background:#111318">
+<tr><td align="center" style="padding:40px 16px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;font-family:'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+
+<tr><td style="padding:0 8px 20px">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+<td style="padding-right:12px"><img src="{{ .SiteURL }}/icons/icon-192.png" width="40" height="40" alt="" style="display:block;border-radius:12px"></td>
+<td style="font-size:24px;font-weight:800;letter-spacing:-0.5px;color:#f1f2f5">BRB</td>
+</tr></table>
+</td></tr>
+
+<tr><td bgcolor="#1b1e25" style="background:#1b1e25;border-radius:28px;padding:32px 28px 30px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 28px"><tr><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#ffd8b0;font-size:0;line-height:0">&nbsp;</div></td><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#ffb98a;font-size:0;line-height:0">&nbsp;</div></td><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#ff9473;font-size:0;line-height:0">&nbsp;</div></td><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#ff6b6b;font-size:0;line-height:0">&nbsp;</div></td><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#ffd43b;font-size:0;line-height:0">&nbsp;</div></td><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#fab005;font-size:0;line-height:0">&nbsp;</div></td><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#8ce99a;font-size:0;line-height:0">&nbsp;</div></td><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#3bc9db;font-size:0;line-height:0">&nbsp;</div></td><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#845ef7;font-size:0;line-height:0">&nbsp;</div></td></tr></table>
+<h1 style="margin:0 0 14px;font-size:34px;line-height:1.05;font-weight:800;letter-spacing:-1px;color:#f1f2f5">{{ if $en }}You're almost in!{{ else }}¡Ya casi estás!{{ end }}</h1>
+<p style="margin:0 0 28px;font-size:16px;line-height:1.55;color:#c3c7d1">{{ if $en }}Hi, <strong style="color:#f1f2f5">{{ .Data.username }}</strong>. Confirm your email and your monster will be waiting: rankings, the daily challenge and games against your friends.{{ else }}Hola, <strong style="color:#f1f2f5">{{ .Data.username }}</strong>. Confirma tu email y tu monster te estará esperando: rankings, reto diario y partidas contra tus amigos.{{ end }}</p>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+<td bgcolor="#f1f2f5" style="background:#f1f2f5;border-radius:999px">
+<a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:15px 30px;font-size:16px;font-weight:800;color:#111318;text-decoration:none;border-radius:999px">{{ if $en }}Confirm my email{{ else }}Confirmar mi email{{ end }}</a>
+</td></tr></table>
+<p style="margin:28px 0 0;font-size:13px;line-height:1.5;color:#959bab">{{ if $en }}Button not working? Copy this link into your browser:{{ else }}¿El botón no funciona? Copia este enlace en el navegador:{{ end }}<br>
+<a href="{{ .ConfirmationURL }}" style="color:#959bab;word-break:break-all">{{ .ConfirmationURL }}</a></p>
+<div style="height:1px;background:#2a2e38;margin:24px 0 18px;font-size:0;line-height:0">&nbsp;</div>
+<p style="margin:0;font-size:13px;line-height:1.5;color:#959bab">{{ if $en }}If you didn't create an account, ignore this email: nothing will happen.{{ else }}Si no has creado ninguna cuenta, ignora este email: no pasará nada.{{ end }}</p>
+</td></tr>
+
+<tr><td align="center" style="padding:22px 8px 0;font-size:12px;line-height:1.5;color:#959bab">
+BRB · {{ if $en }}Mini-games to switch off{{ else }}Minijuegos para desconectar{{ end }}
+</td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>
