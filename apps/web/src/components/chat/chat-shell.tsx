@@ -57,7 +57,8 @@ export function ChatShell({
   const m = useMessages();
   return (
     <div className="grid h-[calc(100dvh-13.5rem-env(safe-area-inset-bottom))] min-h-80 gap-8 sm:h-[calc(100dvh-11rem)] lg:grid-cols-[18rem_minmax(0,1fr)]">
-      <div className={`min-h-0 overflow-y-auto ${friendId ? "hidden lg:block" : ""}`}>
+      {/* Hueco a los lados para el resaltado de cada chat (sus -mx-2), sin scroll horizontal. */}
+      <div className={`-mx-2 min-h-0 overflow-x-hidden overflow-y-auto px-2 ${friendId ? "hidden lg:block" : ""}`}>
         <ConversationList items={items} activeId={friendId} />
       </div>
       <div className={`min-h-0 ${friendId ? "" : "hidden lg:block"}`}>
