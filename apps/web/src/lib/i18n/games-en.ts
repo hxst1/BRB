@@ -202,7 +202,7 @@ export const GAMES_EN: Record<keyof typeof GAMES_ES, GameTexts> = {
     tagline: "Turn by turn, no clock",
     genre: "Strategy game",
     howTo: [
-      "Challenge a friend. One plays white, who moves first, and the other black.",
+      "Challenge a friend. One plays red, who moves first, and the other blue.",
       "Taking turns, each of you moves a piece. Tap one of your pieces to see where it can go.",
       "Checkmate wins: the opponent's king is attacked and has no way out.",
       "It's a draw by stalemate, by repeating the same position three times, after 50 moves without a capture or pawn move, and when there isn't enough material left to checkmate.",

@@ -11,7 +11,7 @@ const HOW_TO_PLAY_ES: Record<string, HowToPlay> = {
   chess: {
     goal: "Da jaque mate al rey de tu amigo: amenázalo sin que pueda escapar.",
     steps: [
-      { icon: "👋", text: "Reta a un amigo. Empiezan las blancas." },
+      { icon: "👋", text: "Reta a un amigo. Empiezan las rojas." },
       { icon: "👆", text: "Toca una pieza tuya: se marcan las casillas adonde puede ir. Luego toca el destino." },
       { icon: "♞", text: "Cada pieza se mueve a su manera. La app solo te deja hacer jugadas legales." },
       { icon: "⏳", text: "No hay reloj: mueve cuando puedas y avisaremos a tu amigo." },
@@ -132,7 +132,7 @@ const HOW_TO_PLAY_EN: Record<string, HowToPlay> = {
   chess: {
     goal: "Checkmate your friend's king: attack it so it has nowhere to escape.",
     steps: [
-      { icon: "👋", text: "Challenge a friend. White moves first." },
+      { icon: "👋", text: "Challenge a friend. Red moves first." },
       { icon: "👆", text: "Tap one of your pieces: the squares it can move to light up. Then tap where it goes." },
       { icon: "♞", text: "Each piece moves its own way. The app only lets you make legal moves." },
       { icon: "⏳", text: "There's no clock: move whenever you can and we'll let your friend know." },

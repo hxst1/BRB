@@ -221,7 +221,7 @@ export const GAMES_ES = {
     tagline: "Por turnos, sin reloj",
     genre: "Juego de estrategia",
     howTo: [
-      "Reta a un amigo. Uno juega con blancas, que empiezan, y el otro con negras.",
+      "Reta a un amigo. Uno juega con las rojas, que empiezan, y el otro con las azules.",
       "Por turnos, cada uno mueve una pieza. Toca una pieza tuya para ver adónde puede ir.",
       "Gana quien dé jaque mate: el rey rival está amenazado y no tiene escapatoria.",
       "Hay tablas por ahogado, por repetir tres veces la misma posición, por 50 jugadas sin capturas ni movimientos de peón y cuando no queda material para dar mate.",

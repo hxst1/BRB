@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { replay, type ChessState, type Mark } from "@repo/games/chess";
 import type { Mood } from "@repo/avatars";
 import type { Match } from "@repo/db";
@@ -17,7 +17,7 @@ import { MatchNotFound } from "@/components/match-not-found";
 
 const PATH = "/ajedrez";
 
-/** Partida de ajedrez por turnos contra un amigo. X juega con blancas. */
+/** Partida de ajedrez por turnos contra un amigo. X juega con rojas. */
 export function ChessMatchView({ matchId, viewerId }: { matchId: string; viewerId: string }) {
   const router = useRouter();
   const m = useMessages();
@@ -110,12 +110,13 @@ export function ChessMatchView({ matchId, viewerId }: { matchId: string; viewerI
     <span className="mt-1 flex items-center gap-1 text-xs text-muted">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={pieceSrc(mark, "k")} alt="" className="size-4" />
-      {mark === "x" ? m.chess.white : m.chess.black}
+      {mark === "x" ? m.chess.red : m.chess.blue}
     </span>
   );
 
   return (
-    <div className="flex w-full max-w-lg flex-col gap-5">
+    // Los aros de turno (PlayerBadge) toman el color de las piezas.
+    <div className="flex w-full max-w-lg flex-col gap-5" style={{ "--mark-x": "var(--chess-red)", "--mark-o": "var(--chess-blue)" } as CSSProperties}>
       <div className="flex items-center justify-between gap-4">
         <PlayerBadge player={players[me]} mark={me} label={m.match.you} active={myTurn} mood={moodOf(me)} detail={side(me)} />
         <span className="text-sm text-muted">{m.match.versus}</span>

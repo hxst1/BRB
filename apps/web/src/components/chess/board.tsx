@@ -6,15 +6,18 @@ import { useMessages } from "@/lib/i18n/client";
 
 const FILES = "abcdefgh";
 
-/** Imagen de una pieza (public/chess, piezas Cburnett). */
+/** Imagen de una pieza (public/chess, piezas kiwen suwi): rojas (X, las blancas de siempre) o azules. */
 export function pieceSrc(mark: Mark, type: string): string {
-  return `/chess/${mark === "x" ? "w" : "b"}${type}.svg`;
+  return `/chess/${mark === "x" ? "r" : "b"}${type}.svg`;
 }
+
+/** Color de las piezas de cada jugador; la última jugada se marca con él, más claro. */
+export const PIECE_COLOR: Record<Mark, string> = { x: "var(--chess-red)", o: "var(--chess-blue)" };
 
 /**
  * Tablero de ajedrez. Se toca una pieza propia (se marcan sus jugadas
  * legales) y luego el destino; si el peón corona, se elige la pieza. Quien
- * juega con negras (O) lo ve girado.
+ * juega con azules (O) lo ve girado.
  */
 export function ChessBoard({
   state,
@@ -68,10 +71,11 @@ export function ChessBoard({
           const piece = state.board[square];
           const target = targets.find((t) => t.to === square);
           const lastMove = state.last && (state.last.from === square || state.last.to === square);
+          const mover = state.last ? state.board[state.last.to]?.mark : undefined;
           const background = selected === square
             ? "color-mix(in srgb, var(--t128) 65%, var(--cell))"
-            : lastMove
-              ? `color-mix(in srgb, var(--t128) ${dark ? 40 : 30}%, ${dark ? "var(--chess-dark)" : "var(--chess-light)"})`
+            : lastMove && mover
+              ? `color-mix(in srgb, ${PIECE_COLOR[mover]} 38%, ${dark ? "var(--chess-dark)" : "var(--chess-light)"})`
               : dark
                 ? "var(--chess-dark)"
                 : "var(--chess-light)";
@@ -80,7 +84,7 @@ export function ChessBoard({
               key={square}
               type="button"
               role="gridcell"
-              aria-label={`${FILES[file]}${rank}${piece ? `: ${m.chess.pieces[piece.type]} ${piece.mark === "x" ? m.chess.white : m.chess.black}` : ""}`}
+              aria-label={`${FILES[file]}${rank}${piece ? `: ${m.chess.pieces[piece.type]} ${piece.mark === "x" ? m.chess.red : m.chess.blue}` : ""}`}
               aria-selected={selected === square}
               disabled={!canPlay}
               onClick={() => tap(square)}

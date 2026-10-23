@@ -24,7 +24,7 @@ const PREVIEW_SUDOKU: [string, "p" | "j" | ""][] = [
   ["7", "j"], ["", ""], ["4", "p"],
 ];
 /** Ajedrez en miniatura (4 × 4, la esquina de un tablero): pieza y su color, o vacía. */
-const PREVIEW_CHESS = ["bk", "", "", "br", "", "bp", "", "", "", "", "wn", "", "wq", "", "", "wk"];
+const PREVIEW_CHESS = ["bk", "", "", "br", "", "bp", "", "", "", "", "rn", "", "rq", "", "", "rk"];
 /** Wordle en miniatura: tres intentos hasta acertar. */
 const PREVIEW_WORDLE = ["bybbb", "gbygb", "ggggg"];
 

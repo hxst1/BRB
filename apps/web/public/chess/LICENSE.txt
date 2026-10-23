@@ -3,5 +3,5 @@ Lichess (https://github.com/lichess-org/lila/tree/master/public/piece/kiwen-suwi
 Licencia: Creative Commons Attribution 4.0 International (CC BY 4.0),
 https://creativecommons.org/licenses/by/4.0/
 
-Modificadas para esta app: recoloreadas con su paleta (blancas con el contorno del color de la tinta,
-negras en el morado de la ficha 2048).
+Modificadas para esta app: recoloreadas con su paleta (unas rojas y otras azules, todas con el
+contorno oscuro de las piezas blancas originales).

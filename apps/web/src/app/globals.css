@@ -498,6 +498,9 @@ body {
 :root {
   --chess-light: var(--cell);
   --chess-dark: color-mix(in srgb, var(--ink) 9%, var(--cell));
+  /* Las piezas (public/chess) llevan estos mismos colores. */
+  --chess-red: #ff6b6b;
+  --chess-blue: #74c0fc;
 }
 
 /* Páginas de error: las fichas del código caen una a una y el monster asoma después. */
