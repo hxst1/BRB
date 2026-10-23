@@ -6,9 +6,11 @@ import { GameGuideSection } from "@/components/seo/game-guide";
 import { SignInPrompt } from "@/components/seo/sign-in-prompt";
 import { gameMetadata } from "@/lib/seo";
 import { HowToPlayButton } from "@/components/how-to-play";
-import { getMessages } from "@/lib/i18n/server";
+import { getLocale, getMessages } from "@/lib/i18n/server";
 
-export const metadata: Metadata = gameMetadata("tron");
+export async function generateMetadata(): Promise<Metadata> {
+  return gameMetadata("tron", await getLocale());
+}
 
 export default async function TronPage() {
   const m = await getMessages();

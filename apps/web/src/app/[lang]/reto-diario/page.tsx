@@ -9,13 +9,16 @@ import { DAILY_GAMES, dailyGameName } from "@/lib/daily";
 import { getLocale, getMessages } from "@/lib/i18n/server";
 import { getViewerId } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { alternatesFor } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Reto diario: un minijuego distinto cada día",
-  description:
-    "Cada día, la misma partida para todo el mundo y un solo intento: 2048, Snake, Buscaminas, Lights Out o Sudoku según el día. Juega gratis y mantén tu racha.",
-  alternates: { canonical: "/reto-diario" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const [m, locale] = await Promise.all([getMessages(), getLocale()]);
+  return {
+    title: m.meta.dailyTitle,
+    description: m.meta.dailyDescription,
+    alternates: alternatesFor("/reto-diario", locale),
+  };
+}
 
 export default function DailyPage() {
   return (

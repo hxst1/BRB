@@ -6,13 +6,17 @@ import { Avatar } from "@repo/ui/avatar";
 import { SupportOptions } from "@/components/support/support-options";
 import { WhereItGoes } from "@/components/support/where-it-goes";
 import { getViewer } from "@/lib/session";
-import { getMessages } from "@/lib/i18n/server";
+import { getLocale, getMessages } from "@/lib/i18n/server";
+import { alternatesFor } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Apoyar",
-  description: `Ayuda a mantener ${brand.name} y consigue partes exclusivas para tu monster.`,
-  alternates: { canonical: "/apoyar" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const [m, locale] = await Promise.all([getMessages(), getLocale()]);
+  return {
+    title: m.meta.supportTitle,
+    description: m.meta.supportDescription(brand.name),
+    alternates: alternatesFor("/apoyar", locale),
+  };
+}
 
 export default async function SupportPage() {
   const m = await getMessages();

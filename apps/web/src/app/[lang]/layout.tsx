@@ -10,7 +10,8 @@ import { ServiceWorker } from "@/components/pwa/service-worker";
 import { SiteHeader } from "@/components/site-header";
 import { I18nProvider } from "@/lib/i18n/client";
 import { LOCALES } from "@/lib/i18n/locales";
-import { getLocale } from "@/lib/i18n/server";
+import { getLocale, getMessages } from "@/lib/i18n/server";
+import { localizedPath, OG_LOCALE } from "@/lib/seo";
 import "../globals.css";
 
 const bricolage = Bricolage_Grotesque({
@@ -19,36 +20,40 @@ const bricolage = Bricolage_Grotesque({
   axes: ["opsz", "wdth"],
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl()),
-  title: {
-    default: `${brand.name}: minijuegos online gratis`,
-    template: `%s · ${brand.name}`,
-  },
-  description: brand.description,
-  applicationName: brand.name,
-  category: "games",
-  openGraph: {
-    type: "website",
-    siteName: brand.name,
-    locale: "es_ES",
-    title: `${brand.name}: minijuegos online gratis`,
-    description: brand.description,
-    url: "/",
-  },
-  twitter: { card: "summary_large_image" },
-  // Códigos de Google Search Console y Bing Webmaster Tools, cuando haya dominio.
-  verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
-    other: process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
-      ? { "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION }
-      : undefined,
-  },
-  appleWebApp: {
-    capable: true,
-    title: brand.name,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const [m, locale] = await Promise.all([getMessages(), getLocale()]);
+  return {
+    metadataBase: new URL(siteUrl()),
+    title: {
+      default: m.meta.title(brand.name),
+      template: `%s · ${brand.name}`,
+    },
+    description: m.landing.description,
+    applicationName: brand.name,
+    category: "games",
+    openGraph: {
+      type: "website",
+      siteName: brand.name,
+      locale: OG_LOCALE[locale],
+      alternateLocale: Object.values(OG_LOCALE).filter((value) => value !== OG_LOCALE[locale]),
+      title: m.meta.title(brand.name),
+      description: m.landing.description,
+      url: localizedPath("/", locale),
+    },
+    twitter: { card: "summary_large_image" },
+    // Códigos de Google Search Console y Bing Webmaster Tools, cuando haya dominio.
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+      other: process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
+        ? { "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION }
+        : undefined,
+    },
+    appleWebApp: {
+      capable: true,
+      title: brand.name,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   // Para que la barra de pestañas respete la zona del indicador de inicio en iOS.

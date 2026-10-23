@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { signupHref } from "@/lib/signup";
-import { useMessages } from "@/lib/i18n/client";
+import { useMessages, usePagePath } from "@/lib/i18n/client";
 
 /**
  * En el móvil, para quien no ha iniciado sesión: una barra abajo (donde los
@@ -11,7 +10,7 @@ import { useMessages } from "@/lib/i18n/client";
  * pantalla de entrar, que ya es eso.
  */
 export function GuestBar() {
-  const pathname = usePathname();
+  const pathname = usePagePath();
   const m = useMessages();
   if (pathname.startsWith("/entrar") || pathname === "/cuenta-borrada") return null;
 

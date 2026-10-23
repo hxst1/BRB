@@ -4,8 +4,12 @@ import { Suspense } from "react";
 import { ChatShell } from "@/components/chat/chat-shell";
 import { getViewer } from "@/lib/session";
 import { PRIVATE_PAGE } from "@/lib/seo";
+import { getMessages } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "Chat", robots: PRIVATE_PAGE };
+export async function generateMetadata(): Promise<Metadata> {
+  const m = await getMessages();
+  return { title: m.nav.chat, robots: PRIVATE_PAGE };
+}
 
 export default function ConversationPage({ params }: PageProps<"/[lang]/chat/[friendId]">) {
   return (

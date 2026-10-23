@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { createContext, useContext, type ReactNode } from "react";
 import { messagesFor, type Messages } from "./index";
 import type { Locale } from "./locales";
@@ -18,4 +19,10 @@ export function useLocale(): Locale {
 /** Textos del idioma actual. */
 export function useMessages(): Messages {
   return messagesFor(useLocale());
+}
+
+/** La ruta de la página sin el prefijo de idioma (/en/sudoku → /sudoku), para comparar rutas. */
+export function usePagePath(): string {
+  const pathname = usePathname();
+  return pathname === "/en" ? "/" : pathname.startsWith("/en/") ? pathname.slice(3) : pathname;
 }

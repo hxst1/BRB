@@ -4,8 +4,12 @@ import { Suspense } from "react";
 import { MatchView } from "@/components/tictactoe/match-view";
 import { getViewer } from "@/lib/session";
 import { PRIVATE_PAGE } from "@/lib/seo";
+import { getMessages } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "4 en raya", robots: PRIVATE_PAGE };
+export async function generateMetadata(): Promise<Metadata> {
+  const m = await getMessages();
+  return { title: m.matchGames.connect4, robots: PRIVATE_PAGE };
+}
 
 export default function MatchPage({ params }: PageProps<"/[lang]/4-en-raya/[id]">) {
   return (

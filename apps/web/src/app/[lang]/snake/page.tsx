@@ -5,9 +5,11 @@ import { getViewerId } from "@/lib/session";
 import { GameGuideSection } from "@/components/seo/game-guide";
 import { gameMetadata } from "@/lib/seo";
 import { HowToPlayButton } from "@/components/how-to-play";
-import { getMessages } from "@/lib/i18n/server";
+import { getLocale, getMessages } from "@/lib/i18n/server";
 
-export const metadata: Metadata = gameMetadata("snake");
+export async function generateMetadata(): Promise<Metadata> {
+  return gameMetadata("snake", await getLocale());
+}
 
 export default async function SnakePage() {
   const m = await getMessages();

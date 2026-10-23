@@ -8,7 +8,10 @@ import { AuthForm } from "./auth-form";
 import { PRIVATE_PAGE } from "@/lib/seo";
 import { getMessages } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "Entrar", robots: PRIVATE_PAGE };
+export async function generateMetadata(): Promise<Metadata> {
+  const m = await getMessages();
+  return { title: m.common.signIn, robots: PRIVATE_PAGE };
+}
 
 export default function SignInPage({ searchParams }: PageProps<"/[lang]/entrar">) {
   return (

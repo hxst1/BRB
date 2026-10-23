@@ -1,7 +1,7 @@
 import { brand } from "@repo/brand";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getLocale, getMessages } from "@/lib/i18n/server";
-import { absoluteUrl, guidesFor, homeFaq } from "@/lib/seo";
+import { absoluteUrl, guidesFor, homeFaq, localizedPath } from "@/lib/seo";
 import { GameCards } from "./game-cards";
 import { SignupButtons, SignupPerks } from "./signup-pitch";
 
@@ -47,10 +47,10 @@ export async function Landing() {
           "@graph": [
             {
               "@type": "WebSite",
-              "@id": `${absoluteUrl("/")}#website`,
+              "@id": `${absoluteUrl(localizedPath("/", locale))}#website`,
               name: brand.name,
               alternateName: brand.expansion,
-              url: absoluteUrl("/"),
+              url: absoluteUrl(localizedPath("/", locale)),
               description: m.landing.description,
               inLanguage: locale,
             },
@@ -60,7 +60,7 @@ export async function Landing() {
               itemListElement: guidesFor(locale).map((game, i) => ({
                 "@type": "ListItem",
                 position: i + 1,
-                url: absoluteUrl(game.path),
+                url: absoluteUrl(localizedPath(game.path, locale)),
                 name: game.name,
               })),
             },

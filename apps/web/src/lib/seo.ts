@@ -61,13 +61,30 @@ export function gameGuide(id: string, locale: Locale = "es"): GameGuide {
 }
 
 /** Metadatos de la página de un juego: título, descripción, URL canónica y tarjetas al compartir. */
-export function gameMetadata(id: string): Metadata {
-  const game = gameGuide(id);
+/** Dirección pública de una página en un idioma: la española sin prefijo, la inglesa con /en. */
+export function localizedPath(path: string, locale: Locale): string {
+  return locale === "es" ? path : `/${locale}${path === "/" ? "" : path}`;
+}
+
+/** Canónica en el idioma de la página y la misma página en el otro (hreflang). */
+export function alternatesFor(path: string, locale: Locale): NonNullable<Metadata["alternates"]> {
+  return {
+    canonical: localizedPath(path, locale),
+    languages: { es: path, en: localizedPath(path, "en"), "x-default": path },
+  };
+}
+
+/** Código de idioma y región para Open Graph. */
+export const OG_LOCALE: Record<Locale, string> = { es: "es_ES", en: "en_US" };
+
+export function gameMetadata(id: string, locale: Locale = "es"): Metadata {
+  const game = gameGuide(id, locale);
+  const url = localizedPath(game.path, locale);
   return {
     title: game.title,
     description: game.description,
-    alternates: { canonical: game.path },
-    openGraph: { title: `${game.title} · ${brand.name}`, description: game.description, url: game.path, type: "website" },
+    alternates: alternatesFor(game.path, locale),
+    openGraph: { title: `${game.title} · ${brand.name}`, description: game.description, url, type: "website", locale: OG_LOCALE[locale] },
   };
 }
 

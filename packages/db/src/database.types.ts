@@ -187,6 +187,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"legal_translations": {
+                  Row: {
+                    "body": string,"lang": string,"slug": string,"title": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body": string,"lang": string,"slug": string,"title": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "body"?: string,"lang"?: string,"slug"?: string,"title"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "legal_translations_slug_fkey"
+      columns: ["slug"]
+isOneToOne: false
+      referencedRelation: "legal_documents"
+      referencedColumns: ["slug"]
+    }
+                  ]
                 },"match_choices": {
                   Row: {
                     "choice": number,"created_at": string,"match_id": string,"player_id": string,"round": number
@@ -561,6 +581,9 @@ isOneToOne: false
                            },
 "admin_update_legal_document":
 { Args: { "admin_id": string,"body": string,"reason"?: string,"slug": string,"title": string }; Returns: number
+                           },
+"admin_update_legal_translation":
+{ Args: { "admin_id": string,"body": string,"lang": string,"reason"?: string,"slug": string,"title": string }; Returns: undefined
                            },
 "apply_match_move":
 { Args: { "end_reason"?: string,"match_id": string,"moves": (number)[],"previous_count": number,"winner"?: string }; Returns: undefined

@@ -17,7 +17,10 @@ import { createClient } from "@/lib/supabase/server";
 import { PRIVATE_PAGE } from "@/lib/seo";
 import { getMessages } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "Tu perfil", robots: PRIVATE_PAGE };
+export async function generateMetadata(): Promise<Metadata> {
+  const m = await getMessages();
+  return { title: m.meta.profile, robots: PRIVATE_PAGE };
+}
 
 /** Pestañas del perfil (en la URL: /perfil?seccion=logros). */
 const SECTIONS = ["monster", "logros", "records", "ajustes"] as const;

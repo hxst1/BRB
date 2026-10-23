@@ -1,5 +1,5 @@
 import { brand } from "@repo/brand";
-import { absoluteUrl, gameGuide } from "@/lib/seo";
+import { absoluteUrl, gameGuide, localizedPath } from "@/lib/seo";
 import { JsonLd } from "./json-ld";
 import { getLocale, getMessages } from "@/lib/i18n/server";
 
@@ -11,7 +11,7 @@ export async function GameGuideSection({ id }: { id: string }) {
   const locale = await getLocale();
   const m = await getMessages();
   const game = gameGuide(id, locale);
-  const url = absoluteUrl(game.path);
+  const url = absoluteUrl(localizedPath(game.path, locale));
 
   return (
     <section aria-labelledby="guide-title" className="mt-16 flex max-w-2xl flex-col gap-6 border-t border-line pt-8">
@@ -51,7 +51,7 @@ export async function GameGuideSection({ id }: { id: string }) {
               name: game.name,
               description: game.description,
               url,
-              image: absoluteUrl(`${game.path}/opengraph-image`),
+              image: absoluteUrl(`${localizedPath(game.path, locale)}/opengraph-image`),
               inLanguage: locale,
               genre: game.genre,
               gamePlatform: [m.howTo.webBrowser, "Android", "iOS"],
@@ -61,7 +61,7 @@ export async function GameGuideSection({ id }: { id: string }) {
               numberOfPlayers: game.mode === "solo" ? 1 : 2,
               isAccessibleForFree: true,
               offers: { "@type": "Offer", price: 0, priceCurrency: "EUR" },
-              isPartOf: { "@type": "WebSite", name: brand.name, url: absoluteUrl("/") },
+              isPartOf: { "@type": "WebSite", name: brand.name, url: absoluteUrl(localizedPath("/", locale)) },
             },
             {
               "@type": "FAQPage",
@@ -70,7 +70,7 @@ export async function GameGuideSection({ id }: { id: string }) {
             {
               "@type": "BreadcrumbList",
               itemListElement: [
-                { "@type": "ListItem", position: 1, name: brand.name, item: absoluteUrl("/") },
+                { "@type": "ListItem", position: 1, name: brand.name, item: absoluteUrl(localizedPath("/", locale)) },
                 { "@type": "ListItem", position: 2, name: game.name, item: url },
               ],
             },

@@ -6,7 +6,7 @@ import type { Json } from "@repo/db";
 import { MAX_GUESSES, WORD_LENGTH, letterHints, shareGrid, type Mark } from "@repo/games/wordle";
 import { Avatar } from "@repo/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
-import { useLocale, useMessages } from "@/lib/i18n/client";
+import { useMessages } from "@/lib/i18n/client";
 import type { Locale } from "@/lib/i18n/locales";
 
 export type WordleState = {
@@ -43,18 +43,20 @@ const MARK_STYLE: Record<Mark, CSSProperties> = {
 };
 
 export function WordleGame({
+  lang,
   day,
   dayLabel,
   initial,
   initialFriends,
 }: {
+  /** Idioma de las palabras (puede no ser el de la app). */
+  lang: Locale;
   day: string;
   dayLabel: string;
   initial: WordleState;
   initialFriends: FriendResult[];
 }) {
   const m = useMessages();
-  const locale = useLocale();
   const [game, setGame] = useState(initial);
   const [current, setCurrent] = useState("");
   const [busy, setBusy] = useState(false);
@@ -83,7 +85,7 @@ export function WordleGame({
       const response = await fetch("/api/wordle/guess", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ day, guess: current, lang: locale }),
+        body: JSON.stringify({ day, guess: current, lang }),
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) return reject(body.error ?? m.wordle.checkError);
@@ -97,7 +99,7 @@ export function WordleGame({
         answer: body.answer,
       }));
       if (body.finished) {
-        const { data } = await createClient().rpc("get_wordle_friends", { lang: locale });
+        const { data } = await createClient().rpc("get_wordle_friends", { lang });
         setFriends(data ?? []);
       }
     } catch {
@@ -105,7 +107,7 @@ export function WordleGame({
     } finally {
       setBusy(false);
     }
-  }, [busy, current, day, game.finished, reject, m, locale]);
+  }, [busy, current, day, game.finished, reject, m, lang]);
 
   const type = useCallback(
     (key: string) => {
@@ -211,7 +213,7 @@ export function WordleGame({
           </button>
         </div>
       ) : (
-        <Keyboard rows={ROWS[locale]} hints={hints} onKey={type} disabled={busy} />
+        <Keyboard rows={ROWS[lang]} hints={hints} onKey={type} disabled={busy} />
       )}
 
       {game.finished && <Friends friends={friends} />}

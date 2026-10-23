@@ -8,9 +8,11 @@ import { createClient } from "@/lib/supabase/server";
 import { GameGuideSection } from "@/components/seo/game-guide";
 import { gameMetadata } from "@/lib/seo";
 import { HowToPlayButton } from "@/components/how-to-play";
-import { getMessages } from "@/lib/i18n/server";
+import { getLocale, getMessages } from "@/lib/i18n/server";
 
-export const metadata: Metadata = gameMetadata("2048");
+export async function generateMetadata(): Promise<Metadata> {
+  return gameMetadata("2048", await getLocale());
+}
 
 export default async function Game2048Page({ searchParams }: PageProps<"/[lang]/2048">) {
   const m = await getMessages();

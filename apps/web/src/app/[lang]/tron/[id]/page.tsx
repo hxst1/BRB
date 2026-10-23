@@ -4,8 +4,12 @@ import { Suspense } from "react";
 import { TronMatchView } from "@/components/tron/match-view";
 import { getViewer } from "@/lib/session";
 import { PRIVATE_PAGE } from "@/lib/seo";
+import { getMessages } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "Tron", robots: PRIVATE_PAGE };
+export async function generateMetadata(): Promise<Metadata> {
+  const m = await getMessages();
+  return { title: m.matchGames.tron, robots: PRIVATE_PAGE };
+}
 
 export default function TronMatchPage({ params }: PageProps<"/[lang]/tron/[id]">) {
   return (

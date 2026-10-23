@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { renderMarkdown } from "@/lib/markdown";
 import { createClient } from "@/lib/supabase/server";
 import { getLocale, getMessages } from "@/lib/i18n/server";
+import { alternatesFor } from "@/lib/seo";
 
 /** Los tres textos legales, en este orden en las pestañas. */
 const DOCUMENTS = [
@@ -18,26 +19,42 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/legal/[slug]">): Promise<Metadata> {
-  const { slug } = await params;
-  const label = DOCUMENTS.find((doc) => doc.slug === slug)?.label;
-  return label ? { title: label, alternates: { canonical: `/legal/${slug}` } } : {};
+  const [{ slug }, m, locale] = await Promise.all([params, getMessages(), getLocale()]);
+  const doc = DOCUMENTS.find((item) => item.slug === slug);
+  return doc ? { title: m.legal[doc.key], alternates: alternatesFor(`/legal/${slug}`, locale) } : {};
 }
 
-export default function LegalPage({ params }: PageProps<"/[lang]/legal/[slug]">) {
+export default function LegalPage({ params, searchParams }: PageProps<"/[lang]/legal/[slug]">) {
   return (
     <main className="mx-auto w-full max-w-2xl px-4 pt-4 pb-24 sm:px-6">
       <Suspense fallback={<div className="h-96 animate-pulse rounded-3xl bg-surface" />}>
-        <LegalDocument params={params} />
+        <LegalDocument params={params} searchParams={searchParams} />
       </Suspense>
     </main>
   );
 }
 
-async function LegalDocument({ params }: { params: PageProps<"/[lang]/legal/[slug]">["params"] }) {
-  const [{ slug }, m, locale] = await Promise.all([params, getMessages(), getLocale()]);
+/**
+ * El texto que vale es el español. En otro idioma se muestra su traducción (si
+ * la hay) avisando de ello, y con ?original el texto español.
+ */
+async function LegalDocument({
+  params,
+  searchParams,
+}: {
+  params: PageProps<"/[lang]/legal/[slug]">["params"];
+  searchParams: PageProps<"/[lang]/legal/[slug]">["searchParams"];
+}) {
+  const [{ slug }, { original }, m, locale, supabase] = await Promise.all([params, searchParams, getMessages(), getLocale(), createClient()]);
   if (!DOCUMENTS.some((doc) => doc.slug === slug)) notFound();
-  const { data: doc } = await (await createClient()).from("legal_documents").select("title, body, updated_at").eq("slug", slug).maybeSingle();
-  if (!doc) notFound();
+  const [{ data: spanish }, { data: translation }] = await Promise.all([
+    supabase.from("legal_documents").select("title, body, updated_at").eq("slug", slug).maybeSingle(),
+    locale === "es" || original !== undefined
+      ? Promise.resolve({ data: null })
+      : supabase.from("legal_translations").select("title, body, updated_at").eq("slug", slug).eq("lang", locale).maybeSingle(),
+  ]);
+  if (!spanish) notFound();
+  const doc = translation ?? spanish;
 
   return (
     <article className="flex flex-col gap-6">
@@ -66,8 +83,22 @@ async function LegalDocument({ params }: { params: PageProps<"/[lang]/legal/[slu
         <p className="mt-2 text-sm text-muted">
           {m.legal.updated(new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" }).format(new Date(doc.updated_at)))}
         </p>
-        {/* Los textos legales solo existen en español por ahora. */}
-        {locale !== "es" && <p className="mt-3 rounded-2xl p-3 text-sm" style={{ background: "var(--cell)" }}>{m.legal.onlySpanish}</p>}
+        {locale !== "es" && (
+          <p className="mt-3 rounded-2xl p-3 text-sm" style={{ background: "var(--cell)" }}>
+            {translation ? m.legal.translationNotice : original !== undefined ? m.legal.originalNotice : m.legal.onlySpanish}{" "}
+            {translation ? (
+              <Link href={`/legal/${slug}?original`} className="font-medium underline underline-offset-4">
+                {m.legal.readOriginal}
+              </Link>
+            ) : (
+              original !== undefined && (
+                <Link href={`/legal/${slug}`} className="font-medium underline underline-offset-4">
+                  {m.legal.readTranslation}
+                </Link>
+              )
+            )}
+          </p>
+        )}
       </header>
 
       {/* Texto del panel de admin, pasado por un Markdown que escapa todo el HTML (lib/markdown.ts). */}

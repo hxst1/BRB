@@ -1,10 +1,10 @@
-import { gameOgImage, OG_SIZE } from "@/lib/og";
+import { gameOgImage, OG_SIZE, ogLocale } from "@/lib/og";
 import { gameGuide } from "@/lib/seo";
 
 export const alt = gameGuide("tictactoe").title;
 export const size = OG_SIZE;
 export const contentType = "image/png";
 
-export default function Image() {
-  return gameOgImage("tictactoe");
+export default async function Image({ params }: { params: Promise<{ lang: string }> }) {
+  return gameOgImage("tictactoe", await ogLocale(params));
 }

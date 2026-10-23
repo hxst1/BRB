@@ -1,8 +1,8 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { usePagePath } from "@/lib/i18n/client";
 
 /** Cada cuánto se renueva la presencia mientras la app está a la vista. */
 const HEARTBEAT_MS = 20_000;
@@ -13,7 +13,7 @@ const HEARTBEAT_MS = 20_000;
  * mirando. Si se cierra sin avisar, la presencia caduca sola a los 45 s.
  */
 export function PresenceReporter() {
-  const pathname = usePathname();
+  const pathname = usePagePath();
 
   useEffect(() => {
     const supabase = createClient();

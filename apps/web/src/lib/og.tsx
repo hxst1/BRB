@@ -1,5 +1,7 @@
 import { ImageResponse } from "next/og";
 import { brand } from "@repo/brand";
+import { messagesFor } from "./i18n";
+import { isLocale, type Locale } from "./i18n/locales";
 import { gameGuide } from "./seo";
 
 /** Imágenes al compartir un enlace (WhatsApp, X, Discord…): 1200 × 630. */
@@ -58,7 +60,13 @@ export async function ogImage({ title, subtitle, accent = "#845ef7" }: { title: 
   );
 }
 
-export function gameOgImage(id: string) {
-  const game = gameGuide(id);
-  return ogImage({ title: game.name, subtitle: `${game.tagline}. Gratis, en el navegador.`, accent: game.accent });
+/** Idioma de una imagen a partir de los parámetros de su ruta (app/[lang]/…/opengraph-image). */
+export async function ogLocale(params: Promise<{ lang: string }>): Promise<Locale> {
+  const { lang } = await params;
+  return isLocale(lang) ? lang : "es";
+}
+
+export function gameOgImage(id: string, locale: Locale = "es") {
+  const game = gameGuide(id, locale);
+  return ogImage({ title: game.name, subtitle: messagesFor(locale).meta.ogGame(game.tagline), accent: game.accent });
 }

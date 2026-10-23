@@ -2,13 +2,17 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { RankingBoard } from "@/components/ranking/ranking-board";
 import { getViewer } from "@/lib/session";
-import { getMessages } from "@/lib/i18n/server";
+import { getLocale, getMessages } from "@/lib/i18n/server";
+import { alternatesFor } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Ranking de minijuegos",
-  description: "Clasificación mundial y entre amigos: quién tiene más nivel, los mejores en 2048, Snake, Sudoku y Buscaminas, y quién gana más partidas.",
-  alternates: { canonical: "/ranking" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const [m, locale] = await Promise.all([getMessages(), getLocale()]);
+  return {
+    title: m.meta.rankingTitle,
+    description: m.meta.rankingDescription,
+    alternates: alternatesFor("/ranking", locale),
+  };
+}
 
 export default async function RankingPage() {
   const m = await getMessages();

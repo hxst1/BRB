@@ -4,8 +4,12 @@ import { Suspense } from "react";
 import { getViewer } from "@/lib/session";
 import { NewPasswordForm } from "./new-password-form";
 import { PRIVATE_PAGE } from "@/lib/seo";
+import { getMessages } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "Nueva contraseña", robots: PRIVATE_PAGE };
+export async function generateMetadata(): Promise<Metadata> {
+  const m = await getMessages();
+  return { title: m.recover.newTitle, robots: PRIVATE_PAGE };
+}
 
 export default function NewPasswordPage() {
   return (

@@ -3,8 +3,12 @@ import { Suspense } from "react";
 import { Dashboard } from "@/components/home/dashboard";
 import { Landing } from "@/components/home/landing";
 import { getViewer } from "@/lib/session";
+import { getLocale } from "@/lib/i18n/server";
+import { alternatesFor } from "@/lib/seo";
 
-export const metadata: Metadata = { alternates: { canonical: "/" } };
+export async function generateMetadata(): Promise<Metadata> {
+  return { alternates: alternatesFor("/", await getLocale()) };
+}
 
 export default function Home() {
   return (

@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { Json } from "@repo/db";
 import { signOut } from "@/app/[lang]/entrar/actions";
 import { Avatar } from "@repo/ui/avatar";
 import { showFeedback } from "@/components/feedback/feedback-dialog";
 import { LevelBar } from "@/components/level-bar";
-import { useMessages } from "@/lib/i18n/client";
+import { useMessages, usePagePath } from "@/lib/i18n/client";
 
 /**
  * Menú de la cuenta en escritorio. "Salir" vive aquí dentro, separado del
@@ -27,7 +26,7 @@ export function AccountMenu({
 }) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
-  const pathname = usePathname();
+  const pathname = usePagePath();
   const m = useMessages();
 
   // Se cierra al navegar, al pulsar fuera o con Escape.

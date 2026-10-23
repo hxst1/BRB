@@ -4,8 +4,12 @@ import { Suspense } from "react";
 import { BattleshipMatchView } from "@/components/battleship/match-view";
 import { getViewer } from "@/lib/session";
 import { PRIVATE_PAGE } from "@/lib/seo";
+import { getMessages } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "Hundir la flota", robots: PRIVATE_PAGE };
+export async function generateMetadata(): Promise<Metadata> {
+  const m = await getMessages();
+  return { title: m.matchGames.battleship, robots: PRIVATE_PAGE };
+}
 
 export default function MatchPage({ params }: PageProps<"/[lang]/hundir-la-flota/[id]">) {
   return (

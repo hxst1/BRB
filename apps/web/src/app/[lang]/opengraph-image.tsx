@@ -1,10 +1,12 @@
 import { brand } from "@repo/brand";
-import { ogImage, OG_SIZE } from "@/lib/og";
+import { messagesFor } from "@/lib/i18n";
+import { ogImage, OG_SIZE, ogLocale } from "@/lib/og";
 
 export const alt = `${brand.name}: minijuegos online gratis`;
 export const size = OG_SIZE;
 export const contentType = "image/png";
 
-export default function Image() {
-  return ogImage({ title: "Minijuegos para desconectar", subtitle: "2048, Sudoku, Wordle, Buscaminas y partidas contra tus amigos. Gratis." });
+export default async function Image({ params }: { params: Promise<{ lang: string }> }) {
+  const m = messagesFor(await ogLocale(params));
+  return ogImage({ title: m.meta.ogTitle, subtitle: m.meta.ogSubtitle });
 }

@@ -6,9 +6,11 @@ import { GameGuideSection } from "@/components/seo/game-guide";
 import { SignInPrompt } from "@/components/seo/sign-in-prompt";
 import { gameMetadata } from "@/lib/seo";
 import { HowToPlayButton } from "@/components/how-to-play";
-import { getMessages } from "@/lib/i18n/server";
+import { getLocale, getMessages } from "@/lib/i18n/server";
 
-export const metadata: Metadata = gameMetadata("battleship");
+export async function generateMetadata(): Promise<Metadata> {
+  return gameMetadata("battleship", await getLocale());
+}
 
 export default async function BattleshipPage() {
   const m = await getMessages();

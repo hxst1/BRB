@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import type { Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { Badge } from "./badge";
 import { ChatIcon, FriendsIcon, HomeIcon, TrophyIcon } from "./icons";
 import { isActive, NAV_ITEMS, type NavCounts } from "./nav-items";
-import { useMessages } from "@/lib/i18n/client";
+import { useMessages, usePagePath } from "@/lib/i18n/client";
 
 const TAB = "relative flex flex-col items-center gap-0.5 rounded-full py-1.5 text-[11px] font-medium transition-colors";
 const TAB_ACTIVE = "bg-ink text-bg";
@@ -23,7 +22,7 @@ const ICONS: Record<string, ReactNode> = {
 
 /** Barra de pestañas flotante (una pill) abajo, solo en el móvil. */
 export function TabBar({ counts, avatarSeed, avatarParts }: { counts: NavCounts; avatarSeed: number; avatarParts: Json }) {
-  const pathname = usePathname();
+  const pathname = usePagePath();
   const m = useMessages();
   const profileActive = isActive(pathname, "/perfil");
 

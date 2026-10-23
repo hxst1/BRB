@@ -1,10 +1,15 @@
 import type { MetadataRoute } from "next";
-import { absoluteUrl, GAME_GUIDES } from "@/lib/seo";
+import { absoluteUrl, GAME_GUIDES, localizedPath } from "@/lib/seo";
 
-/** Páginas públicas: la portada, cada juego y las páginas de ranking, reto diario y apoyo. */
+/** La página en los dos idiomas (la española sin prefijo y la inglesa en /en). */
+function bothLanguages(path: string) {
+  return { languages: { es: absoluteUrl(path), en: absoluteUrl(localizedPath(path, "en")) } };
+}
+
+/** Páginas públicas: la portada, cada juego y las páginas de ranking, reto diario y apoyo, en los dos idiomas. */
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
-  return [
+  const pages: MetadataRoute.Sitemap = [
     { url: absoluteUrl("/"), lastModified, changeFrequency: "weekly", priority: 1 },
     ...GAME_GUIDES.map((game) => ({
       url: absoluteUrl(game.path),
@@ -22,4 +27,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.1,
     })),
   ];
+  // Cada página, también en inglés, y las dos se enlazan entre sí (hreflang).
+  return pages.flatMap((page) => {
+    const path = new URL(page.url).pathname;
+    const alternates = bothLanguages(path);
+    return [
+      { ...page, alternates },
+      { ...page, url: absoluteUrl(localizedPath(path, "en")), alternates },
+    ];
+  });
 }

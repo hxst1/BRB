@@ -3,7 +3,10 @@ import Link from "next/link";
 import { PRIVATE_PAGE } from "@/lib/seo";
 import { getMessages } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "Cuenta borrada", robots: PRIVATE_PAGE };
+export async function generateMetadata(): Promise<Metadata> {
+  const m = await getMessages();
+  return { title: m.deleteAccount.doneTitle, robots: PRIVATE_PAGE };
+}
 
 export default async function DeletedAccountPage() {
   const m = await getMessages();

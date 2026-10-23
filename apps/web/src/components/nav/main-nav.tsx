@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Badge } from "./badge";
 import { isActive, NAV_ITEMS, type NavCounts } from "./nav-items";
-import { useMessages } from "@/lib/i18n/client";
+import { useMessages, usePagePath } from "@/lib/i18n/client";
 
 /** Navegación principal en escritorio (en el móvil va en la barra inferior). */
 export function MainNav({ counts }: { counts: NavCounts }) {
-  const pathname = usePathname();
+  const pathname = usePagePath();
   const m = useMessages();
   return (
     <nav aria-label={m.nav.main} className="hidden items-center gap-1 sm:flex">

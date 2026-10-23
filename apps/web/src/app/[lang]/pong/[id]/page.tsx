@@ -4,8 +4,12 @@ import { Suspense } from "react";
 import { PongMatchView } from "@/components/pong/match-view";
 import { getViewer } from "@/lib/session";
 import { PRIVATE_PAGE } from "@/lib/seo";
+import { getMessages } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "Pong", robots: PRIVATE_PAGE };
+export async function generateMetadata(): Promise<Metadata> {
+  const m = await getMessages();
+  return { title: m.matchGames.pong, robots: PRIVATE_PAGE };
+}
 
 export default function PongMatchPage({ params }: PageProps<"/[lang]/pong/[id]">) {
   return (
