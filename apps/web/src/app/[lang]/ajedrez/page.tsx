@@ -25,6 +25,17 @@ export default async function ChessPage() {
         <ListForViewer />
       </Suspense>
       <GameGuideSection id="chess" />
+      <p className="mt-8 text-xs text-muted">
+        {m.chess.credits}{" "}
+        <a href="https://github.com/neverRare" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-ink">
+          neverRare
+        </a>{" "}
+        (
+        <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-ink">
+          CC BY 4.0
+        </a>
+        ){m.chess.creditsChanges}
+      </p>
     </main>
   );
 }

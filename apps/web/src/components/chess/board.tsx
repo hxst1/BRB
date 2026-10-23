@@ -55,7 +55,12 @@ export function ChessBoard({
 
   return (
     <div className="relative w-full">
-      <div role="grid" aria-label={m.chess.board} className="grid aspect-square w-full grid-cols-8 overflow-hidden rounded-[18px] select-none" style={{ background: "var(--board)" }}>
+      <div
+        role="grid"
+        aria-label={m.chess.board}
+        className="grid aspect-square w-full grid-cols-8 gap-[3px] rounded-[18px] p-1.5 select-none sm:gap-1 sm:p-2"
+        style={{ background: "var(--board)" }}
+      >
         {order.map((square, i) => {
           const file = square % 8;
           const rank = 8 - Math.floor(square / 8);
@@ -79,7 +84,7 @@ export function ChessBoard({
               aria-selected={selected === square}
               disabled={!canPlay}
               onClick={() => tap(square)}
-              className="relative grid aspect-square place-items-center disabled:cursor-default"
+              className="relative grid aspect-square place-items-center rounded-[22%] transition-colors disabled:cursor-default"
               style={{
                 background,
                 boxShadow: square === kingInCheck ? "inset 0 0 0 3px var(--mark-x), inset 0 0 18px var(--mark-x)" : undefined,
@@ -87,18 +92,18 @@ export function ChessBoard({
             >
               {/* Coordenadas en el borde izquierdo y en el de abajo, como en un tablero de verdad. */}
               {i % 8 === 0 && (
-                <span className="pointer-events-none absolute top-0.5 left-1 text-[10px] font-bold" style={{ color: dark ? "var(--chess-light)" : "var(--chess-dark)" }}>
+                <span className="pointer-events-none absolute top-0.5 left-1 text-[9px] font-semibold text-muted">
                   {rank}
                 </span>
               )}
               {i >= 56 && (
-                <span className="pointer-events-none absolute right-1 bottom-0 text-[10px] font-bold" style={{ color: dark ? "var(--chess-light)" : "var(--chess-dark)" }}>
+                <span className="pointer-events-none absolute right-1 bottom-0 text-[9px] font-semibold text-muted">
                   {FILES[file]}
                 </span>
               )}
               {piece && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={pieceSrc(piece.mark, piece.type)} alt="" draggable={false} className="pointer-events-none size-[88%]" />
+                <img src={pieceSrc(piece.mark, piece.type)} alt="" draggable={false} className="pointer-events-none size-[80%]" />
               )}
               {target && (
                 <span

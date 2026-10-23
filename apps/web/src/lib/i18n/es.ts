@@ -952,6 +952,8 @@ export const es = {
     dailyDescription: "Cada día, la misma partida para todo el mundo y un solo intento: 2048, Snake, Buscaminas, Lights Out o Sudoku según el día. Juega gratis y mantén tu racha.",
   },
   chess: {
+    credits: "Piezas «kiwen suwi» de",
+    creditsChanges: ", con los colores de la app.",
     board: "Tablero de ajedrez",
     white: "Blancas",
     black: "Negras",

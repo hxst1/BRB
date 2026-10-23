@@ -953,6 +953,8 @@ export const en: Messages = {
     dailyDescription: "Every day, the same game for everyone and a single attempt: 2048, Snake, Minesweeper, Lights Out or Sudoku depending on the day. Play for free and keep your streak.",
   },
   chess: {
+    credits: "“kiwen suwi” pieces by",
+    creditsChanges: ", recoloured for this app.",
     board: "Chessboard",
     white: "White",
     black: "Black",

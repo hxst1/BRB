@@ -1,12 +1,1 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">
-  <g style="opacity:1; fill:none; fill-rule:evenodd; fill-opacity:1; stroke:#000000; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; stroke-miterlimit:4; stroke-dasharray:none; stroke-opacity:1;" transform="translate(0,0.6)">
-    <g style="fill:#000000; stroke:#000000; stroke-linecap:butt;">
-      <path d="M 9,36 C 12.39,35.03 19.11,36.43 22.5,34 C 25.89,36.43 32.61,35.03 36,36 C 36,36 37.65,36.54 39,38 C 38.32,38.97 37.35,38.99 36,38.5 C 32.61,37.53 25.89,38.96 22.5,37.5 C 19.11,38.96 12.39,37.53 9,38.5 C 7.65,38.99 6.68,38.97 6,38 C 7.35,36.54 9,36 9,36 z"/>
-      <path d="M 15,32 C 17.5,34.5 27.5,34.5 30,32 C 30.5,30.5 30,30 30,30 C 30,27.5 27.5,26 27.5,26 C 33,24.5 33.5,14.5 22.5,10.5 C 11.5,14.5 12,24.5 17.5,26 C 17.5,26 15,27.5 15,30 C 15,30 14.5,30.5 15,32 z"/>
-      <path d="M 25 8 A 2.5 2.5 0 1 1  20,8 A 2.5 2.5 0 1 1  25 8 z"/>
-    </g>
-    <path d="M 17.5,26 L 27.5,26 M 15,30 L 30,30 M 22.5,15.5 L 22.5,20.5 M 20,18 L 25,18" style="fill:none; stroke:#ffffff; stroke-linejoin:miter;"/>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" style="color-scheme:light only" xml:space="preserve" width="260" height="260" overflow="hidden"><defs><clipPath id="a"><path d="M1680 198h260v260h-260z"/></clipPath></defs><g fill="#845ef7" fill-rule="evenodd" clip-path="url(#a)" transform="translate(-1680 -198)"><path d="m1760.66 379 4.74 4.569c12.73 10.051 28.08 15.92 44.6 15.92s31.87-5.869 44.6-15.92l4.74-4.568L1909.5 430h-199z"/><path d="M1809.905 213.661c14.31-.472 26.66 13.616 24 27.573-.38 5.676-4.78 11.263-8.08 14.603 4.74 5.617 9.46 11.233 14.18 16.85-11.08 10.924-22.17 21.849-33.25 32.784 4.47 4.394 8.93 8.798 13.39 13.191 10.54-10.368 21.06-20.746 31.59-31.114 3.29 5.388 7.08 10.517 10.05 16.054 9.35 24.186.61 54.088-21.27 68.641-19.35 13.768-47.77 12.247-65.56-3.419-21.31-17.457-26.65-50.231-12.8-73.761 5.25-8.708 12.68-15.816 18.96-23.778 4.41-5.229 8.81-10.467 13.21-15.696-11.46-8.132-11.38-26.85-.76-35.706 4.42-3.988 10.36-6.249 16.34-6.222"/></g></svg>

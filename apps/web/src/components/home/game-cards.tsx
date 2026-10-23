@@ -295,11 +295,11 @@ const GAMES: Game[] = [
     group: "friends",
     href: "/ajedrez",
     preview: (
-      <div aria-hidden className="grid aspect-square grid-cols-4 overflow-hidden rounded-xl sm:rounded-2xl" style={{ background: "var(--board)" }}>
+      <div aria-hidden className="grid aspect-square grid-cols-4 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
         {PREVIEW_CHESS.map((piece, i) => (
           <span
             key={i}
-            className="grid aspect-square place-items-center"
+            className="grid aspect-square place-items-center rounded-md sm:rounded-lg"
             style={{ background: ((i % 4) + Math.floor(i / 4)) % 2 === 1 ? "var(--chess-dark)" : "var(--chess-light)" }}
           >
             {piece && (

@@ -492,12 +492,12 @@ body {
 }
 
 /*
- * Ajedrez: casillas de tablero clásico en azul grisáceo, iguales en los dos
- * temas (las piezas blancas y negras tienen que leerse siempre).
+ * Ajedrez: como los demás tableros (casillas del color de la app); las oscuras,
+ * un tono más marcadas, igual que las cajas alternas del sudoku.
  */
 :root {
-  --chess-light: #dde6ec;
-  --chess-dark: #7f9fb1;
+  --chess-light: var(--cell);
+  --chess-dark: color-mix(in srgb, var(--ink) 9%, var(--cell));
 }
 
 /* Páginas de error: las fichas del código caen una a una y el monster asoma después. */
