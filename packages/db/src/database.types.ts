@@ -562,6 +562,9 @@ isOneToOne: false
               "avatar_parts": Json,"avatar_seed": number,"created_at": string,"friend_code": string,"id": string,"push_devices": number,"seen_at": string,"streak_best": number,"streak_days": number,"streak_last_day": string,"supporter_tier": string,"total_count": number,"username": string,"xp": number
             }[]
                            },
+"admin_log_auth_action":
+{ Args: { "action": string,"admin_id": string,"reason": string,"target_user": string }; Returns: undefined
+                           },
 "admin_rename_user":
 { Args: { "admin_id": string,"reason": string,"user_id": string,"username": string }; Returns: undefined
                            },
