@@ -1,4 +1,5 @@
 import { isValidFleet, shoot, type Fleet, type ShotError } from "@repo/games/battleship";
+import { play as playChess, replay as replayChess, type MoveError as ChessError } from "@repo/games/chess";
 import { play as playConnect4, replay as replayConnect4, type MoveError as Connect4Error } from "@repo/games/connect4";
 import { isValidChoice, replay as replayRps, type Variant } from "@repo/games/rps";
 import { play, replay, type MoveError } from "@repo/games/tictactoe";
@@ -12,7 +13,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** Código que lanzan apply_match_move / submit_match_choice cuando la partida cambió o no está en juego. */
 const MATCH_CHANGED = "P0002";
 
-const MOVE_ERRORS: Record<MoveError | Connect4Error | ShotError, string> = {
+const MOVE_ERRORS: Record<MoveError | Connect4Error | ShotError | ChessError, string> = {
   game_over: "La partida ya ha terminado",
   not_your_turn: "No es tu turno",
   invalid_cell: "Casilla no válida",
@@ -20,6 +21,7 @@ const MOVE_ERRORS: Record<MoveError | Connect4Error | ShotError, string> = {
   invalid_column: "Columna no válida",
   full: "Esa columna está llena",
   already_shot: "Ya has disparado ahí",
+  illegal: "Esa jugada no está permitida",
 };
 
 type MatchRow = Pick<Match, "id" | "game" | "status" | "moves" | "player_x" | "player_o">;
@@ -33,13 +35,13 @@ const serverError = (context: string, error: unknown) => {
 /**
  * Valida una jugada con la lógica compartida y la guarda.
  * 3 en raya: `{ cell }`. 4 en raya: `{ column }`. Hundir la flota: `{ cell }` (disparo).
- * Piedra, papel o tijera: `{ choice }` (índice de la opción).
+ * Piedra, papel o tijera: `{ choice }` (índice de la opción). Ajedrez: `{ move }` (ver @repo/games/chess).
  */
 export async function POST(request: Request, { params }: RouteContext<"/api/matches/[id]/move">) {
   const { id } = await params;
   if (!UUID.test(id)) return json({ error: "Partida no encontrada" }, 404);
 
-  const body = (await request.json().catch(() => null)) as { cell?: unknown; column?: unknown; choice?: unknown } | null;
+  const body = (await request.json().catch(() => null)) as { cell?: unknown; column?: unknown; choice?: unknown; move?: unknown } | null;
 
   const { supabase, userId } = await createClientForRequest(request);
   if (!userId) return json({ error: "Hay que iniciar sesión" }, 401);
@@ -57,6 +59,7 @@ export async function POST(request: Request, { params }: RouteContext<"/api/matc
 
   if (match.game === "tictactoe") return playTicTacToe(match, userId, body?.cell);
   if (match.game === "connect4") return playFourInARow(match, userId, body?.column);
+  if (match.game === "chess") return playChessMove(match, userId, body?.move);
   if (match.game === "battleship") return fire(match, userId, body?.cell);
   if (match.game === "rps" || match.game === "rpsls") return playRps(match, match.game, userId, body?.choice);
   return json({ error: "Partida no encontrada" }, 404);
@@ -138,6 +141,31 @@ async function playFourInARow(match: MatchRow, userId: string, column: unknown) 
     previous_count: match.moves.length,
     moves: next.moves,
     end_reason: next.winner ? "line" : next.draw ? "draw" : undefined,
+    winner: next.winner ?? undefined,
+  });
+  if (error?.code === MATCH_CHANGED) return json({ error: "La partida ha cambiado, recarga" }, 409);
+  if (error) return serverError("error guardando la jugada", error);
+
+  return json({ moves: next.moves });
+}
+
+async function playChessMove(match: MatchRow, userId: string, move: unknown) {
+  if (typeof move !== "number") return json({ error: MOVE_ERRORS.illegal }, 400);
+
+  const state = replayChess(match.moves);
+  if (!state) return serverError("la partida guardada no es válida", match.id);
+
+  const result = playChess(state, match.player_x === userId ? "x" : "o", move);
+  if (!result.ok) {
+    return json({ error: MOVE_ERRORS[result.error] }, result.error === "not_your_turn" ? 409 : 400);
+  }
+
+  const next = result.state;
+  const { error } = await createAdminClient().rpc("apply_match_move", {
+    match_id: match.id,
+    previous_count: match.moves.length,
+    moves: next.moves,
+    end_reason: next.ending === "checkmate" ? "checkmate" : next.ending ? "draw" : undefined,
     winner: next.winner ?? undefined,
   });
   if (error?.code === MATCH_CHANGED) return json({ error: "La partida ha cambiado, recarga" }, 409);

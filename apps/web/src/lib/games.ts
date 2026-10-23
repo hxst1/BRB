@@ -7,6 +7,7 @@ export const MATCH_GAMES = {
   rpsls: { name: "Piedra, papel, tijera, lagarto o Spock", path: "/piedra-papel-tijera", icon: "🖖" },
   pong: { name: "Pong", path: "/pong", icon: "🏓" },
   tron: { name: "Tron", path: "/tron", icon: "🏍️" },
+  chess: { name: "Ajedrez", path: "/ajedrez", icon: "♞" },
 } as const;
 
 /** Un reto pendiente se retira solo pasado este tiempo (ver expire_challenges). */

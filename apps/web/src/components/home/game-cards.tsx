@@ -23,6 +23,8 @@ const PREVIEW_SUDOKU: [string, "p" | "j" | ""][] = [
   ["", ""], ["2", "p"], ["", ""],
   ["7", "j"], ["", ""], ["4", "p"],
 ];
+/** Ajedrez en miniatura (4 × 4, la esquina de un tablero): pieza y su color, o vacía. */
+const PREVIEW_CHESS = ["bk", "", "", "br", "", "bp", "", "", "", "", "wn", "", "wq", "", "", "wk"];
 /** Wordle en miniatura: tres intentos hasta acertar. */
 const PREVIEW_WORDLE = ["bybbb", "gbygb", "ggggg"];
 
@@ -40,7 +42,8 @@ export type GameId =
   | "battleship"
   | "rps"
   | "pong"
-  | "tron";
+  | "tron"
+  | "chess";
 
 type Game = { id: GameId; group: "solo" | "friends"; href: string; preview: ReactNode };
 
@@ -285,6 +288,27 @@ const GAMES: Game[] = [
             <circle cx="55" cy="48" r="5.5" fill="var(--mark-o)" />
           </svg>
         </div>
+    ),
+  },
+  {
+    id: "chess",
+    group: "friends",
+    href: "/ajedrez",
+    preview: (
+      <div aria-hidden className="grid aspect-square grid-cols-4 overflow-hidden rounded-xl sm:rounded-2xl" style={{ background: "var(--board)" }}>
+        {PREVIEW_CHESS.map((piece, i) => (
+          <span
+            key={i}
+            className="grid aspect-square place-items-center"
+            style={{ background: ((i % 4) + Math.floor(i / 4)) % 2 === 1 ? "var(--chess-dark)" : "var(--chess-light)" }}
+          >
+            {piece && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={`/chess/${piece}.svg`} alt="" className="size-[80%] transition-transform duration-300 group-hover:-translate-y-0.5" style={{ transitionDelay: `${i * 20}ms` }} />
+            )}
+          </span>
+        ))}
+      </div>
     ),
   },
 ];

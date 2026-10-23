@@ -1,3 +1,4 @@
+import { replay as replayChess } from "@repo/games/chess";
 import { replay as replayConnect4 } from "@repo/games/connect4";
 import { replay, type Mark } from "@repo/games/tictactoe";
 import type { Json, Match } from "@repo/db";
@@ -17,14 +18,14 @@ export function opponentOf(match: MatchWithPlayers, userId: string): Player {
 }
 
 /** Juegos por turnos (3 y 4 en raya): el turno se deduce de los movimientos. */
-export function isTurnBased(game: string): game is "tictactoe" | "connect4" {
-  return game === "tictactoe" || game === "connect4";
+export function isTurnBased(game: string): game is "tictactoe" | "connect4" | "chess" {
+  return game === "tictactoe" || game === "connect4" || game === "chess";
 }
 
-/** 3 y 4 en raya: a quién le toca según los movimientos guardados (null si no está en juego). */
+/** 3 y 4 en raya y ajedrez: a quién le toca según los movimientos guardados (null si no está en juego). */
 export function turnOf(match: Match): Mark | null {
   if (match.status !== "active") return null;
-  const state = match.game === "connect4" ? replayConnect4(match.moves) : replay(match.moves);
+  const state = match.game === "connect4" ? replayConnect4(match.moves) : match.game === "chess" ? replayChess(match.moves) : replay(match.moves);
   return state?.turn ?? null;
 }
 

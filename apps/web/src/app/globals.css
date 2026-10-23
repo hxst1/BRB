@@ -488,3 +488,12 @@ body {
     outline-offset: 2px;
   }
 }
+
+/*
+ * Ajedrez: casillas de tablero clásico en azul grisáceo, iguales en los dos
+ * temas (las piezas blancas y negras tienen que leerse siempre).
+ */
+:root {
+  --chess-light: #dde6ec;
+  --chess-dark: #7f9fb1;
+}

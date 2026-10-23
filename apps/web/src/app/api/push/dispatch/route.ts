@@ -122,7 +122,7 @@ async function notificationsFor(change: Change): Promise<Notification[]> {
     ];
   }
 
-  if (match.game === "tictactoe" || match.game === "connect4") {
+  if (match.game === "tictactoe" || match.game === "connect4" || match.game === "chess") {
     // Quien acaba de mover no necesita aviso: se notifica al otro.
     const lastMover = match.moves.length % 2 === 1 ? match.player_x : match.player_o;
     const target = match.end_reason === "resign"
@@ -130,6 +130,9 @@ async function notificationsFor(change: Change): Promise<Notification[]> {
       : other(lastMover);
     if (match.status === "finished") {
       if (match.end_reason === "resign") return [resigned(target)];
+      if (match.end_reason === "checkmate") {
+        return [notify(target, (m) => m.push.finished, (m) => m.push.checkmated(name(m, other(target))))];
+      }
       return [
         notify(
           target,

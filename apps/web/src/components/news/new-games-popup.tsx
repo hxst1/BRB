@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocale, useMessages } from "@/lib/i18n/client";
 import { guidesFor, type GameGuide } from "@/lib/seo";
 import { createClient } from "@/lib/supabase/client";
+import { brand } from "@repo/brand";
 
 /** Solo se anuncian los juegos de los últimos 90 días (más viejos ya no son novedad). */
 const WINDOW_MS = 90 * 24 * 60 * 60 * 1000;
@@ -18,6 +19,9 @@ const DELAY_MS = 1200;
  */
 export function NewGamesPopup({ viewerId }: { viewerId: string }) {
   const [games, setGames] = useState<GameGuide[]>([]);
+  /** Tu código de amigo, para el enlace de invitar (/invita/<código>). */
+  const [code, setCode] = useState<string | null>(null);
+  const [shared, setShared] = useState(false);
   const closeButton = useRef<HTMLButtonElement>(null);
   const locale = useLocale();
   const m = useMessages();
@@ -30,11 +34,13 @@ export function NewGamesPopup({ viewerId }: { viewerId: string }) {
     let cancelled = false;
     const supabase = createClient();
     const timer = setTimeout(async () => {
-      const [{ data: seen }, { data: profile }] = await Promise.all([
+      const [{ data: seen }, { data: profile }, { data: friendCode }] = await Promise.all([
         supabase.from("seen_announcements").select("announcement").in("announcement", candidates.map((game) => game.id)),
         supabase.from("profiles").select("created_at").eq("id", viewerId).maybeSingle(),
+        supabase.from("friend_codes").select("code").eq("user_id", viewerId).maybeSingle(),
       ]);
       if (cancelled || !profile) return;
+      setCode(friendCode?.code ?? null);
       const seenIds = new Set((seen ?? []).map((row) => row.announcement));
       const joined = Date.parse(profile.created_at);
       // Los más nuevos primero.
@@ -70,6 +76,27 @@ export function NewGamesPopup({ viewerId }: { viewerId: string }) {
 
   if (games.length === 0) return null;
   const single = games.length === 1;
+  // Si hay un juego nuevo para jugar con amigos, se invita a traer a alguien (cuenta para el logro Embajador).
+  const social = games.find((game) => game.mode === "friends");
+
+  async function invite(game: GameGuide) {
+    const url = `${window.location.origin}/invita/${code}`;
+    const text = m.news.inviteText(game.name, brand.name);
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: brand.name, text, url });
+      } catch {
+        // Cancelado: no hay nada que hacer.
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(`${text} ${url}`);
+      setShared(true);
+    } catch {
+      // Sin portapapeles: el botón de Amigos también comparte el enlace.
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-3 backdrop-blur-[2px] sm:items-center" onClick={() => dismiss(games)}>
@@ -118,6 +145,18 @@ export function NewGamesPopup({ viewerId }: { viewerId: string }) {
             </li>
           ))}
         </ul>
+
+        {social && code && (
+          <div className="flex flex-col gap-3 rounded-3xl p-4" style={{ background: "var(--board)" }}>
+            <div>
+              <p className="font-semibold">{m.news.inviteTitle(social.name)}</p>
+              <p className="text-sm text-muted">{m.news.inviteBody}</p>
+            </div>
+            <button type="button" onClick={() => void invite(social)} className="self-start rounded-full bg-ink px-4 py-2 text-sm font-semibold text-bg">
+              {shared ? m.news.inviteCopied : m.news.invite}
+            </button>
+          </div>
+        )}
 
         <button type="button" onClick={() => dismiss(games)} className="self-center text-sm text-muted hover:text-ink">
           {m.common.later}

@@ -9,7 +9,7 @@ import { useMessages } from "@/lib/i18n/client";
 import { levelFromXp } from "@repo/games/level";
 import { createClient } from "@/lib/supabase/client";
 
-type GameId = "2048" | "snake" | "lightsout" | "minesweeper" | "sudoku" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron";
+type GameId = "2048" | "snake" | "lightsout" | "minesweeper" | "sudoku" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron" | "chess";
 type Category = "level" | GameId;
 type Difficulty = "easy" | "medium" | "hard";
 type Scope = "global" | "friends";
@@ -116,6 +116,7 @@ const RANKED_GAMES: RankedGame[] = [
   { id: "rps", games: ["rps", "rpsls"], icon: "✂️" },
   { id: "pong", games: ["pong"], icon: "🏓" },
   { id: "tron", games: ["tron"], icon: "🏍️" },
+  { id: "chess", games: ["chess"], icon: "♞" },
 ];
 
 const MAX_ROWS = 50;

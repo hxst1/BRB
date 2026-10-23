@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { replay as replayChess } from "@repo/games/chess";
 import { replay as replayConnect4 } from "@repo/games/connect4";
 import { replay } from "@repo/games/tictactoe";
 import type { Functions, Match } from "@repo/db";
@@ -25,6 +26,7 @@ function myTurnIn(match: Match, viewerId: string, waiting: ReadonlySet<string>):
   const mark = match.player_x === viewerId ? "x" : "o";
   if (match.game === "tictactoe") return replay(match.moves)?.turn === mark;
   if (match.game === "connect4") return replayConnect4(match.moves)?.turn === mark;
+  if (match.game === "chess") return replayChess(match.moves)?.turn === mark;
   if (match.game === "pong" || match.game === "tron") return true;
   return !waiting.has(match.id);
 }
@@ -97,11 +99,12 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
   const invites: NowItem[] = [];
   const waiting: WaitingItem[] = [];
   const expiresAt = (match: Match) => new Date(new Date(match.created_at).getTime() + CHALLENGE_EXPIRY_MS);
-  const tally: Record<"tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron", GameTally> = {
+  const tally: Record<"tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron" | "chess", GameTally> = {
     tictactoe: { myTurn: 0, invites: 0, waiting: 0 },
     connect4: { myTurn: 0, invites: 0, waiting: 0 },
     battleship: { myTurn: 0, invites: 0, waiting: 0 },
     tron: { myTurn: 0, invites: 0, waiting: 0 },
+    chess: { myTurn: 0, invites: 0, waiting: 0 },
     rps: { myTurn: 0, invites: 0, waiting: 0 },
     pong: { myTurn: 0, invites: 0, waiting: 0 },
   };
@@ -232,6 +235,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
             connect4: <MatchStats m={m} counts={tally.connect4} />,
             battleship: <MatchStats m={m} counts={tally.battleship} />,
             tron: <MatchStats m={m} counts={tally.tron} />,
+            chess: <MatchStats m={m} counts={tally.chess} />,
             rps: <MatchStats m={m} counts={tally.rps} />,
             pong: <MatchStats m={m} counts={tally.pong} />,
           }}

@@ -15,6 +15,7 @@ const OPTIONS: { game: MatchGame; icon: string }[] = [
   { game: "rpsls", icon: "🖖" },
   { game: "pong", icon: "🏓" },
   { game: "tron", icon: "🏍️" },
+  { game: "chess", icon: "♞" },
 ];
 
 /**

@@ -41,6 +41,7 @@ const GAMES: GameMeta[] = [
   { id: "rps", path: "/piedra-papel-tijera", mode: "friends", accent: "#fab005", addedAt: "2026-10-20T12:23:36+02:00" },
   { id: "pong", path: "/pong", mode: "friends", accent: "#22b8cf", addedAt: "2026-10-20T12:58:27+02:00" },
   { id: "tron", path: "/tron", mode: "friends", accent: "#ff6b6b", addedAt: "2026-10-21T23:43:17+02:00" },
+  { id: "chess", path: "/ajedrez", mode: "friends", accent: "#845ef7", addedAt: "2026-10-23T12:00:00+02:00" },
 ];
 
 const TEXTS: Record<Locale, Record<GameMeta["id"], GameTexts>> = { es: GAMES_ES, en: GAMES_EN };
