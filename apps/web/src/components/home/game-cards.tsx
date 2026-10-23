@@ -28,7 +28,11 @@ const PREVIEW_CHESS = ["bk", "", "", "br", "", "bp", "", "", "", "", "rn", "", "
 /** Wordle en miniatura: tres intentos hasta acertar. */
 const PREVIEW_WORDLE = ["bybbb", "gbygb", "ggggg"];
 
-const ITEM = "w-44 shrink-0 snap-start sm:w-auto";
+/**
+ * En el móvil, fila deslizable: cada tarjeta mide algo menos de la mitad del
+ * ancho para que asome la siguiente y se vea que hay más juegos al lado.
+ */
+const ITEM = "w-[clamp(9.5rem,42%,11rem)] shrink-0 snap-start sm:w-auto";
 
 export type GameId =
   | "2048"
