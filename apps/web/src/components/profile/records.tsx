@@ -1,51 +1,54 @@
 import Link from "next/link";
 import type { Functions } from "@repo/db";
-import { formatNumber, formatTime } from "@/lib/format";
+import type { GameId } from "@/components/home/game-cards";
+import { getLocale, getMessages } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 
 type Standing = Functions<"get_my_standing">["Returns"][number] | null;
 
 /** Juegos en solitario con ranking. Los de tiempo (gana el menor) tienen una fila por dificultad. */
-const SOLO: { name: string; href: string; boards: { game: string; label?: string }[]; time?: boolean; unit?: string }[] = [
-  { name: "2048", href: "/2048", boards: [{ game: "2048" }], unit: "puntos" },
-  { name: "Snake", href: "/snake", boards: [{ game: "snake" }], unit: "puntos" },
-  { name: "Lights Out", href: "/lights-out", boards: [{ game: "lightsout" }], unit: "niveles" },
+type Level = "easy" | "medium" | "hard";
+
+/** `id`: clave del nombre en m.gameCards. */
+const SOLO: { id: GameId; href: string; boards: { game: string; level?: Level }[]; time?: boolean; unit?: "points" | "levels" }[] = [
+  { id: "2048", href: "/2048", boards: [{ game: "2048" }], unit: "points" },
+  { id: "snake", href: "/snake", boards: [{ game: "snake" }], unit: "points" },
+  { id: "lights-out", href: "/lights-out", boards: [{ game: "lightsout" }], unit: "levels" },
   {
-    name: "Buscaminas",
+    id: "minesweeper",
     href: "/buscaminas",
     time: true,
     boards: [
-      { game: "minesweeper-easy", label: "Fácil" },
-      { game: "minesweeper-medium", label: "Medio" },
-      { game: "minesweeper-hard", label: "Difícil" },
+      { game: "minesweeper-easy", level: "easy" },
+      { game: "minesweeper-medium", level: "medium" },
+      { game: "minesweeper-hard", level: "hard" },
     ],
   },
   {
-    name: "Sudoku",
+    id: "sudoku",
     href: "/sudoku",
     time: true,
     boards: [
-      { game: "sudoku-easy", label: "Fácil" },
-      { game: "sudoku-medium", label: "Medio" },
-      { game: "sudoku-hard", label: "Difícil" },
+      { game: "sudoku-easy", level: "easy" },
+      { game: "sudoku-medium", level: "medium" },
+      { game: "sudoku-hard", level: "hard" },
     ],
   },
 ];
 
-const MATCH_GAMES: { name: string; href: string; games: string[] }[] = [
-  { name: "3 en raya", href: "/3-en-raya", games: ["tictactoe"] },
-  { name: "4 en raya", href: "/4-en-raya", games: ["connect4"] },
-  { name: "Hundir la flota", href: "/hundir-la-flota", games: ["battleship"] },
-  { name: "Piedra, papel o tijera", href: "/piedra-papel-tijera", games: ["rps", "rpsls"] },
-  { name: "Pong", href: "/pong", games: ["pong"] },
-  { name: "Tron", href: "/tron", games: ["tron"] },
+const MATCH_GAMES: { id: GameId; href: string; games: string[] }[] = [
+  { id: "tictactoe", href: "/3-en-raya", games: ["tictactoe"] },
+  { id: "connect4", href: "/4-en-raya", games: ["connect4"] },
+  { id: "battleship", href: "/hundir-la-flota", games: ["battleship"] },
+  { id: "rps", href: "/piedra-papel-tijera", games: ["rps", "rpsls"] },
+  { id: "pong", href: "/pong", games: ["pong"] },
+  { id: "tron", href: "/tron", games: ["tron"] },
 ];
-
-const plural = (n: number, one: string, many: string) => `${formatNumber(n)} ${n === 1 ? one : many}`;
 
 /** Tus récords: mejor marca y puesto en cada juego, Wordle y partidas contra amigos. */
 export async function Records({ viewerId }: { viewerId: string }) {
-  const supabase = await createClient();
+  const [supabase, m, locale] = await Promise.all([createClient(), getMessages(), getLocale()]);
+  const t = m.records;
   const boards = SOLO.flatMap((game) => game.boards.map((board) => board.game));
   const [standings, { data: wordle }, { data: matches }] = await Promise.all([
     Promise.all(boards.map((game) => supabase.rpc("get_my_standing", { game }).maybeSingle().then(({ data }) => [game, data] as const))),
@@ -65,29 +68,29 @@ export async function Records({ viewerId }: { viewerId: string }) {
     <div className="flex flex-col gap-10">
       <section aria-labelledby="records-solo" className="flex flex-col gap-3">
         <h2 id="records-solo" className="text-xl font-semibold">
-          En solitario
+          {m.gameCards.soloTitle}
         </h2>
         <ul className="flex flex-col">
           {SOLO.map((game) => (
-            <li key={game.name} className="flex flex-col gap-1 border-b border-line py-3">
+            <li key={game.id} className="flex flex-col gap-1 border-b border-line py-3">
               <Link href={game.href} className="font-semibold hover:underline">
-                {game.name}
+                {m.gameCards[game.id].title}
               </Link>
               {game.boards.map((board) => {
                 const row = standing.get(board.game);
                 const best = row?.best_score;
                 return (
                   <div key={board.game} className="flex items-baseline justify-between gap-3 text-sm">
-                    <span className="text-muted">{board.label ?? "Tu récord"}</span>
+                    <span className="text-muted">{board.level ? m.levels[board.level] : m.run.yourRecord}</span>
                     {best == null ? (
-                      <span className="text-muted">Sin partidas</span>
+                      <span className="text-muted">{t.none}</span>
                     ) : (
                       <span className="text-right">
-                        <strong className="tabular">{game.time ? formatTime(best) : formatNumber(best)}</strong>
-                        {!game.time && game.unit && ` ${game.unit}`}
+                        <strong className="tabular">{game.time ? m.format.time(best) : m.format.number(best)}</strong>
+                        {!game.time && game.unit && ` ${t[game.unit]}`}
                         <span className="block text-xs text-muted">
-                          {row!.global_rank}º de {row!.global_players}
-                          {row!.friends_players > 1 && `, ${row!.friends_rank}º entre amigos`}
+                          {m.daily.rank(row!.global_rank, row!.global_players)}
+                          {row!.friends_players > 1 && t.amongFriends(row!.friends_rank)}
                         </span>
                       </span>
                     )}
@@ -101,20 +104,20 @@ export async function Records({ viewerId }: { viewerId: string }) {
               Wordle
             </Link>
             <div className="flex items-baseline justify-between gap-3 text-sm">
-              <span className="text-muted">Palabras acertadas</span>
+              <span className="text-muted">{t.wordsGuessed}</span>
               {wordle?.length ? (
                 <span className="text-right">
                   <strong className="tabular">
-                    {solved.length} de {wordle.length}
+                    {t.of(solved.length, wordle.length)}
                   </strong>
                   {solved.length > 0 && (
                     <span className="block text-xs text-muted">
-                      {average.toLocaleString("es-ES", { maximumFractionDigits: 1 })} intentos de media
+                      {t.average(average.toLocaleString(locale, { maximumFractionDigits: 1 }))}
                     </span>
                   )}
                 </span>
               ) : (
-                <span className="text-muted">Sin partidas</span>
+                <span className="text-muted">{t.none}</span>
               )}
             </div>
           </li>
@@ -123,7 +126,7 @@ export async function Records({ viewerId }: { viewerId: string }) {
 
       <section aria-labelledby="records-friends" className="flex flex-col gap-3">
         <h2 id="records-friends" className="text-xl font-semibold">
-          Contra tus amigos
+          {m.gameCards.friendsTitle}
         </h2>
         <ul className="flex flex-col">
           {MATCH_GAMES.map((game) => {
@@ -133,18 +136,18 @@ export async function Records({ viewerId }: { viewerId: string }) {
             const draws = played.filter((match) => match.winner === null).length;
             const lost = played.length - won - draws;
             return (
-              <li key={game.name} className="flex items-center justify-between gap-3 border-b border-line py-3 last:border-b-0">
+              <li key={game.id} className="flex items-center justify-between gap-3 border-b border-line py-3 last:border-b-0">
                 <Link href={game.href} className="font-semibold hover:underline">
-                  {game.name}
+                  {m.gameCards[game.id].title}
                 </Link>
                 {played.length === 0 ? (
-                  <span className="text-sm text-muted">Sin partidas</span>
+                  <span className="text-sm text-muted">{t.none}</span>
                 ) : (
                   <span className="text-right text-sm">
-                    <strong className="tabular">{plural(won, "victoria", "victorias")}</strong>
+                    <strong className="tabular">{t.wins(m.format.number(won), won)}</strong>
                     <span className="block text-xs text-muted">
-                      {plural(lost, "derrota", "derrotas")}
-                      {draws > 0 && `, ${plural(draws, "empate", "empates")}`}, {Math.round((won / played.length) * 100)} % ganadas
+                      {t.losses(m.format.number(lost), lost)}
+                      {draws > 0 && `, ${t.draws(m.format.number(draws), draws)}`}, {t.winRate(Math.round((won / played.length) * 100))}
                     </span>
                   </span>
                 )}

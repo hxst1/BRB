@@ -3,11 +3,13 @@
 import { useSyncExternalStore } from "react";
 import { brand } from "@repo/brand";
 import { applyTheme, THEME_KEY, type ThemeChoice } from "@/lib/theme";
+import { useMessages } from "@/lib/i18n/client";
 
-const OPTIONS: { value: ThemeChoice; label: string }[] = [
-  { value: "system", label: "Automático" },
-  { value: "light", label: "Claro" },
-  { value: "dark", label: "Oscuro" },
+/** Las etiquetas están en m.settings.themes. */
+const OPTIONS: { value: ThemeChoice }[] = [
+  { value: "system" },
+  { value: "light" },
+  { value: "dark" },
 ];
 
 const listeners = new Set<() => void>();
@@ -23,6 +25,7 @@ function read(): ThemeChoice {
 
 /** Tema de la app: el del sistema o uno fijo. Se guarda en este dispositivo. */
 export function ThemePicker() {
+  const m = useMessages();
   const choice = useSyncExternalStore(
     (listener) => {
       listeners.add(listener);
@@ -45,8 +48,8 @@ export function ThemePicker() {
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-sm font-medium">Tema</p>
-      <div role="radiogroup" aria-label="Tema" className="grid grid-flow-col auto-cols-fr rounded-full bg-line/60 p-1">
+      <p className="text-sm font-medium">{m.settings.theme}</p>
+      <div role="radiogroup" aria-label={m.settings.theme} className="grid grid-flow-col auto-cols-fr rounded-full bg-line/60 p-1">
         {OPTIONS.map((option) => (
           <button
             key={option.value}
@@ -58,7 +61,7 @@ export function ThemePicker() {
               choice === option.value ? "bg-surface font-medium shadow-soft" : "text-muted hover:text-ink"
             }`}
           >
-            {option.label}
+            {m.settings.themes[option.value]}
           </button>
         ))}
       </div>

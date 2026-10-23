@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useMessages } from "@/lib/i18n/client";
 
 function urlBase64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
@@ -19,6 +20,7 @@ export function detectEnvironment() {
 
 /** Estado de las notificaciones en este dispositivo, y activarlas o desactivarlas. */
 export function usePushNotifications() {
+  const m = useMessages();
   const [env, setEnv] = useState<{ standalone: boolean; ios: boolean } | null>(null);
   const [push, setPush] = useState<PushState>("loading");
   const [busy, setBusy] = useState(false);
@@ -74,7 +76,7 @@ export function usePushNotifications() {
       }
       setPush("on");
     } catch {
-      setError("No se han podido activar. Inténtalo otra vez.");
+      setError(m.settings.pushError);
     } finally {
       setBusy(false);
     }

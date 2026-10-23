@@ -8,17 +8,12 @@ import { randomSeed } from "@repo/games";
 import type { Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { achievementById } from "@/lib/achievements";
+import { useLocale, useMessages } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 
 type Slot = "body" | "palette" | "eyes" | "mouth" | "top";
 
-const SLOTS: { slot: Slot; label: string }[] = [
-  { slot: "body", label: "Cuerpo" },
-  { slot: "palette", label: "Color" },
-  { slot: "eyes", label: "Ojos" },
-  { slot: "mouth", label: "Boca" },
-  { slot: "top", label: "Cabeza" },
-];
+const SLOTS: Slot[] = ["body", "palette", "eyes", "mouth", "top"];
 
 type Status = { kind: "idle" } | { kind: "saving" } | { kind: "saved" } | { kind: "error"; message: string };
 
@@ -37,6 +32,9 @@ export function AvatarEditor({
   unlocked: readonly string[];
 }) {
   const router = useRouter();
+  const m = useMessages();
+  const t = m.avatar;
+  const locale = useLocale();
   const [seed, setSeed] = useState(initialSeed);
   const [overrides, setOverrides] = useState<Partial<MonsterParts>>(() => sanitizeParts(initialParts));
   const [status, setStatus] = useState<Status>({ kind: "idle" });
@@ -65,10 +63,10 @@ export function AvatarEditor({
         kind: "error",
         message:
           error.hint === "supporter_only"
-            ? "Esa parte es exclusiva de supporters."
+            ? t.supporterOnly
             : error.hint === "achievement_only"
-              ? "Esa parte se desbloquea con un logro."
-              : "No se ha podido guardar. Inténtalo otra vez.",
+              ? t.achievementOnly
+              : t.saveError,
       });
       return;
     }
@@ -80,7 +78,7 @@ export function AvatarEditor({
   return (
     <section aria-labelledby="avatar-title" className="flex flex-col gap-6">
       <h2 id="avatar-title" className="sr-only">
-        Tu monster
+        {m.home.yourMonster}
       </h2>
 
       <div className="flex items-center gap-6">
@@ -94,11 +92,11 @@ export function AvatarEditor({
             onClick={() => void save(randomSeed(), {})}
             className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg"
           >
-            Tirar el dado
+            {t.roll}
           </button>
           <p aria-live="polite" className="min-h-5 text-sm text-muted">
-            {status.kind === "saving" && "Guardando…"}
-            {status.kind === "saved" && "Guardado"}
+            {status.kind === "saving" && m.common.saving}
+            {status.kind === "saved" && m.common.saved}
             {status.kind === "error" && <span className="text-danger">{status.message}</span>}
           </p>
           {status.kind === "saved" && <InstalledIconNote />}
@@ -106,8 +104,8 @@ export function AvatarEditor({
       </div>
 
       <div className="flex flex-col gap-3">
-        <div role="tablist" aria-label="Partes del monster" className="flex gap-1 overflow-x-auto rounded-full bg-line/60 p-1">
-          {SLOTS.map(({ slot, label }) => (
+        <div role="tablist" aria-label={t.parts} className="flex gap-1 overflow-x-auto rounded-full bg-line/60 p-1">
+          {SLOTS.map((slot) => (
             <button
               key={slot}
               type="button"
@@ -120,7 +118,7 @@ export function AvatarEditor({
                 activeSlot === slot ? "bg-surface font-medium shadow-soft" : "text-muted hover:text-ink"
               }`}
             >
-              {label}
+              {t.slots[slot]}
             </button>
           ))}
         </div>
@@ -133,9 +131,9 @@ export function AvatarEditor({
             const achievementLocked = needed !== null && !unlocked.includes(needed);
             const locked = supporterOnly || achievementLocked;
             const lockReason = supporterOnly
-              ? "Exclusivo para supporters"
+              ? t.supportersOnly
               : achievementLocked
-                ? `Se desbloquea con el logro «${achievementById(needed)?.name ?? needed}»`
+                ? t.unlockWith(achievementById(needed, locale)?.name ?? needed)
                 : undefined;
             const selected = monster[activeSlot] === id;
             return (
@@ -180,7 +178,7 @@ export function AvatarEditor({
           onChange={(event) => void save(seed, { ...overrides, cheeks: event.target.checked })}
           className="size-4 accent-ink"
         />
-        Coloretes
+        {t.cheeks}
       </label>
 
       {lockedPart && (
@@ -193,17 +191,17 @@ export function AvatarEditor({
       )}
 
       <p className="text-sm text-muted">
-        Las partes con candado se desbloquean con los{" "}
+        {t.lockedHint}{" "}
         <Link href="/perfil?seccion=logros" className="font-medium text-ink underline underline-offset-4">
-          logros
+          {t.achievementsLink}
         </Link>
         .
         {!isSupporter && (
           <>
             {" "}
-            Las que llevan ✦ son para quien apoya el proyecto:{" "}
+            {t.supporterHint}{" "}
             <Link href="/apoyar" className="font-medium text-ink underline underline-offset-4">
-              cómo conseguirlas
+              {t.howToGet}
             </Link>
             .
           </>
@@ -216,6 +214,7 @@ export function AvatarEditor({
 /** Se pone contento un momento tras cada cambio y vuelve a su cara normal. */
 function CheeringAvatar({ seed, parts, animate }: { seed: number; parts: Partial<MonsterParts>; animate: boolean }) {
   const [happy, setHappy] = useState(animate);
+  const m = useMessages();
 
   useEffect(() => {
     if (!happy) return;
@@ -225,7 +224,7 @@ function CheeringAvatar({ seed, parts, animate }: { seed: number; parts: Partial
 
   return (
     <span className={happy ? "monster-cheer" : undefined}>
-      <Avatar seed={seed} parts={parts} size={128} mood={happy ? "happy" : "neutral"} label="Tu monster" />
+      <Avatar seed={seed} parts={parts} size={128} mood={happy ? "happy" : "neutral"} label={m.home.yourMonster} />
     </span>
   );
 }
@@ -237,6 +236,7 @@ function CheeringAvatar({ seed, parts, animate }: { seed: number; parts: Partial
  */
 function InstalledIconNote() {
   const [platform, setPlatform] = useState<"ios" | "other" | null>(null);
+  const m = useMessages();
 
   useEffect(() => {
     const standalone = window.matchMedia("(display-mode: standalone)").matches || ("standalone" in navigator && navigator.standalone === true);
@@ -251,8 +251,8 @@ function InstalledIconNote() {
   return (
     <p className="max-w-56 text-xs text-muted">
       {platform === "ios"
-        ? "El icono de la app no cambia solo en iPhone: para verlo, vuelve a añadirla a la pantalla de inicio."
-        : "El icono de la app se actualizará solo en un rato."}
+        ? m.avatar.iconIos
+        : m.avatar.iconOther}
     </p>
   );
 }
@@ -269,7 +269,10 @@ function LockedPartDialog({
   monster: MonsterParts;
   onClose: () => void;
 }) {
-  const achievement = part.achievement ? achievementById(part.achievement) : null;
+  const m = useMessages();
+  const t = m.avatar;
+  const locale = useLocale();
+  const achievement = part.achievement ? achievementById(part.achievement, locale) : null;
   const close = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -296,10 +299,10 @@ function LockedPartDialog({
         {achievement ? (
           <>
             <h2 id="locked-title" className="display text-2xl font-bold">
-              Se gana con un logro
+              {t.lockedAchievement}
             </h2>
             <p className="text-muted">
-              Consigue el logro{" "}
+              {t.getAchievement}{" "}
               <strong className="text-ink">
                 {achievement.icon} {achievement.name}
               </strong>
@@ -307,28 +310,27 @@ function LockedPartDialog({
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               <Link href="/perfil?seccion=logros" onClick={onClose} className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-bg">
-                Ver logros
+                {m.achievements.see}
               </Link>
               <button ref={close} type="button" onClick={onClose} className="rounded-full border border-line px-5 py-2.5 text-sm font-semibold hover:border-muted">
-                Cerrar
+                {m.common.close}
               </button>
             </div>
           </>
         ) : (
           <>
             <h2 id="locked-title" className="display text-2xl font-bold">
-              Exclusivo para quien apoya ✦
+              {t.lockedSupporter}
             </h2>
             <p className="text-muted">
-              Si apoyas el proyecto, desbloqueas esta y otras partes exclusivas para tu monster, la insignia ✦ y el color de la
-              app. Solo cosméticos: nunca ventajas en las partidas.
+              {t.lockedSupporterBody}
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               <Link href="/apoyar" onClick={onClose} className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-bg">
-                Cómo apoyar
+                {t.howToSupport}
               </Link>
               <button ref={close} type="button" onClick={onClose} className="rounded-full border border-line px-5 py-2.5 text-sm font-semibold hover:border-muted">
-                Cerrar
+                {m.common.close}
               </button>
             </div>
           </>

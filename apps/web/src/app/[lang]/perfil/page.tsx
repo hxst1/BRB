@@ -15,17 +15,13 @@ import { LEGAL_LINKS } from "@/components/site-footer";
 import { getViewer, type Viewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { PRIVATE_PAGE } from "@/lib/seo";
+import { getMessages } from "@/lib/i18n/server";
 
 export const metadata: Metadata = { title: "Tu perfil", robots: PRIVATE_PAGE };
 
 /** Pestañas del perfil (en la URL: /perfil?seccion=logros). */
-const SECTIONS = [
-  { id: "monster", label: "Monster" },
-  { id: "logros", label: "Logros" },
-  { id: "records", label: "Récords" },
-  { id: "ajustes", label: "Ajustes" },
-] as const;
-type Section = (typeof SECTIONS)[number]["id"];
+const SECTIONS = ["monster", "logros", "records", "ajustes"] as const;
+type Section = (typeof SECTIONS)[number];
 
 export default function ProfilePage({ searchParams }: PageProps<"/[lang]/perfil">) {
   return (
@@ -38,10 +34,10 @@ export default function ProfilePage({ searchParams }: PageProps<"/[lang]/perfil"
 }
 
 async function Profile({ searchParams }: { searchParams: PageProps<"/[lang]/perfil">["searchParams"] }) {
-  const viewer = await getViewer();
+  const [viewer, m] = await Promise.all([getViewer(), getMessages()]);
   if (!viewer) redirect("/entrar?next=/perfil");
   const { seccion } = await searchParams;
-  const section: Section = SECTIONS.find((s) => s.id === seccion)?.id ?? "monster";
+  const section: Section = SECTIONS.find((s) => s === seccion) ?? "monster";
 
   return (
     <div className="flex max-w-xl flex-col gap-8">
@@ -49,7 +45,7 @@ async function Profile({ searchParams }: { searchParams: PageProps<"/[lang]/perf
         <h1 className="display mb-3 text-5xl font-bold sm:text-6xl">
           {viewer.username}
           {viewer.supporter_tier && (
-            <span title="Apoya el proyecto" className="ml-2 align-top text-2xl" style={{ color: "var(--t256)" }}>
+            <span title={m.common.supporter} className="ml-2 align-top text-2xl" style={{ color: "var(--t256)" }}>
               ✦
             </span>
           )}
@@ -57,9 +53,9 @@ async function Profile({ searchParams }: { searchParams: PageProps<"/[lang]/perf
         <LevelBar xp={viewer.xp} className="max-w-sm" />
       </div>
 
-      <nav aria-label="Secciones del perfil">
+      <nav aria-label={m.profile.sections}>
         <div className="grid grid-flow-col auto-cols-fr rounded-full bg-line/60 p-1">
-          {SECTIONS.map(({ id, label }) => (
+          {SECTIONS.map((id) => (
             <Link
               key={id}
               href={id === "monster" ? "/perfil" : `/perfil?seccion=${id}`}
@@ -69,7 +65,7 @@ async function Profile({ searchParams }: { searchParams: PageProps<"/[lang]/perf
                 section === id ? "bg-surface font-medium shadow-soft" : "text-muted hover:text-ink"
               }`}
             >
-              {label}
+              {m.profile.tabs[id]}
             </Link>
           ))}
         </div>
@@ -109,6 +105,7 @@ async function AchievementsSection({ viewer }: { viewer: Viewer }) {
 
 async function SettingsSection({ viewer }: { viewer: Viewer }) {
   const supabase = await createClient();
+  const m = await getMessages();
   const [{ data: feedback }, { data: friendCode }] = await Promise.all([
     supabase.from("feedback").select("id, kind, body, rating, status, admin_reply, created_at").order("created_at", { ascending: false }).limit(10),
     supabase.from("friend_codes").select("code").eq("user_id", viewer.id).maybeSingle(),
@@ -122,17 +119,17 @@ async function SettingsSection({ viewer }: { viewer: Viewer }) {
 
       <FeedbackSection items={feedback ?? []} />
 
-      <section aria-label="Cuenta" className="flex flex-col gap-3 border-t border-line pt-6">
+      <section aria-label={m.profile.account} className="flex flex-col gap-3 border-t border-line pt-6">
         <Link href="/amigos" className="text-sm font-medium underline-offset-4 hover:underline">
-          Amigos y código de invitación
+          {m.nav.friendsAndCode}
         </Link>
         <Link href="/apoyar" className="text-sm font-medium underline-offset-4 hover:underline">
-          {viewer.supporter_tier ? "Gracias por apoyar ✦" : "Apoyar el proyecto"}
+          {viewer.supporter_tier ? m.profile.thanksSupport : m.profile.support}
         </Link>
         <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
           {LEGAL_LINKS.map((link) => (
             <Link key={link.href} href={link.href} className="underline-offset-4 hover:text-ink hover:underline">
-              {link.label}
+              {m.legal[link.label]}
             </Link>
           ))}
         </p>
@@ -141,7 +138,7 @@ async function SettingsSection({ viewer }: { viewer: Viewer }) {
             type="submit"
             className="rounded-full border border-line px-4 py-2 text-sm text-danger transition-colors hover:border-danger"
           >
-            Cerrar sesión
+            {m.nav.signOut}
           </button>
         </form>
       </section>

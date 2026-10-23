@@ -6,13 +6,15 @@ import { Friends } from "@/components/profile/friends";
 import { getViewerId } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { PRIVATE_PAGE } from "@/lib/seo";
+import { getMessages } from "@/lib/i18n/server";
 
 export const metadata: Metadata = { title: "Amigos", robots: PRIVATE_PAGE };
 
-export default function FriendsPage({ searchParams }: PageProps<"/[lang]/amigos">) {
+export default async function FriendsPage({ searchParams }: PageProps<"/[lang]/amigos">) {
+  const m = await getMessages();
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pt-4 pb-16 sm:px-6">
-      <h1 className="display mb-8 text-5xl font-bold sm:text-6xl">Amigos</h1>
+      <h1 className="display mb-8 text-5xl font-bold sm:text-6xl">{m.nav.friends}</h1>
       <Suspense fallback={<div className="h-48 max-w-md animate-pulse rounded-3xl bg-line/40" />}>
         <FriendsForViewer searchParams={searchParams} />
       </Suspense>

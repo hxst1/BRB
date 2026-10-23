@@ -6,29 +6,24 @@ import type { FriendRequestResult, Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { ChallengeMenu } from "@/components/challenge-menu";
 import { createClient } from "@/lib/supabase/client";
+import { useMessages } from "@/lib/i18n/client";
 
 type Person = { id: string; username: string; avatar_seed: number; avatar_parts: Json };
 type Row = { id: string; status: "pending" | "accepted"; other: Person; incoming: boolean };
 
-const RESULT_MESSAGES: Record<FriendRequestResult, { text: string; ok: boolean }> = {
-  sent: { text: "Solicitud enviada. Saldrá en tu lista cuando la acepte.", ok: true },
-  accepted: { text: "Ya sois amigos: esa persona también te había añadido.", ok: true },
-  already_sent: { text: "Ya le has enviado una solicitud. Toca esperar.", ok: true },
-  already_friends: { text: "Ya sois amigos.", ok: true },
-  self: { text: "Ese es tu propio código.", ok: false },
-  not_found: { text: "No hay nadie con ese código. Revisa que esté bien escrito.", ok: false },
-  rate_limited: { text: "Demasiados intentos seguidos. Prueba otra vez dentro de un rato.", ok: false },
-};
+/** Resultados que son un error (el texto de cada uno está en m.friends.results). */
+const FAILED: ReadonlySet<FriendRequestResult> = new Set(["self", "not_found", "rate_limited"]);
 
 const PERSON = "id, username, avatar_seed, avatar_parts";
 
 export function Friends({ viewerId, initialCode = "" }: { viewerId: string; initialCode?: string }) {
+  const m = useMessages();
   const [rows, setRows] = useState<Row[] | null>(null);
   // Llega relleno al abrir un enlace de invitación (/amigos?codigo=…).
   const [code, setCode] = useState(initialCode);
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ text: string; ok: boolean } | null>(
-    initialCode ? { text: "Te han invitado: pulsa Añadir para enviarle una solicitud.", ok: true } : null,
+    initialCode ? { text: m.friends.invited, ok: true } : null,
   );
 
   const load = useCallback(async () => {
@@ -64,7 +59,7 @@ export function Friends({ viewerId, initialCode = "" }: { viewerId: string; init
     setSending(true);
     const { data, error } = await createClient().rpc("send_friend_request", { friend_code: code });
     setSending(false);
-    setResult(error ? { text: "No se ha podido enviar. Inténtalo otra vez.", ok: false } : RESULT_MESSAGES[data as FriendRequestResult]);
+    setResult(error ? { text: m.feedback.sendError, ok: false } : { text: m.friends.results[data as FriendRequestResult], ok: !FAILED.has(data as FriendRequestResult) });
     if (!error && data !== "not_found" && data !== "self" && data !== "rate_limited") {
       setCode("");
       await reload();
@@ -88,12 +83,12 @@ export function Friends({ viewerId, initialCode = "" }: { viewerId: string; init
   return (
     <section aria-labelledby="friends-title" className="flex flex-col gap-6">
       <h2 id="friends-title" className="sr-only">
-        Tus amigos
+        {m.friends.yours}
       </h2>
 
       <form onSubmit={addFriend} className="flex flex-col gap-2">
         <label htmlFor="friend-code" className="text-sm font-medium">
-          Añadir con su código
+          {m.friends.addWithCode}
         </label>
         <div className="flex gap-2">
           <input
@@ -114,7 +109,7 @@ export function Friends({ viewerId, initialCode = "" }: { viewerId: string; init
             disabled={sending || code.length !== 5}
             className="rounded-xl bg-ink px-4 font-semibold text-bg disabled:opacity-40"
           >
-            Añadir
+            {m.friends.add}
           </button>
         </div>
         <p aria-live="polite" className={`min-h-5 text-sm ${result?.ok === false ? "text-danger" : "text-muted"}`}>
@@ -127,41 +122,41 @@ export function Friends({ viewerId, initialCode = "" }: { viewerId: string; init
       ) : (
         <>
           {incoming.length > 0 && (
-            <PeopleList title="Quieren ser tus amigos">
+            <PeopleList title={m.friends.incoming}>
               {incoming.map((row) => (
                 <PersonRow key={row.id} person={row.other}>
                   <button type="button" onClick={() => void respond(row.id, true)} className="rounded-full bg-ink px-3 py-1 text-sm font-medium text-bg">
-                    Aceptar
+                    {m.now.accept}
                   </button>
                   <button type="button" onClick={() => void respond(row.id, false)} className="text-sm text-muted hover:text-ink">
-                    Rechazar
+                    {m.now.decline}
                   </button>
                 </PersonRow>
               ))}
             </PeopleList>
           )}
 
-          <PeopleList title={friends.length ? `Tus amigos (${friends.length})` : "Tus amigos"}>
+          <PeopleList title={friends.length ? `${m.friends.yours} (${friends.length})` : m.friends.yours}>
             {friends.length === 0 && (
-              <li className="py-3 text-sm text-muted">Aún no tienes amigos aquí. Pásales tu código y pídeles el suyo.</li>
+              <li className="py-3 text-sm text-muted">{m.friends.empty}</li>
             )}
             {friends.map((row) => (
               <PersonRow key={row.id} person={row.other}>
                 <Link href={`/chat/${row.other.id}`} className="text-sm font-medium text-muted hover:text-ink">
-                  Mensaje
+                  {m.friends.message}
                 </Link>
                 <ChallengeMenu friendId={row.other.id} />
-                <ConfirmButton label="Eliminar" confirmLabel="Sí, eliminar" onConfirm={() => void remove(row.other.id)} />
+                <ConfirmButton label={m.friends.remove} confirmLabel={m.friends.confirmRemove} onConfirm={() => void remove(row.other.id)} />
               </PersonRow>
             ))}
           </PeopleList>
 
           {outgoing.length > 0 && (
-            <PeopleList title="Solicitudes enviadas">
+            <PeopleList title={m.friends.outgoing}>
               {outgoing.map((row) => (
                 <PersonRow key={row.id} person={row.other}>
                   <button type="button" onClick={() => void remove(row.other.id)} className="text-sm text-muted hover:text-ink">
-                    Cancelar
+                    {m.common.cancel}
                   </button>
                 </PersonRow>
               ))}
@@ -195,6 +190,7 @@ function PersonRow({ person, children }: { person: Person; children: React.React
 /** Confirmación en línea en vez de un diálogo del navegador. */
 function ConfirmButton({ label, confirmLabel, onConfirm }: { label: string; confirmLabel: string; onConfirm: () => void }) {
   const [asking, setAsking] = useState(false);
+  const m = useMessages();
   if (!asking) {
     return (
       <button type="button" onClick={() => setAsking(true)} className="text-sm text-muted hover:text-ink">
@@ -208,7 +204,7 @@ function ConfirmButton({ label, confirmLabel, onConfirm }: { label: string; conf
         {confirmLabel}
       </button>
       <button type="button" onClick={() => setAsking(false)} className="text-sm text-muted hover:text-ink">
-        No
+        {m.run.no}
       </button>
     </>
   );
