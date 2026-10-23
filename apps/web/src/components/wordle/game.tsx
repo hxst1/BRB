@@ -6,7 +6,8 @@ import type { Json } from "@repo/db";
 import { MAX_GUESSES, WORD_LENGTH, letterHints, shareGrid, type Mark } from "@repo/games/wordle";
 import { Avatar } from "@repo/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
-import { useMessages } from "@/lib/i18n/client";
+import { useLocale, useMessages } from "@/lib/i18n/client";
+import type { Locale } from "@/lib/i18n/locales";
 
 export type WordleState = {
   guesses: string[];
@@ -27,7 +28,8 @@ export type FriendResult = {
   patterns: string[];
 };
 
-const ROWS = ["qwertyuiop", "asdfghjklñ", "zxcvbnm"];
+/** Teclado de cada idioma (el inglés, sin ñ). */
+const ROWS: Record<Locale, string[]> = { es: ["qwertyuiop", "asdfghjklñ", "zxcvbnm"], en: ["qwertyuiop", "asdfghjkl", "zxcvbnm"] };
 /** Cuánto se ve un aviso ("No está en la lista"…). */
 const TOAST_MS = 1800;
 
@@ -52,6 +54,7 @@ export function WordleGame({
   initialFriends: FriendResult[];
 }) {
   const m = useMessages();
+  const locale = useLocale();
   const [game, setGame] = useState(initial);
   const [current, setCurrent] = useState("");
   const [busy, setBusy] = useState(false);
@@ -80,7 +83,7 @@ export function WordleGame({
       const response = await fetch("/api/wordle/guess", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ day, guess: current }),
+        body: JSON.stringify({ day, guess: current, lang: locale }),
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) return reject(body.error ?? m.wordle.checkError);
@@ -94,7 +97,7 @@ export function WordleGame({
         answer: body.answer,
       }));
       if (body.finished) {
-        const { data } = await createClient().rpc("get_wordle_friends");
+        const { data } = await createClient().rpc("get_wordle_friends", { lang: locale });
         setFriends(data ?? []);
       }
     } catch {
@@ -102,7 +105,7 @@ export function WordleGame({
     } finally {
       setBusy(false);
     }
-  }, [busy, current, day, game.finished, reject, m]);
+  }, [busy, current, day, game.finished, reject, m, locale]);
 
   const type = useCallback(
     (key: string) => {
@@ -208,7 +211,7 @@ export function WordleGame({
           </button>
         </div>
       ) : (
-        <Keyboard hints={hints} onKey={type} disabled={busy} />
+        <Keyboard rows={ROWS[locale]} hints={hints} onKey={type} disabled={busy} />
       )}
 
       {game.finished && <Friends friends={friends} />}
@@ -216,11 +219,11 @@ export function WordleGame({
   );
 }
 
-function Keyboard({ hints, onKey, disabled }: { hints: Map<string, Mark>; onKey: (key: string) => void; disabled: boolean }) {
+function Keyboard({ rows, hints, onKey, disabled }: { rows: string[]; hints: Map<string, Mark>; onKey: (key: string) => void; disabled: boolean }) {
   const m = useMessages();
   return (
     <div aria-label={m.wordle.keyboard} className="flex flex-col gap-1.5 select-none">
-      {ROWS.map((row, r) => (
+      {rows.map((row, r) => (
         <div key={row} className="flex justify-center gap-1">
           {r === 2 && (
             <Key label={m.wordle.enter} wide onClick={() => onKey("enter")} disabled={disabled}>

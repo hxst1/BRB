@@ -3,24 +3,27 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClientForRequest } from "@/lib/supabase/server";
 import { parseGuess, wordleToday } from "@/lib/wordle/server";
 import { apiJson } from "@/lib/i18n/api";
+import { isLocale } from "@/lib/i18n/locales";
 
 /**
  * Puntúa un intento del Wordle. La palabra se queda en el servidor: solo se
- * devuelven los colores (y la palabra, al fallar los 6 intentos).
+ * devuelven los colores (y la palabra, al fallar los 6 intentos). `lang` elige
+ * la palabra del día en español o en inglés.
  */
 export async function POST(request: Request) {
   const { userId } = await createClientForRequest(request);
   if (!userId) return apiJson({ error: "Hay que iniciar sesión" }, { status: 401 });
 
-  const body = (await request.json().catch(() => null)) as { day?: unknown; guess?: unknown } | null;
+  const body = (await request.json().catch(() => null)) as { day?: unknown; guess?: unknown; lang?: unknown } | null;
   if (typeof body?.guess !== "string" || typeof body.day !== "string") {
     return apiJson({ error: "Intento no válido" }, { status: 400 });
   }
 
-  const guess = parseGuess(body.guess);
+  const lang = isLocale(body.lang) ? body.lang : "es";
+  const guess = parseGuess(body.guess, lang);
   if (!guess) return apiJson({ error: "No está en la lista de palabras" }, { status: 422 });
 
-  const today = await wordleToday();
+  const today = await wordleToday(lang);
   if (body.day !== today.day) {
     return apiJson({ error: "Ha cambiado el día: recarga para jugar la palabra nueva", code: "day_changed" }, { status: 409 });
   }
@@ -32,6 +35,7 @@ export async function POST(request: Request) {
     game_day: today.day,
     guess,
     pattern,
+    lang,
   });
 
   if (error?.hint === "finished") return apiJson({ error: "Ya has terminado la palabra de hoy" }, { status: 409 });

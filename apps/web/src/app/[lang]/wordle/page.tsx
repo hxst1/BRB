@@ -44,17 +44,18 @@ async function WordleForViewer() {
     );
   }
 
-  const [today, supabase] = await Promise.all([wordleToday(), createClient()]);
+  const [today, supabase] = await Promise.all([wordleToday(locale), createClient()]);
   const { data: game } = await supabase
     .from("wordle_games")
     .select("guesses, patterns, solved, finished_at")
     .eq("user_id", viewerId)
     .eq("day", today.day)
+    .eq("lang", locale)
     .maybeSingle();
 
   const finished = game?.finished_at != null;
   const solved = game?.solved ?? false;
-  const friends: FriendResult[] = finished ? ((await supabase.rpc("get_wordle_friends")).data ?? []) : [];
+  const friends: FriendResult[] = finished ? ((await supabase.rpc("get_wordle_friends", { lang: locale })).data ?? []) : [];
 
   return (
     <WordleGame

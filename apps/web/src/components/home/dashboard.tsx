@@ -7,7 +7,7 @@ import { DailyCard } from "@/components/daily/daily-summary";
 import { LevelBar } from "@/components/level-bar";
 import { battleshipMyTurn } from "@/components/tictactoe/data";
 import { CHALLENGE_EXPIRY_MS, matchGame, matchGameKey, matchHref } from "@/lib/games";
-import { getMessages } from "@/lib/i18n/server";
+import { getLocale, getMessages } from "@/lib/i18n/server";
 import type { Messages } from "@/lib/i18n";
 import { MATCH_WITH_PLAYERS, PLAYER_COLUMNS } from "@/lib/queries";
 import type { Viewer } from "@/lib/session";
@@ -31,7 +31,7 @@ function myTurnIn(match: Match, viewerId: string, waiting: ReadonlySet<string>):
 
 export async function Dashboard({ viewer }: { viewer: Viewer }) {
   const supabase = await createClient();
-  const m = await getMessages();
+  const [m, locale] = await Promise.all([getMessages(), getLocale()]);
   const { ago, number, time, timeLeft } = m.format;
   const [
     { data: matches },
@@ -69,6 +69,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
       .from("wordle_games")
       .select("day, guesses, solved, finished_at")
       .eq("user_id", viewer.id)
+      .eq("lang", locale)
       .order("day", { ascending: false })
       .limit(1)
       .maybeSingle(),

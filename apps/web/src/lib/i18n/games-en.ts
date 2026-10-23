@@ -91,12 +91,12 @@ export const GAMES_EN: Record<keyof typeof GAMES_ES, GameTexts> = {
   },
   wordle: {
     name: "Wordle",
-    title: "Wordle in Spanish: the word of the day",
-    description: "Play Wordle in Spanish for free: guess the 5-letter word of the day in 6 tries and compare your result with your friends.",
+    title: "Wordle: the word of the day",
+    description: "Play Wordle for free: guess the 5-letter word of the day in 6 tries and compare your result with your friends. In English or Spanish.",
     tagline: "The word of the day in 6 tries",
     genre: "Word game",
     howTo: [
-      "Type a 5-letter Spanish word and press enter.",
+      "Type a 5-letter word and press enter.",
       "Green: the letter is in the right spot. Yellow: it's in the word, but somewhere else. Grey: it's not in the word.",
       "You have 6 tries. The word changes every day and it's the same for everyone.",
     ],

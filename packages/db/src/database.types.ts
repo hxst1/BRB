@@ -459,14 +459,14 @@ isOneToOne: false
                   ]
                 },"wordle_games": {
                   Row: {
-                    "day": string,"finished_at": string | null,"guesses": (string)[],"patterns": (string)[],"solved": boolean,"user_id": string
+                    "day": string,"finished_at": string | null,"guesses": (string)[],"lang": string,"patterns": (string)[],"solved": boolean,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "day": string,"finished_at"?: string | null,"guesses"?: (string)[],"patterns"?: (string)[],"solved"?: boolean,"user_id": string
+                    "day": string,"finished_at"?: string | null,"guesses"?: (string)[],"lang"?: string,"patterns"?: (string)[],"solved"?: boolean,"user_id": string
                   }
                   Update: {
-                    "day"?: string,"finished_at"?: string | null,"guesses"?: (string)[],"patterns"?: (string)[],"solved"?: boolean,"user_id"?: string
+                    "day"?: string,"finished_at"?: string | null,"guesses"?: (string)[],"lang"?: string,"patterns"?: (string)[],"solved"?: boolean,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -658,7 +658,7 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: number
                            },
 "get_wordle_friends":
-{ Args: Record<PropertyKey, never>; Returns: {
+{ Args: { "lang"?: string }; Returns: {
               "attempts": number,"avatar_parts": Json,"avatar_seed": number,"patterns": (string)[],"solved": boolean,"user_id": string,"username": string
             }[]
                            },
@@ -772,10 +772,11 @@ isOneToOne: false
 { Args: { "code": string }; Returns: string
                            },
 "wordle_add_guess":
-{ Args: { "game_day": string,"guess": string,"pattern": string,"player": string }; Returns: {
+{ Args: { "game_day": string,"guess": string,"lang"?: string,"pattern": string,"player": string }; Returns: {
               "day": string,
 "finished_at": string | null,
 "guesses": (string)[],
+"lang": string,
 "patterns": (string)[],
 "solved": boolean,
 "user_id": string
@@ -787,7 +788,7 @@ isOneToOne: false
         isSetofReturn: false
       } },
 "wordle_today":
-{ Args: { "candidates": (string)[] }; Returns: {
+{ Args: { "candidates": (string)[],"lang"?: string }; Returns: {
               "day": string,"word": string
             }[]
                            }

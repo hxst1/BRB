@@ -165,7 +165,7 @@ const HOW_TO_PLAY_EN: Record<string, HowToPlay> = {
     ],
   },
   wordle: {
-    goal: "Guess the secret word of the day. It's a 5-letter Spanish word and you have 6 tries.",
+    goal: "Guess the secret word of the day. It has 5 letters and you have 6 tries.",
     steps: [
       { icon: "⌨️", text: "Type a 5-letter word and send it." },
       { icon: "🟩", text: "Green: that letter is in the word and in the right spot." },
