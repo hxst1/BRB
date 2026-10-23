@@ -353,6 +353,34 @@ export const en: Messages = {
     summary: (score: string, apples: number) => `${score} points, ${apples === 1 ? "1 apple" : `${apples} apples`}`,
   },
   lightsOut: {
+    tutorial: {
+      step: (n: number, total: number) => `Tutorial · ${n} of ${total}`,
+      ready: "Tutorial complete",
+      skip: "Skip tutorial",
+      nice: "All off!",
+      next: "Next",
+      doneTitle: "You know how to play!",
+      doneBody: "In the game, each level has a tap limit and the board grows every two levels. Hover over or hold a square to see what will change before you tap it.",
+      start: "Start playing",
+      review: "Review the tutorial",
+      steps: [
+        {
+          title: "Tap the centre",
+          body: "Tapping a square toggles it and its neighbours above, below, left and right: lights that are on go off, and lights that are off come on.",
+          hint: "Hover over or hold a square: you'll see which squares will change.",
+        },
+        {
+          title: "A cross in each corner",
+          body: "Each tap toggles its own cross. Tap the two pulsing corners, in any order: it doesn't matter.",
+          hint: "In a corner the cross is smaller: it only has two neighbours.",
+        },
+        {
+          title: "Your turn",
+          body: "Switch everything off. If you make a mistake, tap the same square again: it goes back to how it was.",
+          hint: "Hint: start with the top middle square.",
+        },
+      ],
+    },
     level: "Level",
     presses: "Taps",
     stop: "Stop here",

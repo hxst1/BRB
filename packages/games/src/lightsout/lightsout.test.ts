@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MAX_SIZE, budgetForLevel, encodeCell, newGame, press, replay, sizeForLevel, toggle, type LightsOutState } from ".";
+import { MAX_SIZE, budgetForLevel, scrambleForLevel, encodeCell, newGame, press, replay, sizeForLevel, toggle, type LightsOutState } from ".";
 import { verifyRun } from "./verify";
 
 /**
@@ -106,5 +106,21 @@ describe("replay y validación", () => {
     expect(verifyRun(77, played.presses, 60_000)).toMatchObject({ valid: true, score: 6 });
     expect(verifyRun(77, played.presses, 0)).toMatchObject({ valid: false });
     expect(verifyRun(77, played.presses, 7 * 60 * 60 * 1000)).toMatchObject({ valid: false });
+  });
+});
+
+describe("primeros niveles", () => {
+  it("el 1 se resuelve con un toque y el 2 con dos como mucho", () => {
+    for (let seed = 1; seed <= 50; seed++) {
+      const first = newGame(seed);
+      expect(solve(first)).toHaveLength(1);
+      const second = press(first, solve(first)[0]!);
+      expect(second.level).toBe(2);
+      expect(solve(second).length).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it("desde el 3 la dificultad sigue como antes", () => {
+    expect([1, 2, 3, 4].map(scrambleForLevel)).toEqual([1, 2, 5, 6]);
   });
 });

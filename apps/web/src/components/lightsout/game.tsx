@@ -5,6 +5,8 @@ import { randomSeed } from "@repo/games";
 import { budgetForLevel, newGame, press, type LightsOutState } from "@repo/games/lightsout";
 import { startRun, type RunNotice } from "@/lib/start-run";
 import { GuestNotice } from "@/components/guest-notice";
+import { LightsBoard } from "./board";
+import { LightsOutTutorial, useTutorialDone } from "./tutorial";
 import { useMessages } from "@/lib/i18n/client";
 
 const BEST_KEY = "lightsout:best";
@@ -45,16 +47,26 @@ function writeBest(score: number) {
   }
 }
 
-export function LightsOutGame({
-  viewerId,
-  onSaved,
-  daily = null,
-}: {
+type GameProps = {
   viewerId: string | null;
   onSaved: () => void;
   /** Día del reto diario (AAAA-MM-DD) si se juega el reto. */
   daily?: string | null;
-}) {
+};
+
+/**
+ * La primera vez, el tutorial (antes de pedir la partida: así no gasta el
+ * intento del reto diario); después, el juego.
+ */
+export function LightsOutGame(props: GameProps) {
+  const done = useTutorialDone();
+  const [reviewing, setReviewing] = useState(false);
+  if (done === null) return <div className="aspect-square w-full max-w-[30rem] animate-pulse rounded-[22px]" style={{ background: "var(--board)" }} />;
+  if (!done || reviewing) return <LightsOutTutorial onDone={() => setReviewing(false)} />;
+  return <Game {...props} onReviewTutorial={() => setReviewing(true)} />;
+}
+
+function Game({ viewerId, onSaved, daily = null, onReviewTutorial }: GameProps & { onReviewTutorial: () => void }) {
   const m = useMessages();
   const signedIn = viewerId !== null;
   const [state, setState] = useState<LightsOutState | null>(null);
@@ -176,28 +188,14 @@ export function LightsOutGame({
 
       {state ? (
         <div className="relative">
-          <div
-            role="group"
-            aria-label={m.lightsOut.boardAria(state.level, lit)}
-            className="grid aspect-square w-full rounded-[22px] p-[3%]"
-            style={{ background: "var(--board)", gridTemplateColumns: `repeat(${state.size}, 1fr)`, gap: `${12 / state.size}%` }}
-          >
-            {state.lights.map((on, cell) => (
-              <button
-                key={`${state.level}:${cell}`}
-                type="button"
-                aria-pressed={on}
-                aria-label={m.lightsOut.cellAria(Math.floor(cell / state.size) + 1, (cell % state.size) + 1)}
-                disabled={ended}
-                onClick={() => tap(cell)}
-                className="rounded-[22%] transition-[background-color,box-shadow,transform] duration-150 active:scale-95 disabled:active:scale-100"
-                style={{
-                  background: on ? "var(--t128)" : "var(--cell)",
-                  boxShadow: on ? "0 0 18px -2px color-mix(in srgb, var(--t128) 70%, transparent)" : "none",
-                }}
-              />
-            ))}
-          </div>
+          <LightsBoard
+            key={state.level}
+            lights={state.lights}
+            size={state.size}
+            label={m.lightsOut.boardAria(state.level, lit)}
+            disabled={ended}
+            onTap={tap}
+          />
           {levelUp !== null && !ended && (
             <div className="pointer-events-none absolute inset-x-0 top-6 flex justify-center">
               <p className="rounded-full bg-bg/85 px-4 py-2 text-sm font-semibold backdrop-blur-sm">
@@ -224,6 +222,15 @@ export function LightsOutGame({
 
       <p className="text-sm text-muted">
         {m.lightsOut.hint(state ? budgetForLevel(state.level) : null)}
+        {/* Sin partida a medias (y nunca en el reto diario, que tiene un solo intento). */}
+        {daily === null && (ended || state?.presses.length === 0) && (
+          <>
+            {" "}
+            <button type="button" onClick={onReviewTutorial} className="font-medium text-ink underline underline-offset-4">
+              {m.lightsOut.tutorial.review}
+            </button>
+          </>
+        )}
       </p>
     </section>
   );

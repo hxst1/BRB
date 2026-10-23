@@ -352,6 +352,34 @@ export const es = {
     summary: (score: string, apples: number) => `${score} puntos, ${apples === 1 ? "1 manzana" : `${apples} manzanas`}`,
   },
   lightsOut: {
+    tutorial: {
+      step: (n: number, total: number) => `Tutorial · ${n} de ${total}`,
+      ready: "Tutorial completado",
+      skip: "Saltar tutorial",
+      nice: "¡Apagado!",
+      next: "Siguiente",
+      doneTitle: "¡Ya sabes jugar!",
+      doneBody: "En la partida, cada nivel tiene un límite de toques y el tablero crece cada dos niveles. Pasa el dedo o el ratón por una casilla para ver qué cambiará antes de tocarla.",
+      start: "Empezar a jugar",
+      review: "Repasar el tutorial",
+      steps: [
+        {
+          title: "Toca el centro",
+          body: "Al tocar una casilla cambian ella y sus vecinas de arriba, abajo, izquierda y derecha: las encendidas se apagan y las apagadas se encienden.",
+          hint: "Pasa el dedo o el ratón por encima: verás qué casillas cambiarán.",
+        },
+        {
+          title: "Una cruz en cada esquina",
+          body: "Cada toque cambia su propia cruz. Toca las dos esquinas que laten, en el orden que quieras: da igual.",
+          hint: "En una esquina, la cruz es más pequeña: solo tiene dos vecinas.",
+        },
+        {
+          title: "Ahora tú solo",
+          body: "Apágalo todo. Si te equivocas, toca otra vez la misma casilla: vuelve a quedar como estaba.",
+          hint: "Pista: empieza por la casilla de arriba en el centro.",
+        },
+      ],
+    },
     level: "Nivel",
     presses: "Pulsaciones",
     stop: "Plantarse",

@@ -468,3 +468,23 @@ body {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* Lights Out (tutorial): la casilla que conviene tocar late suavemente. */
+.lights-target {
+  animation: lights-target 1.4s ease-in-out infinite;
+}
+
+@keyframes lights-target {
+  50% {
+    outline: 3px solid var(--ink);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lights-target {
+    animation: none;
+    outline: 3px solid var(--ink);
+    outline-offset: 2px;
+  }
+}

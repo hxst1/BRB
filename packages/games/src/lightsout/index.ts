@@ -32,9 +32,12 @@ export function sizeForLevel(level: number): number {
   return Math.min(3 + Math.floor((level - 1) / 2), MAX_SIZE);
 }
 
-/** Pulsaciones con que se genera el nivel: crece uno por nivel. */
-function scrambleForLevel(level: number): number {
-  return level + 2;
+/**
+ * Pulsaciones con que se genera el nivel. Los dos primeros se resuelven con 1
+ * y 2 toques, para aprender; desde el tercero crece uno por nivel.
+ */
+export function scrambleForLevel(level: number): number {
+  return level <= 2 ? level : level + 2;
 }
 
 /** Límite de pulsaciones: las de la mezcla (siempre resuelven) más un margen para errores. */
