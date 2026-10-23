@@ -10,6 +10,7 @@ import { Avatar } from "@repo/ui/avatar";
 import { achievementById } from "@/lib/achievements";
 import { useLocale, useMessages } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
+import { InlinePicto } from "@/components/picto";
 
 type Slot = "body" | "palette" | "eyes" | "mouth" | "top";
 
@@ -326,7 +327,8 @@ function LockedPartDialog({
             <p className="text-muted">
               {t.getAchievement}{" "}
               <strong className="text-ink">
-                {achievement.icon} {achievement.name}
+                <InlinePicto name={achievement.icon} className="mr-1" />
+                {achievement.name}
               </strong>
               : {achievement.description.charAt(0).toLowerCase() + achievement.description.slice(1)}
             </p>

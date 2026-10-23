@@ -10,6 +10,7 @@ import { achievementById, type Achievement } from "@/lib/achievements";
 import { useLocale, useMessages } from "@/lib/i18n/client";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import { createClient } from "@/lib/supabase/client";
+import { InlinePicto } from "@/components/picto";
 
 /** Tiempo a la vista de cada aviso. */
 const SHOW_MS = 9000;
@@ -77,9 +78,7 @@ export function AchievementToaster({ viewerId, avatarSeed, avatarParts }: { view
         <span className="flex min-w-0 flex-col gap-1">
           <span className="text-xs text-muted">{m.achievements.unlocked}</span>
           <span className="font-semibold">
-            <span aria-hidden className="mr-1.5">
-              {current.icon}
-            </span>
+            <InlinePicto name={current.icon} className="mr-1.5" />
             {current.name}
           </span>
           <span className="text-xs">

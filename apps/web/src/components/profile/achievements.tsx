@@ -3,6 +3,7 @@ import { sanitizeParts } from "@repo/avatars";
 import { Avatar } from "@repo/ui/avatar";
 import { achievementsFor } from "@/lib/achievements";
 import { getLocale, getMessages } from "@/lib/i18n/server";
+import { InlinePicto } from "@/components/picto";
 
 export type AchievementStatus = { achievement: string; progress: number; goal: number; unlocked_at: string | null };
 
@@ -51,9 +52,7 @@ export async function Achievements({ statuses, avatarSeed, avatarParts }: { stat
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="font-semibold">
-                  <span aria-hidden className="mr-1.5">
-                    {achievement.icon}
-                  </span>
+                  <InlinePicto name={achievement.icon} className="mr-1.5" />
                   {achievement.name}
                 </span>
                 <span className="text-xs text-muted">{achievement.description}</span>

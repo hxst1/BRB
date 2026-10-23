@@ -6,11 +6,11 @@ International (CC BY-SA 4.0), https://creativecommons.org/licenses/by-sa/4.0/
 Modificados para esta app: recoloreados y con el contorno más grueso y oscuro. Estas versiones
 se comparten con la misma licencia CC BY-SA 4.0.
 
-steps/ (los dibujos de "¿Cómo se juega?") también son de OpenMoji, con la misma licencia y los mismos
-cambios (los colores pasados a la paleta de la app): apple 1F34E, crash 1F4A5, fast 26A1, flag 1F6A9,
-goal 1F945, hand 270B, handshake 1F91D, idea 1F4A1, look 1F440, new 1F195, numbers 1F522, pencil 270F,
-secret 1F92B, stop 1F6D1, tap 1F446, target 1F3AF, think 1F9E0, timer 23F1, trophy 1F3C6, wait 23F3 y
-water 1F4A7. Los demás de steps/ (flechas, más, repetir, en raya, teclado, cuadros y cuadrícula)
+pictos/ (los dibujitos de la interfaz: "¿Cómo se juega?", logros…) también son de OpenMoji, con la misma licencia y los mismos
+cambios (los colores pasados a la paleta de la app): apple 1F34E, crash 1F4A5, fast 26A1, fire 1F525, flag 1F6A9,
+gamepad 1F3AE, goal 1F945, hand 270B, handshake 1F91D, idea 1F4A1, laptop 1F4BB, look 1F440, megaphone 1F4E3, new 1F195, numbers 1F522, pencil 270F,
+secret 1F92B, star 2B50, stop 1F6D1, tap 1F446, target 1F3AF, think 1F9E0, timer 23F1, trophy 1F3C6, wait 23F3 y
+water 1F4A7. Los demás de pictos/ (flechas, más, repetir, en raya, teclado, cometa, cuadros y cuadrícula)
 están dibujados para esta app.
 
 El resto están dibujados para esta app en el mismo estilo.

@@ -4,29 +4,9 @@
  * están en lib/seo.ts (sección "Cómo se juega" de cada página).
  */
 import type { Locale } from "./i18n/locales";
+import type { Picto } from "./pictos";
 
-/** Dibujos de los pasos (public/icons/steps), con el mismo contorno oscuro que los iconos de los juegos. */
-type StepFile = "apple" | "box" | "crash" | "down" | "fast" | "flag" | "goal" | "hand" | "handshake" | "idea" | "keyboard" | "line" | "look" | "new" | "numbers" | "pencil" | "plus" | "repeat" | "right" | "secret" | "stop" | "tap" | "target" | "think" | "tile-gray" | "tile-green" | "tile-yellow" | "timer" | "trophy" | "up" | "wait" | "water";
-/** Los que ya existen en otro sitio. */
-const SHARED_ICONS = {
-  wave: "/icons/friend.svg",
-  ship: "/icons/battleship.svg",
-  snake: "/icons/snake.svg",
-  paddle: "/icons/pong.svg",
-  tron: "/icons/tron.svg",
-  knight: "/chess/rn.svg",
-  scissors: "/rps/scissors-x.svg",
-  rock: "/rps/rock-x.svg",
-  paper: "/rps/paper-x.svg",
-} as const;
-
-export type StepIcon = StepFile | keyof typeof SHARED_ICONS;
-
-export function stepIconSrc(icon: StepIcon): string {
-  return icon in SHARED_ICONS ? SHARED_ICONS[icon as keyof typeof SHARED_ICONS] : `/icons/steps/${icon}.svg`;
-}
-
-export type HowToPlay = { goal: string; steps: { icon: StepIcon; text: string }[] };
+export type HowToPlay = { goal: string; steps: { icon: Picto; text: string }[] };
 
 const HOW_TO_PLAY_ES: Record<string, HowToPlay> = {
   chess: {

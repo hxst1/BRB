@@ -4,12 +4,13 @@
  * (`achievement`); achievements.test.ts comprueba que los tres coinciden.
  */
 import type { Locale } from "./i18n/locales";
+import type { Picto } from "./pictos";
 
 export type Achievement = {
   id: string;
   name: string;
   description: string;
-  icon: string;
+  icon: Picto;
   reward: { slot: "palette" | "top"; id: string; label: string };
 };
 
@@ -18,91 +19,91 @@ export const ACHIEVEMENTS: Achievement[] = [
     id: "first-run",
     name: "Primera partida",
     description: "Termina una partida en solitario.",
-    icon: "🎮",
+    icon: "gamepad",
     reward: { slot: "top", id: "cap", label: "Gorra" },
   },
   {
     id: "friends-3",
     name: "En buena compañía",
     description: "Ten 3 amigos.",
-    icon: "👋",
+    icon: "wave",
     reward: { slot: "top", id: "headphones", label: "Cascos" },
   },
   {
     id: "streak-7",
     name: "Constante",
     description: "Juega 7 días seguidos.",
-    icon: "🔥",
+    icon: "fire",
     reward: { slot: "top", id: "flower", label: "Flor" },
   },
   {
     id: "streak-30",
     name: "Imparable",
     description: "Juega 30 días seguidos.",
-    icon: "☄️",
+    icon: "comet",
     reward: { slot: "palette", id: "ember", label: "Color brasa" },
   },
   {
     id: "tile-2048",
     name: "2048",
     description: "Consigue la ficha 2048.",
-    icon: "🟪",
+    icon: "tile-violet",
     reward: { slot: "palette", id: "ultra", label: "Color 2048" },
   },
   {
     id: "snake-30",
     name: "Serpiente larga",
     description: "Cómete 30 manzanas en una partida de Snake.",
-    icon: "🐍",
+    icon: "snake",
     reward: { slot: "palette", id: "jungle", label: "Color selva" },
   },
   {
     id: "lightsout-10",
     name: "Apagón",
     description: "Supera 10 niveles de Lights Out en una partida.",
-    icon: "💡",
+    icon: "idea",
     reward: { slot: "top", id: "halo", label: "Aureola" },
   },
   {
     id: "minesweeper-hard",
     name: "Artificiero",
     description: "Gana un buscaminas difícil.",
-    icon: "💣",
+    icon: "bomb",
     reward: { slot: "palette", id: "ice", label: "Color hielo" },
   },
   {
     id: "sudoku-hard",
     name: "Cerebrito",
     description: "Resuelve un sudoku difícil.",
-    icon: "🧠",
+    icon: "think",
     reward: { slot: "top", id: "wizard", label: "Sombrero de mago" },
   },
   {
     id: "wordle-3",
     name: "A la tercera",
     description: "Acierta el Wordle en 3 intentos o menos.",
-    icon: "🔤",
+    icon: "abc",
     reward: { slot: "top", id: "bow", label: "Lazo" },
   },
   {
     id: "winner-5",
     name: "Rival a batir",
     description: "Gana a 5 personas distintas en los juegos contra amigos.",
-    icon: "🏆",
+    icon: "trophy",
     reward: { slot: "top", id: "party", label: "Gorro de fiesta" },
   },
   {
     id: "contributor",
     name: "Colaborador",
     description: "Abre una issue o haz un pull request en GitHub con tu código de amigo.",
-    icon: "💻",
+    icon: "laptop",
     reward: { slot: "palette", id: "terminal", label: "Color terminal" },
   },
   {
     id: "referrals-5",
     name: "Embajador",
     description: "Invita a 5 amigos con tu enlace: que se registren y jueguen al menos una partida.",
-    icon: "📣",
+    icon: "megaphone",
     reward: { slot: "palette", id: "neon", label: "Color neón" },
   },
 ];
