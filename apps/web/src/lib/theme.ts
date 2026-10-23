@@ -6,18 +6,36 @@ export type ThemeChoice = "system" | "light" | "dark";
 export const THEME_KEY = "theme";
 export const TINT_KEY = "tint";
 
-/** Tintes de la app para quien apoya (theme.css: data-tint). */
-export const TINTS = [
+export type TintId = "grape" | "sea" | "forest" | "sunset" | "mint" | "tangerine" | "sky";
+
+/**
+ * Tintes de la app (theme.css: data-tint). Los que llevan `achievement` se
+ * consiguen con ese logro (lo comprueba achievements.test.ts); el resto son
+ * para quien apoya el proyecto.
+ */
+export const TINTS: readonly { value: TintId; label: string; color: string; achievement?: string }[] = [
+  { value: "mint", label: "Menta", color: "#20c997", achievement: "first-steps" },
+  { value: "tangerine", label: "Mandarina", color: "#ff922b", achievement: "explorer" },
+  { value: "sky", label: "Cielo", color: "#4c6ef5", achievement: "matches-10" },
   { value: "grape", label: "Uva", color: "#845ef7" },
   { value: "sea", label: "Mar", color: "#22b8cf" },
   { value: "forest", label: "Bosque", color: "#40c057" },
   { value: "sunset", label: "Atardecer", color: "#ff6b6b" },
-] as const;
+];
+
+/**
+ * Fondo para enseñar un premio de color: la casilla teñida, como quedaría la app.
+ * Sin color (premios de ropa), la casilla normal.
+ */
+export function rewardBackground(reward: { slot: string; id: string }): string {
+  const color = reward.slot === "tint" ? TINTS.find((tint) => tint.value === reward.id)?.color : undefined;
+  return color ? `color-mix(in oklab, var(--cell) 45%, ${color})` : "var(--cell)";
+}
 
 /** Aplica un tinte (o lo quita con null). Como applyTheme, sin dependencias: va en el script del <head>. */
 export function applyTint(tint: string | null) {
   const root = document.documentElement;
-  if (tint && ["grape", "sea", "forest", "sunset"].includes(tint)) root.dataset.tint = tint;
+  if (tint && ["grape", "sea", "forest", "sunset", "mint", "tangerine", "sky"].includes(tint)) root.dataset.tint = tint;
   else delete root.dataset.tint;
 }
 

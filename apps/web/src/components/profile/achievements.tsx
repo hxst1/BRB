@@ -1,7 +1,8 @@
 import type { Json } from "@repo/db";
 import { sanitizeParts } from "@repo/avatars";
 import { Avatar } from "@repo/ui/avatar";
-import { achievementsFor } from "@/lib/achievements";
+import { achievementsFor, wearing } from "@/lib/achievements";
+import { rewardBackground } from "@/lib/theme";
 import { getLocale, getMessages } from "@/lib/i18n/server";
 import { InlinePicto } from "@/components/picto";
 
@@ -9,7 +10,8 @@ export type AchievementStatus = { achievement: string; progress: number; goal: n
 
 /**
  * Logros del perfil: los conseguidos primero y luego los más avanzados. Cada
- * uno enseña tu monstruo con la ropa que da (en gris si aún no la tienes).
+ * uno enseña tu monstruo con la ropa que da, o sobre el color de la app que da
+ * (en gris si aún no lo tienes).
  */
 export async function Achievements({ statuses, avatarSeed, avatarParts }: { statuses: AchievementStatus[]; avatarSeed: number; avatarParts: Json }) {
   const locale = await getLocale();
@@ -46,9 +48,9 @@ export async function Achievements({ statuses, avatarSeed, avatarParts }: { stat
             <li key={achievement.id} className="flex items-center gap-3 rounded-3xl bg-surface p-3 shadow-soft">
               <span
                 className={`grid size-16 shrink-0 place-items-center rounded-2xl ${done ? "" : "opacity-45 grayscale"}`}
-                style={{ background: "var(--cell)" }}
+                style={{ background: rewardBackground(achievement.reward) }}
               >
-                <Avatar seed={avatarSeed} parts={{ ...parts, [achievement.reward.slot]: achievement.reward.id }} size={52} mood={done ? "happy" : "neutral"} />
+                <Avatar seed={avatarSeed} parts={wearing(parts, achievement.reward)} size={52} mood={done ? "happy" : "neutral"} />
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="font-semibold">

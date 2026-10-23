@@ -108,16 +108,18 @@ async function AchievementsSection({ viewer }: { viewer: Viewer }) {
 async function SettingsSection({ viewer }: { viewer: Viewer }) {
   const supabase = await createClient();
   const m = await getMessages();
-  const [{ data: feedback }, { data: friendCode }] = await Promise.all([
+  const [{ data: feedback }, { data: friendCode }, { data: achievements }] = await Promise.all([
     supabase.from("feedback").select("id, kind, body, rating, status, admin_reply, created_at").order("created_at", { ascending: false }).limit(10),
     supabase.from("friend_codes").select("code").eq("user_id", viewer.id).maybeSingle(),
+    // Los colores de la app que dan los logros.
+    supabase.from("user_achievements").select("achievement"),
   ]);
 
   // En escritorio, dos columnas: la app y los mensajes; tu cuenta, enlaces y borrar la cuenta.
   return (
     <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-10">
       <div className="flex flex-col gap-8">
-        <AppSettings isSupporter={viewer.supporter_tier !== null} />
+        <AppSettings isSupporter={viewer.supporter_tier !== null} unlocked={(achievements ?? []).map((a) => a.achievement)} />
         <FeedbackSection items={feedback ?? []} />
       </div>
 

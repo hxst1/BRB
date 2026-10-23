@@ -6,11 +6,13 @@ import { useEffect, useState } from "react";
 import { sanitizeParts } from "@repo/avatars";
 import type { Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
-import { achievementById, type Achievement } from "@/lib/achievements";
+import { achievementById, wearing, type Achievement } from "@/lib/achievements";
 import { useLocale, useMessages } from "@/lib/i18n/client";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import { createClient } from "@/lib/supabase/client";
 import { InlinePicto } from "@/components/picto";
+import { setTint } from "@/components/pwa/tint-picker";
+import { rewardBackground } from "@/lib/theme";
 
 /** Tiempo a la vista de cada aviso. */
 const SHOW_MS = 9000;
@@ -56,15 +58,22 @@ export function AchievementToaster({ viewerId, avatarSeed, avatarParts }: { view
   }
 
   async function wear(achievement: Achievement) {
+    // Un color de la app no se guarda en el perfil: es de este navegador.
+    if (achievement.reward.slot === "tint") {
+      setTint(achievement.reward.id);
+      setState("worn");
+      return;
+    }
     setState("saving");
-    const parts = { ...sanitizeParts(avatarParts), [achievement.reward.slot]: achievement.reward.id };
+    const parts = wearing(sanitizeParts(avatarParts), achievement.reward);
     const { error } = await createClient().from("profiles").update({ avatar_parts: parts }).eq("id", viewerId);
     setState(error ? "error" : "worn");
     if (!error) router.refresh();
   }
 
   if (!current) return null;
-  const preview = { ...sanitizeParts(avatarParts), [current.reward.slot]: current.reward.id };
+  const preview = wearing(sanitizeParts(avatarParts), current.reward);
+  const isTint = current.reward.slot === "tint";
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-3 z-50 flex justify-center px-3">
@@ -72,7 +81,7 @@ export function AchievementToaster({ viewerId, avatarSeed, avatarParts }: { view
         role="status"
         className="install-sheet pointer-events-auto relative flex w-full max-w-sm items-center gap-3 rounded-3xl bg-surface p-3 pr-10 shadow-lift ring-2 ring-[var(--t256)]"
       >
-        <span className="monster-cheer grid size-16 shrink-0 place-items-center rounded-2xl" style={{ background: "var(--cell)" }}>
+        <span className="monster-cheer grid size-16 shrink-0 place-items-center rounded-2xl" style={{ background: rewardBackground(current.reward) }}>
           <Avatar seed={avatarSeed} parts={preview} size={52} mood="happy" />
         </span>
         <span className="flex min-w-0 flex-col gap-1">
@@ -82,11 +91,11 @@ export function AchievementToaster({ viewerId, avatarSeed, avatarParts }: { view
             {current.name}
           </span>
           <span className="text-xs">
-            {m.achievements.yourMonsterWears} <strong>{current.reward.label}</strong>
+            {isTint ? m.achievements.newTint : m.achievements.yourMonsterWears} <strong>{current.reward.label}</strong>
           </span>
           <span className="mt-1 flex items-center gap-3">
             {state === "worn" ? (
-              <span className="text-sm font-medium">{m.achievements.worn}</span>
+              <span className="text-sm font-medium">{isTint ? m.achievements.tintOn : m.achievements.worn}</span>
             ) : (
               <button
                 type="button"
@@ -94,7 +103,7 @@ export function AchievementToaster({ viewerId, avatarSeed, avatarParts }: { view
                 onClick={() => void wear(current)}
                 className="rounded-full bg-ink px-3 py-1 text-sm font-semibold text-bg disabled:opacity-50"
               >
-                {m.achievements.wear}
+                {isTint ? m.achievements.useTint : m.achievements.wear}
               </button>
             )}
             <Link href="/perfil?seccion=logros" onClick={next} className="text-sm text-muted hover:text-ink">

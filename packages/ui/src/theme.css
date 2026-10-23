@@ -101,6 +101,10 @@
 :root[data-tint="sea"] { --tint: #22b8cf; }
 :root[data-tint="forest"] { --tint: #40c057; }
 :root[data-tint="sunset"] { --tint: #ff6b6b; }
+/* Estos tres se consiguen con logros (apps/web/src/lib/theme.ts). */
+:root[data-tint="mint"] { --tint: #20c997; }
+:root[data-tint="tangerine"] { --tint: #ff922b; }
+:root[data-tint="sky"] { --tint: #4c6ef5; }
 
 :root[data-tint] {
   --bg: color-mix(in oklab, #f3f4f7 86%, var(--tint));

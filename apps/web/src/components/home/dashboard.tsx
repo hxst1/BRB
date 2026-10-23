@@ -53,7 +53,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     { data: battleship },
     { data: pins },
     { data: profile },
-    { count: friendships },
+    { data: steps },
   ] =
     await Promise.all([
     supabase
@@ -84,11 +84,8 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     supabase.rpc("get_battleship_status"),
     supabase.from("pinned_games").select("game").order("pinned_at"),
     supabase.from("profiles").select("first_steps_dismissed, created_at").eq("id", viewer.id).single(),
-    // Amigos, o al menos una solicitud enviada (lo que depende de él ya está hecho).
-    supabase
-      .from("friendships")
-      .select("id", { count: "exact", head: true })
-      .or(`status.eq.accepted,requester_id.eq.${viewer.id}`),
+    // La misma regla que el logro "Primeros pasos".
+    supabase.rpc("get_my_first_steps").maybeSingle(),
   ]);
   // Solo cuenta la partida de hoy (el día lo da el resumen del reto diario).
   const wordleToday = wordle && daily && wordle.day === daily.day ? wordle : null;
@@ -196,12 +193,14 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
   }
 
   const firstSteps: FirstStep[] = [
-    { id: "monster", done: isCustomised(viewer.avatar_parts) },
-    { id: "friend", done: (friendships ?? 0) > 0 },
-    { id: "daily", done: !!daily && (daily.status !== "available" || daily.streak_best > 0) },
+    { id: "monster", done: !!steps?.monster },
+    { id: "friend", done: !!steps?.friend },
+    { id: "daily", done: !!steps?.daily },
   ];
+  // Al completarlos desaparecen (y salta el aviso del logro); antes, solo con la X.
   const showFirstSteps =
     !!profile &&
+    !!steps &&
     !profile.first_steps_dismissed &&
     isNewAccount(profile.created_at) &&
     firstSteps.some((step) => !step.done);
@@ -272,10 +271,6 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
 const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 const isNewAccount = (createdAt: string) => new Date(createdAt).getTime() > Date.now() - FIRST_STEPS_DAYS * 24 * 60 * 60 * 1000;
-
-/** ¿Ha elegido algo en el editor del monster? Sin cambios, sus partes salen todas de la semilla. */
-const isCustomised = (parts: Viewer["avatar_parts"]) =>
-  !!parts && typeof parts === "object" && !Array.isArray(parts) && Object.keys(parts).length > 0;
 
 /** Récord y puesto en un juego en solitario. */
 function SoloStats({

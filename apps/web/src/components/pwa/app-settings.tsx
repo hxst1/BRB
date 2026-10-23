@@ -11,7 +11,7 @@ import { usePushNotifications } from "./push";
 import { useMessages } from "@/lib/i18n/client";
 
 /** Tema, notificaciones e instalar la app en este dispositivo. */
-export function AppSettings({ isSupporter = false }: { isSupporter?: boolean }) {
+export function AppSettings({ isSupporter = false, unlocked = [] }: { isSupporter?: boolean; unlocked?: readonly string[] }) {
   const installable = useSyncExternalStore(subscribeInstall, canInstall, () => false);
   const { env, push, busy, error, enable, disable } = usePushNotifications();
   const m = useMessages();
@@ -25,7 +25,7 @@ export function AppSettings({ isSupporter = false }: { isSupporter?: boolean }) 
 
       <LanguagePicker />
       <ThemePicker />
-      <TintPicker isSupporter={isSupporter} />
+      <TintPicker isSupporter={isSupporter} unlocked={unlocked} />
 
       <div className="flex flex-col gap-1">
         <p className="text-sm font-medium">{t.notifications}</p>

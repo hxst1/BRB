@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { partAchievement, PART_OPTIONS } from "@repo/avatars";
 import { ACHIEVEMENTS, achievementsFor } from "./achievements";
+import { TINTS } from "./theme";
 
 const dir = new URL("../../../../supabase/migrations/", import.meta.url);
 /** Texto de la última migración que define esa función (las posteriores la reemplazan). */
@@ -35,9 +36,15 @@ describe("logros", () => {
         return achievement ? [{ slot, id, achievement }] : [];
       }),
     );
-    const inCatalog = ACHIEVEMENTS.map((a) => ({ slot: a.reward.slot, id: a.reward.id, achievement: a.id }));
+    const inCatalog = ACHIEVEMENTS.filter((a) => a.reward.slot !== "tint").map((a) => ({ slot: a.reward.slot, id: a.reward.id, achievement: a.id }));
     const sort = (list: { slot: string; id: string }[]) => [...list].sort((a, b) => `${a.slot}${a.id}`.localeCompare(`${b.slot}${b.id}`));
     expect(sort(inAvatars)).toEqual(sort(inDb));
     expect(sort(inCatalog)).toEqual(sort(inDb));
+  });
+
+  it("los que dan un color de la app son los mismos que dice el catálogo de tintes", () => {
+    const fromAchievements = ACHIEVEMENTS.filter((a) => a.reward.slot === "tint").map((a) => `${a.reward.id}:${a.id}`);
+    const fromTints = TINTS.filter((tint) => tint.achievement).map((tint) => `${tint.value}:${tint.achievement}`);
+    expect(fromAchievements.sort()).toEqual(fromTints.sort());
   });
 });

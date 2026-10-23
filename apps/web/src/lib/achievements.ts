@@ -11,7 +11,8 @@ export type Achievement = {
   name: string;
   description: string;
   icon: Picto;
-  reward: { slot: "palette" | "top"; id: string; label: string };
+  /** Ropa del monster (`palette`, `top`) o un color para toda la app (`tint`, ver lib/theme.ts). */
+  reward: { slot: "palette" | "top" | "tint"; id: string; label: string };
 };
 
 export const ACHIEVEMENTS: Achievement[] = [
@@ -106,6 +107,27 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "megaphone",
     reward: { slot: "palette", id: "neon", label: "Color neón" },
   },
+  {
+    id: "first-steps",
+    name: "Primeros pasos",
+    description: "Personaliza tu monster, añade un amigo y juega el reto diario.",
+    icon: "flag",
+    reward: { slot: "tint", id: "mint", label: "Tema menta" },
+  },
+  {
+    id: "explorer",
+    name: "Explorador",
+    description: "Juega a los 6 juegos en solitario (el Wordle cuenta al terminarlo).",
+    icon: "globe",
+    reward: { slot: "tint", id: "tangerine", label: "Tema mandarina" },
+  },
+  {
+    id: "matches-10",
+    name: "Pique sano",
+    description: "Termina 10 partidas contra amigos (sin rendirse).",
+    icon: "handshake",
+    reward: { slot: "tint", id: "sky", label: "Tema cielo" },
+  },
 ];
 
 /** En inglés: nombre, descripción y nombre del premio de cada logro. */
@@ -123,6 +145,9 @@ const EN: Record<string, { name: string; description: string; reward: string }> 
   "winner-5": { name: "One to beat", description: "Beat 5 different people in games against friends.", reward: "Party hat" },
   contributor: { name: "Contributor", description: "Open an issue or make a pull request on GitHub with your friend code.", reward: "Syntax colour" },
   "referrals-5": { name: "Ambassador", description: "Invite 5 friends with your link: they have to sign up and play at least one game.", reward: "Neon colour" },
+  "first-steps": { name: "First steps", description: "Customise your monster, add a friend and play the daily challenge.", reward: "Mint theme" },
+  explorer: { name: "Explorer", description: "Play all 6 solo games (Wordle counts once you finish it).", reward: "Tangerine theme" },
+  "matches-10": { name: "Friendly rivalry", description: "Finish 10 games against friends (without resigning).", reward: "Sky theme" },
 };
 
 /** Los logros con sus textos en un idioma. */
@@ -136,4 +161,9 @@ export function achievementsFor(locale: Locale): Achievement[] {
 
 export function achievementById(id: string, locale: Locale = "es"): Achievement | undefined {
   return achievementsFor(locale).find((achievement) => achievement.id === id);
+}
+
+/** El monstruo con la ropa del premio puesta (si el premio es un color, tal cual). */
+export function wearing<T extends object>(parts: T, reward: { slot: string; id: string }): T {
+  return reward.slot === "tint" ? parts : { ...parts, [reward.slot]: reward.id };
 }

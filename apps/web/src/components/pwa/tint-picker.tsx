@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useSyncExternalStore } from "react";
+import { InlinePicto } from "@/components/picto";
+import { achievementById } from "@/lib/achievements";
 import { applyTint, TINT_KEY, TINTS } from "@/lib/theme";
-import { useMessages } from "@/lib/i18n/client";
+import { useLocale, useMessages } from "@/lib/i18n/client";
 
 const listeners = new Set<() => void>();
 
@@ -26,9 +28,16 @@ function save(tint: string | null) {
   listeners.forEach((listener) => listener());
 }
 
-/** Color de toda la app: exclusivo de quien apoya el proyecto. */
-export function TintPicker({ isSupporter }: { isSupporter: boolean }) {
+/** Lo pone y avisa a los selectores abiertos (también lo usa el aviso de logro). */
+export const setTint = save;
+
+/**
+ * Color de toda la app. Los de logro, para quien tenga el logro (`unlocked`);
+ * el resto (✦), para quien apoya el proyecto.
+ */
+export function TintPicker({ isSupporter, unlocked }: { isSupporter: boolean; unlocked: readonly string[] }) {
   const m = useMessages();
+  const locale = useLocale();
   const current = useSyncExternalStore(
     (listener) => {
       listeners.add(listener);
@@ -37,25 +46,35 @@ export function TintPicker({ isSupporter }: { isSupporter: boolean }) {
     read,
     () => null,
   );
+  const locked = (tint: (typeof TINTS)[number]) => (tint.achievement ? !unlocked.includes(tint.achievement) : !isSupporter);
+  const anyAchievementLocked = TINTS.some((tint) => tint.achievement && locked(tint));
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-sm font-medium">
-        {m.settings.tint} <span style={{ color: "var(--t256)" }}>✦</span>
-      </p>
+      <p className="text-sm font-medium">{m.settings.tint}</p>
       <div role="radiogroup" aria-label={m.settings.tint} className="flex flex-wrap gap-2">
-        <Swatch label={m.settings.classic} color="var(--line)" selected={!current} disabled={!isSupporter} onClick={() => save(null)} />
+        <Swatch label={m.settings.classic} color="var(--line)" selected={!current} onClick={() => save(null)} />
         {TINTS.map((tint) => (
           <Swatch
             key={tint.value}
             label={m.settings.tints[tint.value]}
             color={tint.color}
             selected={current === tint.value}
-            disabled={!isSupporter}
+            supporter={!tint.achievement}
+            locked={locked(tint)}
+            hint={tint.achievement ? m.settings.tintFromAchievement(achievementById(tint.achievement, locale)?.name ?? "") : undefined}
             onClick={() => save(tint.value)}
           />
         ))}
       </div>
+      {anyAchievementLocked && (
+        <p className="text-sm text-muted">
+          {m.settings.tintAchievementsLocked}{" "}
+          <Link href="/perfil?seccion=logros" className="font-medium text-ink underline underline-offset-4">
+            {m.settings.seeAchievements}
+          </Link>
+        </p>
+      )}
       {!isSupporter && (
         <p className="text-sm text-muted">
           {m.settings.tintLocked}{" "}
@@ -68,13 +87,32 @@ export function TintPicker({ isSupporter }: { isSupporter: boolean }) {
   );
 }
 
-function Swatch({ label, color, selected, disabled, onClick }: { label: string; color: string; selected: boolean; disabled: boolean; onClick: () => void }) {
+function Swatch({
+  label,
+  color,
+  selected,
+  supporter = false,
+  locked = false,
+  hint,
+  onClick,
+}: {
+  label: string;
+  color: string;
+  selected: boolean;
+  /** Lleva ✦: es de quien apoya. */
+  supporter?: boolean;
+  locked?: boolean;
+  /** Cómo se consigue (al pasar por encima y para los lectores de pantalla). */
+  hint?: string;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
       role="radio"
       aria-checked={selected}
-      disabled={disabled}
+      disabled={locked}
+      title={hint}
       onClick={onClick}
       className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors disabled:opacity-50 ${
         selected ? "border-ink font-medium" : "border-line hover:border-muted"
@@ -82,14 +120,25 @@ function Swatch({ label, color, selected, disabled, onClick }: { label: string; 
     >
       <span aria-hidden className="size-4 rounded-full" style={{ background: color }} />
       {label}
+      {supporter && (
+        <span aria-hidden style={{ color: "var(--t256)" }}>
+          ✦
+        </span>
+      )}
+      {locked && !supporter && <InlinePicto name="lock" className="-ml-0.5 opacity-80" />}
+      {hint && locked && <span className="sr-only">. {hint}</span>}
     </button>
   );
 }
 
-/** Si alguien deja de apoyar, se le quita el tinte que tuviera puesto. */
+/**
+ * Si alguien deja de apoyar, se le quita el tinte de quien apoya que tuviera
+ * puesto. Los de logro se quedan: un logro no se pierde.
+ */
 export function TintGuard({ isSupporter }: { isSupporter: boolean }) {
   useEffect(() => {
-    if (!isSupporter && read()) save(null);
+    const current = read();
+    if (!isSupporter && current && !TINTS.find((tint) => tint.value === current)?.achievement) save(null);
   }, [isSupporter]);
   return null;
 }
