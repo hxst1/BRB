@@ -291,6 +291,18 @@ export const es = {
     pushIos: "En iPhone, añade la app a la pantalla de inicio (Compartir y Añadir a pantalla de inicio) y actívalos desde ahí.",
     pushHint: "Para enterarte cuando te reten o te toque, aunque tengas la app cerrada.",
     pushEnable: "Activar avisos",
+    pending: (n: number): string => (n === 1 ? "1 cosa pendiente" : `${n} cosas pendientes`),
+    showMore: (n: number) => `Ver ${n} más`,
+    showLess: "Ver menos",
+  },
+  firstSteps: {
+    title: "Primeros pasos",
+    progress: (done: number, total: number) => `${done} de ${total}`,
+    close: "Cerrar los primeros pasos",
+    done: "Hecho",
+    monster: { title: "Dale tu estilo al monster", hint: "Colores, ropa y accesorios, en tu perfil." },
+    friend: { title: "Añade a un amigo", hint: "Con su nombre o su código de amigo. Así podréis retaros." },
+    daily: { title: "Juega el reto diario", hint: "La misma partida para todos, un intento al día." },
   },
   daily: {
     title: "Reto diario",

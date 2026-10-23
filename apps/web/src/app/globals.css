@@ -532,3 +532,48 @@ body {
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Portada: lo que llega en directo a "Ahora" entra con un pequeño salto y un
+ * destello del color de los avisos; el contador salta cuando cambia.
+ * ------------------------------------------------------------------------- */
+
+.now-enter {
+  animation: now-enter 480ms cubic-bezier(0.3, 1.4, 0.5, 1) backwards;
+}
+
+/* Sin fotograma final: el destello se desvanece hacia la sombra (o el anillo) de la fila. */
+.now-enter > * {
+  animation: now-flash 1800ms ease-out;
+}
+
+.now-pop {
+  animation: now-pop 360ms cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+
+@keyframes now-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+}
+
+@keyframes now-flash {
+  from {
+    box-shadow: 0 0 0 3px var(--mark-o), 0 12px 32px -12px var(--mark-o);
+  }
+}
+
+@keyframes now-pop {
+  from {
+    transform: scale(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .now-enter,
+  .now-enter > *,
+  .now-pop {
+    animation: none;
+  }
+}

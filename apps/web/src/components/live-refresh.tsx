@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
 
 const WATCHED = ["messages", "matches", "friendships", "challenges"] as const;
+/** Tiempo fuera a partir del cual, al volver, se recarga (un vistazo a otra pestaña no cuenta). */
+const AWAY_MS = 15_000;
 
 /**
  * Refresca los datos del servidor (avisos de la cabecera, panel de inicio)
@@ -32,9 +34,21 @@ export function LiveRefresh({ viewerId }: { viewerId: string }) {
       return channel.subscribe();
     });
 
+    // Con el móvil bloqueado o la pestaña en segundo plano, la conexión se cae
+    // y lo que pase mientras no llega: al volver (o al recuperar la red), se recarga.
+    let hiddenAt = 0;
+    const onVisibility = () => {
+      if (document.hidden) hiddenAt = Date.now();
+      else if (hiddenAt && Date.now() - hiddenAt > AWAY_MS) refresh();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("online", refresh);
+
     return () => {
       clearTimeout(timer);
       unsubscribe();
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("online", refresh);
     };
   }, [router, viewerId]);
 

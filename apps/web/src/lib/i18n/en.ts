@@ -288,6 +288,18 @@ export const en: Messages = {
     pushIos: "On iPhone, add the app to your home screen (Share, then Add to Home Screen) and turn them on from there.",
     pushHint: "So you find out when someone challenges you or it's your turn, even with the app closed.",
     pushEnable: "Turn on notifications",
+    pending: (n: number): string => (n === 1 ? "1 thing pending" : `${n} things pending`),
+    showMore: (n: number) => `Show ${n} more`,
+    showLess: "Show less",
+  },
+  firstSteps: {
+    title: "First steps",
+    progress: (done: number, total: number) => `${done} of ${total}`,
+    close: "Close first steps",
+    done: "Done",
+    monster: { title: "Give your monster some style", hint: "Colours, clothes and accessories, on your profile." },
+    friend: { title: "Add a friend", hint: "By their name or friend code, so you can challenge each other." },
+    daily: { title: "Play the daily challenge", hint: "The same game for everyone, one try a day." },
   },
   daily: {
     title: "Daily challenge",
