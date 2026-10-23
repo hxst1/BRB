@@ -1,9 +1,12 @@
 begin;
-select plan(7);
+select plan(8);
 
 select is((select count(*) from public.legal_translations where lang = 'en')::int, 3, 'los tres textos están en inglés');
 select ok((select body like '%Idioma (cookie técnica)%' and body like '%Invitación (cookie técnica)%' from public.legal_documents where slug = 'cookies'),
   'la política de cookies cuenta la del idioma y la de invitación');
+select ok((select body like '%Estadísticas de visitas%' from public.legal_documents where slug = 'privacidad')
+  and (select body like '%Visit statistics%' from public.legal_translations where slug = 'privacidad' and lang = 'en'),
+  'la privacidad explica las estadísticas de visitas');
 select ok((select body like '%Language (technical cookie)%' from public.legal_translations where slug = 'cookies' and lang = 'en'), 'también en inglés');
 
 create function pg_temp.login(id uuid) returns void language sql as $$

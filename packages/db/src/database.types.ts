@@ -588,6 +588,26 @@ isOneToOne: false
 "admin_update_legal_translation":
 { Args: { "admin_id": string,"body": string,"lang": string,"reason"?: string,"slug": string,"title": string }; Returns: undefined
                            },
+"admin_visits_by_country":
+{ Args: { "days"?: number }; Returns: {
+              "avg_seconds": number,"country": string,"pageviews": number,"signups": number,"visitors": number
+            }[]
+                           },
+"admin_visits_daily":
+{ Args: { "days"?: number }; Returns: {
+              "day": string,"pageviews": number,"signups": number,"visitors": number
+            }[]
+                           },
+"admin_visits_summary":
+{ Args: { "days"?: number }; Returns: {
+              "avg_seconds": number,"pageviews": number,"signed_in_visitors": number,"signups": number,"visitors": number
+            }[]
+                           },
+"admin_visits_top":
+{ Args: { "days"?: number,"dimension": string,"max_rows"?: number }; Returns: {
+              "pageviews": number,"value": string,"visitors": number
+            }[]
+                           },
 "apply_match_move":
 { Args: { "end_reason"?: string,"match_id": string,"moves": (number)[],"previous_count": number,"winner"?: string }; Returns: undefined
                            },
@@ -696,6 +716,9 @@ isOneToOne: false
                            },
 "record_github_contribution":
 { Args: { "github_login": string,"kind": string,"url": string,"user_id": string }; Returns: boolean
+                           },
+"record_visit":
+{ Args: { "country"?: string,"device"?: string,"kind": string,"lang"?: string,"path"?: string,"referrer"?: string,"seconds"?: number,"signed_in"?: boolean,"visitor": string }; Returns: undefined
                            },
 "reject_run":
 { Args: { "reason": string,"run_id": string }; Returns: undefined

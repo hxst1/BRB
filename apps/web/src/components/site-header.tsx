@@ -8,6 +8,7 @@ import { GuestBar } from "@/components/guest-bar";
 import { LiveRefresh } from "@/components/live-refresh";
 import { LocaleSync } from "@/components/locale-sync";
 import { PresenceReporter } from "@/components/presence-reporter";
+import { VisitTracker } from "@/components/visit-tracker";
 import { PersonalIcons } from "@/components/pwa/personal-icons";
 import { TintGuard } from "@/components/pwa/tint-picker";
 import { SupportButton } from "@/components/support/support-button";
@@ -62,6 +63,7 @@ async function Navigation() {
           {m.common.signIn}
         </Link>
         <GuestBar />
+        <VisitTracker signedIn={false} />
       </>
     );
   }
@@ -69,6 +71,7 @@ async function Navigation() {
   return (
     <>
       <LiveRefresh viewerId={viewer.id} />
+      <VisitTracker signedIn />
       <LocaleSync userId={viewer.id} saved={viewer.locale} />
       <PresenceReporter />
       <TintGuard isSupporter={viewer.supporter_tier !== null} />

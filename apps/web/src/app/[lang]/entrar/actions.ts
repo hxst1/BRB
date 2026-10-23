@@ -1,11 +1,12 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { siteUrl } from "@repo/brand";
 import { getRequestLocale } from "@/lib/i18n/server";
 import { messagesFor } from "@/lib/i18n";
 import { INVITE_COOKIE } from "@/lib/invite";
+import { recordVisit } from "@/lib/visits";
 import { safeNext } from "@/lib/safe-next";
 import { createClient } from "@/lib/supabase/server";
 
@@ -77,6 +78,8 @@ export async function authenticate(_prev: AuthState, formData: FormData): Promis
       };
     }
     if (invitedBy) (await cookies()).delete(INVITE_COOKIE);
+    // Para las estadísticas: con la huella del día se sabe de dónde venía quien se registra.
+    await recordVisit(await headers(), { kind: "signup", path: "/entrar", lang: locale }).catch(() => undefined);
     // Si el proyecto exige confirmar el email, todavía no hay sesión.
     if (!data.session) return { mode, error: null, confirmEmail: email };
   } else {
