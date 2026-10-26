@@ -50,3 +50,13 @@ iframe {
   opacity: 0;
   pointer-events: none;
 }
+
+/*
+ * La ventanita del icono toma el tamaño de su contenido: hay que dárselo (el
+ * máximo de Chrome es 800 × 600). La ventana propia ocupa lo que mida.
+ */
+html.popup,
+html.popup body {
+  width: 400px;
+  height: 600px;
+}
