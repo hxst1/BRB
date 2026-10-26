@@ -1,12 +1,25 @@
-# BRB (nombre provisional)
+# BRB
 
-Minijuegos rápidos para procrastinar: rankings globales, amigos por código, retos y partidas 1 vs 1.
+Minijuegos rápidos para cuando necesitas desconectar un rato, solo o contra tus amigos. Gratis, en el
+navegador y sin descargar nada.
+
+**Juega: https://afk-brb.vercel.app**
+
+*Quick mini-games for a short break, solo or with your friends. Free, right in your browser.*
+
+- **En solitario**, con ranking global y de amigos: Solitario, Sudoku, Reinas, 2048, Buscaminas, Snake,
+  Lights Out y un Wordle diario.
+- **Contra amigos**: ajedrez, 3 y 4 en raya, hundir la flota y piedra, papel o tijera por turnos, y Pong y
+  Tron en directo.
+- **Reto diario** (la misma partida para todos, un intento al día), logros, rachas, un monster que se
+  personaliza, chat y notificaciones.
+- Se instala como app (PWA) y tiene **extensión de Chrome**.
 
 ## Estructura
 
 ```
 apps/web        Next.js (App Router) + PWA
-apps/extension  Extensión de Chrome (WXT + React)
+apps/extension  Extensión de Chrome (WXT): la web dentro de la ventanita del icono
 packages/brand  Nombre, textos y colores de la marca (única fuente de verdad)
 packages/games  Lógica pura de los juegos en TS, compartida por cliente y servidor
 packages/db     Tipos generados del esquema de Supabase
@@ -63,6 +76,9 @@ enviado una solicitud a Ana.
 4. El servidor repite la partida, comprueba el ritmo de movimientos y llama a `finish_run`/`reject_run`
    con la secret key. El cliente nunca envía la puntuación.
 
+En los juegos por tiempo (buscaminas, sudoku, solitario y reinas) la puntuación es el tiempo que mide el
+servidor, menos las pausas (`pause_run`/`resume_run`).
+
 Para pasar a la nube: `supabase link --project-ref <ref>` y `supabase db push`.
 
 ## Cambiar el nombre de la app
@@ -78,15 +94,19 @@ Ningún otro fichero debe escribir el nombre a mano; si lo necesitas, importa `b
 
 ## Extensión de Chrome
 
-Popup con tus pendientes, accesos a los juegos y un 2048 que cuenta para el ranking; el icono muestra
-cuántas cosas tienes pendientes (se consulta cada 3 minutos).
+La ventanita del icono muestra la web entera (en un iframe), así que tiene siempre los mismos juegos que
+la web sin publicar nada aparte. Vuelve a la última pantalla en la que se estuvo, y con el clic derecho
+en el icono se abre en una ventana propia o en una pestaña. El número del icono son tus pendientes
+(`/api/pending`, con la sesión de la web; se consulta cada 3 minutos).
 
 ```sh
-cp apps/extension/.env.example apps/extension/.env   # mismos valores que la web
+cp apps/extension/.env.example apps/extension/.env   # WXT_SITE_URL: la web que muestra
 pnpm --filter extension dev    # abre Chrome con la extensión cargada y recarga al guardar
 pnpm --filter extension build  # genera apps/extension/.output/chrome-mv3
 pnpm --filter extension zip    # zip listo para la Chrome Web Store
 ```
+
+Para la de producción, `apps/extension/.env.production` con `WXT_SITE_URL` de la web publicada.
 
 Para cargarla a mano: `chrome://extensions` → modo desarrollador → *Cargar descomprimida* →
 `apps/extension/.output/chrome-mv3`. El nombre sale de `@repo/brand` como en la web.
@@ -139,15 +159,13 @@ Cuando haya dominio:
 - [ ] Revisar los datos estructurados con la prueba de resultados enriquecidos de Google.
 - [ ] Actualizar en Supabase (Auth → URL) el `site_url` y las URL de redirección.
 
-## Antes de producción
+## Pendiente
 
-- [ ] Activar confirmación de email (`auth.email.enable_confirmations`) y captcha (Cloudflare Turnstile)
-      en el registro: cada cuenta nueva tiene su propio cupo de intentos de código de amigo.
-- [ ] Configurar SMTP propio (el de Supabase solo permite unos pocos emails por hora).
+- [ ] Volver a pedir la confirmación del email, con dominio propio y un servicio de emails (#2).
+- [ ] Traducir la app al japonés (#1).
+- [ ] Captcha (Cloudflare Turnstile) en el registro: cada cuenta nueva tiene su propio cupo de intentos de
+      código de amigo.
 - [ ] Revisar los límites de Auth por IP en el dashboard.
-- [ ] Claves VAPID propias (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) y
-      secretos de Vault `push_webhook_url` (URL pública de `/api/push/dispatch`) y `push_webhook_secret`
-      (igual que `PUSH_WEBHOOK_SECRET`).
 - [ ] Apoyos: en Ko-fi (Ajustes → API), webhook a `https://<dominio>/api/webhooks/kofi` y su token de
       verificación en `KOFI_VERIFICATION_TOKEN`. GitHub Sponsors: cuando GitHub apruebe la cuenta, poner su
       enlace en `SUPPORT_LINKS.githubSponsors` (`apps/web/src/lib/support.ts`).
