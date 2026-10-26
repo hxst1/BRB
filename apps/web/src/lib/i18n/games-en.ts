@@ -89,6 +89,25 @@ export const GAMES_EN: Record<keyof typeof GAMES_ES, GameTexts> = {
       { q: "Do I need to download anything?", a: NO_DOWNLOAD },
     ],
   },
+  solitaire: {
+    name: "Solitaire",
+    title: "Solitaire online for free (Klondike)",
+    description: "Play classic Klondike solitaire for free in your browser: draw one, unlimited undo and a ranking by time. Every deal can be won.",
+    tagline: "The classic, against the clock",
+    genre: "Card game",
+    howTo: [
+      "Move all 52 cards to the four piles at the top, one per suit, from ace to king.",
+      "In the columns, each card goes on one a rank higher and of the other colour. You can move a whole run.",
+      "Only a king (or a run starting with a king) fits in an empty column.",
+      "Draw from the pile one card at a time. When it runs out, turn it over as often as you like. The fastest time wins.",
+    ],
+    faq: [
+      { q: "Can every game be won?", a: "Yes. Every deal is checked before you play it, so it can always be finished." },
+      { q: "Can I undo?", a: "Yes, as many times as you like. The clock keeps running." },
+      { q: "Is my game saved if I close the page?", a: "Yes. You can pick up the solitaire where you left it." },
+      { q: "Do I need to download anything?", a: NO_DOWNLOAD },
+    ],
+  },
   wordle: {
     name: "Wordle",
     title: "Wordle: the word of the day",

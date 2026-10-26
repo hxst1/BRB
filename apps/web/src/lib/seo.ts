@@ -34,6 +34,7 @@ const GAMES: GameMeta[] = [
   { id: "lights-out", path: "/lights-out", mode: "solo", accent: "#fab005", addedAt: "2026-10-20T17:44:48+02:00" },
   { id: "minesweeper", path: "/buscaminas", mode: "solo", accent: "#22b8cf", addedAt: "2026-10-22T08:11:02+02:00" },
   { id: "sudoku", path: "/sudoku", mode: "solo", accent: "#4c6ef5", addedAt: "2026-10-22T08:23:27+02:00" },
+  { id: "solitaire", path: "/solitario", mode: "solo", accent: "#845ef7", addedAt: "2026-10-26T13:00:00+01:00" },
   { id: "wordle", path: "/wordle", mode: "solo", accent: "#40c057", addedAt: "2026-10-20T18:34:41+02:00" },
   { id: "tictactoe", path: "/3-en-raya", mode: "friends", accent: "#ff6b6b", addedAt: "2026-10-20T11:27:56+02:00" },
   { id: "connect4", path: "/4-en-raya", mode: "friends", accent: "#ff6b6b", addedAt: "2026-10-21T09:56:59+02:00" },

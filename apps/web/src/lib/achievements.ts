@@ -117,7 +117,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "explorer",
     name: "Explorador",
-    description: "Juega a los 6 juegos en solitario (el Wordle cuenta al terminarlo).",
+    description: "Juega a 6 juegos distintos en solitario (el Wordle cuenta al terminarlo).",
     icon: "globe",
     reward: { slot: "tint", id: "tangerine", label: "Tema mandarina" },
   },
@@ -146,7 +146,7 @@ const EN: Record<string, { name: string; description: string; reward: string }> 
   contributor: { name: "Contributor", description: "Open an issue or make a pull request on GitHub with your friend code.", reward: "Syntax colour" },
   "referrals-5": { name: "Ambassador", description: "Invite 5 friends with your link: they have to sign up and play at least one game.", reward: "Neon colour" },
   "first-steps": { name: "First steps", description: "Customise your monster, add a friend and play the daily challenge.", reward: "Mint theme" },
-  explorer: { name: "Explorer", description: "Play all 6 solo games (Wordle counts once you finish it).", reward: "Tangerine theme" },
+  explorer: { name: "Explorer", description: "Play 6 different solo games (Wordle counts once you finish it).", reward: "Tangerine theme" },
   "matches-10": { name: "Friendly rivalry", description: "Finish 10 games against friends (without resigning).", reward: "Sky theme" },
 };
 

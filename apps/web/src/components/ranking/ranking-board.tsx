@@ -12,7 +12,7 @@ import { createClient } from "@/lib/supabase/client";
 import { InlinePicto } from "@/components/picto";
 import type { Picto } from "@/lib/pictos";
 
-type GameId = "2048" | "snake" | "lightsout" | "minesweeper" | "sudoku" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron" | "chess";
+type GameId = "2048" | "snake" | "lightsout" | "minesweeper" | "sudoku" | "solitaire" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron" | "chess";
 type Category = "level" | GameId;
 type Difficulty = "easy" | "medium" | "hard";
 type Scope = "global" | "friends";
@@ -68,6 +68,10 @@ const RANKED_GAMES: RankedGame[] = [
   {
     id: "sudoku",
     levels: { easy: "sudoku-easy", medium: "sudoku-medium", hard: "sudoku-hard" },
+    time: true,
+  },
+  {
+    id: "solitaire",
     time: true,
   },
   {

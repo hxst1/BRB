@@ -3,6 +3,8 @@ import { verifyRun as verifyLightsOut } from "@repo/games/lightsout/verify";
 import { GAME_IDS, type Difficulty } from "@repo/games/minesweeper";
 import { verifyRun as verifyMinesweeper } from "@repo/games/minesweeper/verify";
 import { verifyRun as verifySnake } from "@repo/games/snake/verify";
+import { GAME_ID as SOLITAIRE_ID } from "@repo/games/solitaire";
+import { verifyRun as verifySolitaire } from "@repo/games/solitaire/verify";
 import { GAME_IDS as SUDOKU_IDS, type Difficulty as SudokuDifficulty } from "@repo/games/sudoku";
 import { verifyRun as verifySudoku } from "@repo/games/sudoku/verify";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -22,8 +24,9 @@ type Verified = { valid: true; score: number; detail: number } | { valid: false;
 /**
  * Repite la partida con el motor de su juego. En Snake, `moves` son los giros
  * (puede no haber ninguno); en Lights Out, las pulsaciones (se puede plantar
- * sin pulsar); en el buscaminas, las casillas abiertas, y en el sudoku, el
- * tablero resuelto. En estos dos, la puntuación es el tiempo que ha medido el servidor.
+ * sin pulsar); en el buscaminas, las casillas abiertas; en el sudoku, el
+ * tablero resuelto, y en el solitario, sus movimientos. En estos tres, la
+ * puntuación es el tiempo que ha medido el servidor.
  */
 function verify(game: string, seed: number, moves: string, elapsedMs: number): Verified | null {
   if (game === "2048") {
@@ -38,6 +41,10 @@ function verify(game: string, seed: number, moves: string, elapsedMs: number): V
   if (game === "lightsout") {
     const result = verifyLightsOut(seed, moves, elapsedMs);
     return result.valid ? { valid: true, score: result.score, detail: result.presses } : result;
+  }
+  if (game === SOLITAIRE_ID) {
+    const result = verifySolitaire(seed, moves, elapsedMs);
+    return result.valid ? { valid: true, score: result.timeMs, detail: result.moves } : result;
   }
   const difficulty = (Object.keys(GAME_IDS) as Difficulty[]).find((d) => GAME_IDS[d] === game);
   if (difficulty) {

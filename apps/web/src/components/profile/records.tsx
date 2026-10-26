@@ -34,6 +34,7 @@ const SOLO: { id: GameId; href: string; boards: { game: string; level?: Level }[
       { game: "sudoku-hard", level: "hard" },
     ],
   },
+  { id: "solitaire", href: "/solitario", time: true, boards: [{ game: "solitaire" }] },
 ];
 
 const MATCH_GAMES: { id: GameId; href: string; games: string[] }[] = [
@@ -66,7 +67,7 @@ export async function Records({ viewerId }: { viewerId: string }) {
   const average = solved.length ? solved.reduce((sum, game) => sum + game.guesses.length, 0) / solved.length : 0;
 
   return (
-    <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-12">
+    <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-2 lg:gap-12">
       <section aria-labelledby="records-solo" className="flex flex-col gap-3">
         <h2 id="records-solo" className="text-xl font-semibold">
           {m.gameCards.soloTitle}

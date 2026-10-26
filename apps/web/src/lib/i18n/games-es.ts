@@ -106,6 +106,25 @@ export const GAMES_ES = {
       { q: "¿Hay que descargar algo?", a: NO_DOWNLOAD },
     ],
   },
+  solitaire: {
+    name: "Solitario",
+    title: "Solitario online gratis (Klondike)",
+    description: "Juega al solitario clásico gratis en el navegador: robando de una en una, con deshacer y ranking por tiempo. Todas las partidas tienen solución.",
+    tagline: "El de toda la vida, contra el reloj",
+    genre: "Juego de cartas",
+    howTo: [
+      "Sube las 52 cartas a los cuatro montones de arriba, uno por palo, del as al rey.",
+      "En las columnas, cada carta va sobre otra un número mayor y de otro color. Puedes mover una escalera entera.",
+      "En un hueco libre solo cabe un rey (o una escalera que empiece por un rey).",
+      "Roba del mazo de una en una. Cuando se acaba, se vuelve a pasar sin límite. Gana el menor tiempo.",
+    ],
+    faq: [
+      { q: "¿Todas las partidas tienen solución?", a: "Sí. Cada reparto se comprueba antes de jugarlo, así que siempre se puede terminar." },
+      { q: "¿Se puede deshacer?", a: "Sí, todas las veces que quieras. El tiempo sigue corriendo." },
+      { q: "¿Se guarda la partida si cierro la página?", a: "Sí. Puedes seguir el solitario donde lo dejaste." },
+      { q: "¿Hay que descargar algo?", a: NO_DOWNLOAD },
+    ],
+  },
   wordle: {
     name: "Wordle",
     title: "Wordle en español: la palabra del día",

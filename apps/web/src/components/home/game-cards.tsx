@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { DragScrollList } from "@/components/drag-scroll";
+import { CardFace } from "@/components/solitaire/card";
 import { PinButton } from "./pin-button";
 import { getMessages } from "@/lib/i18n/server";
 
@@ -25,6 +26,8 @@ const PREVIEW_SUDOKU: [string, "p" | "j" | ""][] = [
 ];
 /** Ajedrez en miniatura (4 × 4, la esquina de un tablero): pieza y su color, o vacía. */
 const PREVIEW_CHESS = ["bk", "", "", "br", "", "bp", "", "", "", "", "rn", "", "rq", "", "", "rk"];
+/** Solitario en miniatura: tres columnas (null es una carta tapada): K♠ y Q♥, una tapada con el 7♦ y el A♣. */
+const PREVIEW_SOLITAIRE: (number | null)[][] = [[12, 24], [null, 32], [39]];
 /** Wordle en miniatura: tres intentos hasta acertar. */
 const PREVIEW_WORDLE = ["bybbb", "gbygb", "ggggg"];
 
@@ -40,6 +43,7 @@ export type GameId =
   | "lights-out"
   | "minesweeper"
   | "sudoku"
+  | "solitaire"
   | "wordle"
   | "tictactoe"
   | "connect4"
@@ -156,6 +160,34 @@ const GAMES: Game[] = [
               }}
             >
               {digit}
+            </span>
+          ))}
+        </div>
+    ),
+  },
+  {
+    id: "solitaire",
+    group: "solo",
+    href: "/solitario",
+    preview: (
+        <div aria-hidden className="solitaire grid grid-cols-3 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+          {PREVIEW_SOLITAIRE.map((column, i) => (
+            <span key={i} className="relative self-start" style={{ aspectRatio: `5 / ${7 + (column.length - 1) * 2.4}` }}>
+              {column.map((card, j) => (
+                <span
+                  key={j}
+                  className={`solitaire-card absolute inset-x-0 aspect-[5/7] transition-transform duration-300 group-hover:-translate-y-0.5 ${
+                    card === null ? "solitaire-back" : "solitaire-face"
+                  }`}
+                  style={{
+                    top: `${(j / (column.length - 1 + 7 / 2.4)) * 100}%`,
+                    color: card !== null && card >= 13 && card < 39 ? "var(--mark-x)" : "var(--ink)",
+                    transitionDelay: `${i * 40}ms`,
+                  }}
+                >
+                  {card !== null && <CardFace card={card} />}
+                </span>
+              ))}
             </span>
           ))}
         </div>

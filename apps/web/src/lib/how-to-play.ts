@@ -64,6 +64,15 @@ const HOW_TO_PLAY_ES: Record<string, HowToPlay> = {
       { icon: "pencil", text: "Si dudas, usa las notas para apuntar los números que podrían ir en una casilla." },
     ],
   },
+  solitaire: {
+    goal: "Sube todas las cartas a los cuatro montones de arriba, uno por palo, del as al rey.",
+    steps: [
+      { icon: "cards", text: "En las columnas, pon cada carta sobre otra un número mayor y de otro color: un 6 rojo sobre un 7 negro." },
+      { icon: "tap", text: "Toca una carta y se va sola adonde encaje. También puedes arrastrarla." },
+      { icon: "repeat", text: "Si te atascas, roba del mazo. Cuando se acabe, se vuelve a pasar todas las veces que quieras." },
+      { icon: "timer", text: "Todas las partidas tienen solución. Cuanto más rápido las termines, mejor." },
+    ],
+  },
   wordle: {
     goal: "Adivina la palabra secreta del día. Tiene 5 letras y tienes 6 intentos.",
     steps: [
@@ -183,6 +192,15 @@ const HOW_TO_PLAY_EN: Record<string, HowToPlay> = {
       { icon: "down", text: "Or in a column." },
       { icon: "box", text: "Or in each 3 × 3 square." },
       { icon: "pencil", text: "If you're not sure, use notes to jot down the numbers that could go in a square." },
+    ],
+  },
+  solitaire: {
+    goal: "Move every card to the four piles at the top, one per suit, from ace to king.",
+    steps: [
+      { icon: "cards", text: "In the columns, put each card on one a rank higher and of the other colour: a red 6 on a black 7." },
+      { icon: "tap", text: "Tap a card and it moves where it fits. You can also drag it." },
+      { icon: "repeat", text: "If you're stuck, draw from the pile. When it runs out, turn it over as many times as you like." },
+      { icon: "timer", text: "Every deal can be won. The faster you finish, the better." },
     ],
   },
   wordle: {

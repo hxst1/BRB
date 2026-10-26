@@ -13,6 +13,7 @@ const SHARED = {
   paddle: "/icons/pong.svg",
   tron: "/icons/tron.svg",
   bomb: "/icons/minesweeper.svg",
+  cards: "/icons/solitaire.svg",
   knight: "/chess/rn.svg",
   scissors: "/rps/scissors-x.svg",
   rock: "/rps/rock-x.svg",
