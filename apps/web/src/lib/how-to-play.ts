@@ -64,6 +64,15 @@ const HOW_TO_PLAY_ES: Record<string, HowToPlay> = {
       { icon: "pencil", text: "Si dudas, usa las notas para apuntar los números que podrían ir en una casilla." },
     ],
   },
+  queens: {
+    goal: "Pon una reina en cada fila, en cada columna y en cada región de color.",
+    steps: [
+      { icon: "crown", text: "Solo cabe una reina por fila, una por columna y una por color." },
+      { icon: "stop", text: "Dos reinas no pueden tocarse, ni siquiera en diagonal." },
+      { icon: "tap", text: "Toca una casilla para marcarla con una × (ahí no va). Tócala otra vez para poner una reina." },
+      { icon: "timer", text: "Cada tablero tiene una sola solución. Cuanto más rápido, mejor." },
+    ],
+  },
   solitaire: {
     goal: "Sube todas las cartas a los cuatro montones de arriba, uno por palo, del as al rey.",
     steps: [
@@ -192,6 +201,15 @@ const HOW_TO_PLAY_EN: Record<string, HowToPlay> = {
       { icon: "down", text: "Or in a column." },
       { icon: "box", text: "Or in each 3 × 3 square." },
       { icon: "pencil", text: "If you're not sure, use notes to jot down the numbers that could go in a square." },
+    ],
+  },
+  queens: {
+    goal: "Place a queen in every row, every column and every colour region.",
+    steps: [
+      { icon: "crown", text: "Only one queen fits in each row, each column and each colour." },
+      { icon: "stop", text: "Two queens can't touch, not even diagonally." },
+      { icon: "tap", text: "Tap a square to mark it with an × (no queen there). Tap it again to place a queen." },
+      { icon: "timer", text: "Every board has exactly one solution. The faster, the better." },
     ],
   },
   solitaire: {

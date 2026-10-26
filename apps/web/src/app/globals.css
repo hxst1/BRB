@@ -507,6 +507,60 @@ body {
   line-height: 1;
 }
 
+/*
+ * Reinas: cada región con un color de la paleta de la app (los de las fichas
+ * del 2048 y las marcas, más claros para que la corona y las × se lean en
+ * tinta). Líneas finas dentro de una región y gruesas donde cambia.
+ */
+.queens {
+  --q0: #ffc078;
+  --q1: #ffe066;
+  --q2: #8ce99a;
+  --q3: #66d9e8;
+  --q4: #91a7ff;
+  --q5: #e599f7;
+  --q6: #ff8787;
+  --q7: #ced4da;
+  --q8: #faa2c1;
+  --queens-line: #15171c;
+  --queens-thin: rgb(21 23 28 / 0.18);
+  background: var(--queens-line);
+}
+
+.queens-cell {
+  color: #15171c;
+  transition: filter 120ms;
+}
+
+@media (hover: hover) {
+  .queens-cell:hover {
+    filter: brightness(0.94);
+  }
+}
+
+.queens-cell:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: -3px;
+}
+
+.queens-crown {
+  width: 62%;
+  height: 62%;
+}
+
+.queens-cross {
+  font-size: clamp(14px, 4.4vw, 22px);
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0.45;
+}
+
+/* Reina que choca con otra: en rojo, con rayas para que no dependa solo del color. */
+.queens-wrong {
+  color: #c92a2a;
+  background-image: repeating-linear-gradient(135deg, rgb(201 42 42 / 0.28) 0 4px, transparent 4px 9px) !important;
+}
+
 /* Aviso de instalar la app: sube desde abajo, como una hoja del sistema. */
 .install-sheet {
   animation: install-sheet-in 280ms cubic-bezier(0.2, 0.8, 0.2, 1);

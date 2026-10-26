@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { DragScrollList } from "@/components/drag-scroll";
+import { Crown } from "@/components/queens/crown";
 import { CardFace } from "@/components/solitaire/card";
 import { PinButton } from "./pin-button";
 import { getMessages } from "@/lib/i18n/server";
@@ -28,6 +29,8 @@ const PREVIEW_SUDOKU: [string, "p" | "j" | ""][] = [
 const PREVIEW_CHESS = ["bk", "", "", "br", "", "bp", "", "", "", "", "rn", "", "rq", "", "", "rk"];
 /** Solitario en miniatura: tres columnas (null es una carta tapada): K♠ y Q♥, una tapada con el 7♦ y el A♣. */
 const PREVIEW_SOLITAIRE: (number | null)[][] = [[12, 24], [null, 32], [39]];
+/** Reinas en miniatura (5 × 5): región de cada casilla, dos reinas (q) y algunas × (x). */
+const PREVIEW_QUEENS = { regions: [0, 0, 1, 1, 1, 0, 2, 2, 1, 1, 3, 3, 2, 2, 1, 3, 4, 4, 2, 1, 3, 4, 2, 2, 2], marks: { 1: "q", 10: "q", 0: "x", 5: "x", 7: "x" } as Record<number, "q" | "x"> };
 /** Wordle en miniatura: tres intentos hasta acertar. */
 const PREVIEW_WORDLE = ["bybbb", "gbygb", "ggggg"];
 
@@ -44,6 +47,7 @@ export type GameId =
   | "minesweeper"
   | "sudoku"
   | "solitaire"
+  | "queens"
   | "wordle"
   | "tictactoe"
   | "connect4"
@@ -188,6 +192,28 @@ const GAMES: Game[] = [
                   {card !== null && <CardFace card={card} />}
                 </span>
               ))}
+            </span>
+          ))}
+        </div>
+    ),
+  },
+  {
+    id: "queens",
+    group: "solo",
+    href: "/reinas",
+    preview: (
+        <div aria-hidden className="queens grid grid-cols-5 gap-px overflow-hidden rounded-xl border-2 sm:rounded-2xl" style={{ borderColor: "var(--queens-line)" }}>
+          {PREVIEW_QUEENS.regions.map((region, i) => (
+            <span
+              key={i}
+              className="grid aspect-square place-items-center transition-transform duration-300 group-hover:scale-95"
+              style={{ background: `var(--q${region})`, color: "#15171c", transitionDelay: `${(i % 5) * 25}ms` }}
+            >
+              {PREVIEW_QUEENS.marks[i] === "q" ? (
+                <Crown className="size-3/5" />
+              ) : PREVIEW_QUEENS.marks[i] === "x" ? (
+                <span className="text-xs font-bold opacity-45 sm:text-base">×</span>
+              ) : null}
             </span>
           ))}
         </div>

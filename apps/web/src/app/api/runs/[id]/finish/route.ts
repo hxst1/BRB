@@ -4,6 +4,8 @@ import { GAME_IDS, type Difficulty } from "@repo/games/minesweeper";
 import { verifyRun as verifyMinesweeper } from "@repo/games/minesweeper/verify";
 import { verifyRun as verifySnake } from "@repo/games/snake/verify";
 import { GAME_ID as SOLITAIRE_ID } from "@repo/games/solitaire";
+import { GAME_IDS as QUEENS_IDS, type Difficulty as QueensDifficulty } from "@repo/games/queens";
+import { verifyRun as verifyQueens } from "@repo/games/queens/verify";
 import { verifyRun as verifySolitaire } from "@repo/games/solitaire/verify";
 import { GAME_IDS as SUDOKU_IDS, type Difficulty as SudokuDifficulty } from "@repo/games/sudoku";
 import { verifyRun as verifySudoku } from "@repo/games/sudoku/verify";
@@ -25,8 +27,9 @@ type Verified = { valid: true; score: number; detail: number } | { valid: false;
  * Repite la partida con el motor de su juego. En Snake, `moves` son los giros
  * (puede no haber ninguno); en Lights Out, las pulsaciones (se puede plantar
  * sin pulsar); en el buscaminas, las casillas abiertas; en el sudoku, el
- * tablero resuelto, y en el solitario, sus movimientos. En estos tres, la
- * puntuación es el tiempo que ha medido el servidor.
+ * tablero resuelto; en el solitario, sus movimientos, y en Reinas, la columna
+ * de cada reina. En estos cuatro, la puntuación es el tiempo que ha medido el
+ * servidor.
  */
 function verify(game: string, seed: number, moves: string, elapsedMs: number): Verified | null {
   if (game === "2048") {
@@ -55,6 +58,11 @@ function verify(game: string, seed: number, moves: string, elapsedMs: number): V
   if (sudoku) {
     const result = verifySudoku(sudoku, seed, moves, elapsedMs);
     return result.valid ? { valid: true, score: result.timeMs, detail: result.filled } : result;
+  }
+  const queens = (Object.keys(QUEENS_IDS) as QueensDifficulty[]).find((d) => QUEENS_IDS[d] === game);
+  if (queens) {
+    const result = verifyQueens(queens, seed, moves, elapsedMs);
+    return result.valid ? { valid: true, score: result.timeMs, detail: result.queens } : result;
   }
   return null;
 }

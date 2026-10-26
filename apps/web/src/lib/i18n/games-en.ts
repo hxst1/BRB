@@ -89,6 +89,25 @@ export const GAMES_EN: Record<keyof typeof GAMES_ES, GameTexts> = {
       { q: "Do I need to download anything?", a: NO_DOWNLOAD },
     ],
   },
+  queens: {
+    name: "Queens",
+    title: "Queens online for free: the colour region queens puzzle",
+    description: "Play Queens for free: the logic puzzle with one queen per row, column and colour, like LinkedIn's Queens. Three board sizes and a ranking by time.",
+    tagline: "One per row, column and colour",
+    genre: "Logic puzzle",
+    howTo: [
+      "The board is split into colour regions, as many as there are rows.",
+      "Place a queen in every row, every column and every region.",
+      "Two queens can't touch, not even diagonally.",
+      "Mark with an × the squares where a queen can't go. Easy is 7 × 7, medium 8 × 8 and hard 9 × 9. The fastest time wins.",
+    ],
+    faq: [
+      { q: "Is it like LinkedIn's Queens?", a: "Yes, it has the same rules. Here you can play as many boards as you like, in three sizes, and compete on time in the ranking." },
+      { q: "Does every board have a single solution?", a: "Yes. Every board is checked to have exactly one solution, so you can solve it with logic, no guessing." },
+      { q: "Can I pause?", a: "Yes. Pausing stops the clock and hides the board. It also pauses by itself if you switch apps." },
+      { q: "Do I need to download anything?", a: NO_DOWNLOAD },
+    ],
+  },
   solitaire: {
     name: "Solitaire",
     title: "Solitaire online for free (Klondike)",

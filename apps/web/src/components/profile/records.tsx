@@ -35,6 +35,16 @@ const SOLO: { id: GameId; href: string; boards: { game: string; level?: Level }[
     ],
   },
   { id: "solitaire", href: "/solitario", time: true, boards: [{ game: "solitaire" }] },
+  {
+    id: "queens",
+    href: "/reinas",
+    time: true,
+    boards: [
+      { game: "queens-easy", level: "easy" },
+      { game: "queens-medium", level: "medium" },
+      { game: "queens-hard", level: "hard" },
+    ],
+  },
 ];
 
 const MATCH_GAMES: { id: GameId; href: string; games: string[] }[] = [

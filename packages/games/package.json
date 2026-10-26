@@ -25,7 +25,9 @@
     "./sudoku/verify": "./src/sudoku/verify.ts",
     "./chess": "./src/chess/index.ts",
     "./solitaire": "./src/solitaire/index.ts",
-    "./solitaire/verify": "./src/solitaire/verify.ts"
+    "./solitaire/verify": "./src/solitaire/verify.ts",
+    "./queens": "./src/queens/index.ts",
+    "./queens/verify": "./src/queens/verify.ts"
   },
   "scripts": {
     "test": "vitest run",

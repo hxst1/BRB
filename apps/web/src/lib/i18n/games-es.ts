@@ -106,6 +106,25 @@ export const GAMES_ES = {
       { q: "¿Hay que descargar algo?", a: NO_DOWNLOAD },
     ],
   },
+  queens: {
+    name: "Reinas",
+    title: "Reinas online gratis: el puzle de las reinas por colores",
+    description: "Juega gratis a Reinas, el puzle de lógica de una reina por fila, columna y color, como el Queens de LinkedIn. Tres tamaños y ranking por tiempo.",
+    tagline: "Una por fila, columna y color",
+    genre: "Puzle de lógica",
+    howTo: [
+      "El tablero está dividido en regiones de colores, tantas como filas.",
+      "Pon una reina en cada fila, en cada columna y en cada región.",
+      "Dos reinas no pueden tocarse, ni siquiera en diagonal.",
+      "Marca con una × las casillas donde no puede ir. Fácil es de 7 × 7, medio de 8 × 8 y difícil de 9 × 9. Gana el menor tiempo.",
+    ],
+    faq: [
+      { q: "¿Es como el Queens de LinkedIn?", a: "Sí, tiene las mismas reglas. Aquí puedes jugar todos los tableros que quieras, en tres tamaños, y competir por tiempo en el ranking." },
+      { q: "¿Cada tablero tiene una sola solución?", a: "Sí. Todos se comprueban para que tengan una única solución, así que se resuelven con lógica, sin adivinar." },
+      { q: "¿Se puede pausar?", a: "Sí. Con la pausa el tiempo se para y el tablero se tapa. También se pausa sola si cambias de app." },
+      { q: "¿Hay que descargar algo?", a: NO_DOWNLOAD },
+    ],
+  },
   solitaire: {
     name: "Solitario",
     title: "Solitario online gratis (Klondike)",

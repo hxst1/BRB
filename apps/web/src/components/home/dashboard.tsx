@@ -48,6 +48,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     { data: minesweeper },
     { data: sudoku },
     { data: solitaire },
+    { data: queens },
     { data: challenges },
     { data: daily },
     { data: wordle },
@@ -73,6 +74,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     supabase.rpc("get_my_standing", { game: "minesweeper-medium" }).maybeSingle(),
     supabase.rpc("get_my_standing", { game: "sudoku-medium" }).maybeSingle(),
     supabase.rpc("get_my_standing", { game: "solitaire" }).maybeSingle(),
+    supabase.rpc("get_my_standing", { game: "queens-medium" }).maybeSingle(),
     supabase.rpc("get_my_challenges", { max_rows: 20 }),
     supabase.rpc("get_my_daily").maybeSingle(),
     supabase
@@ -248,6 +250,7 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
             minesweeper: <SoloStats m={m} standing={minesweeper} format={(ms) => m.home.onMedium(time(ms))} />,
             sudoku: <SoloStats m={m} standing={sudoku} format={(ms) => m.home.onMedium(time(ms))} />,
             solitaire: <SoloStats m={m} standing={solitaire} format={time} />,
+            queens: <SoloStats m={m} standing={queens} format={(ms) => m.home.onMedium(time(ms))} />,
             wordle: wordleToday?.finished_at ? (
               <span>
                 {m.home.today} <strong className="tabular">{wordleToday.solved ? wordleToday.guesses.length : "X"}/6</strong>
