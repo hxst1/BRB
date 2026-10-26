@@ -119,7 +119,8 @@ export const es = {
   },
   howTo: {
     howToPlay: "¿Cómo se juega?",
-    howToPlayGame: (name: string) => `Cómo se juega al ${name}`,
+    // Sin artículo: «al Reinas» o «al Hundir la flota» no suenan bien.
+    howToPlayGame: (name: string) => `${name}: cómo se juega`,
     gotIt: "¡Entendido!",
     faq: "Preguntas frecuentes",
     webBrowser: "Navegador web",
