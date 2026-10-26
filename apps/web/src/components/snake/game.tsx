@@ -5,6 +5,7 @@ import { randomSeed } from "@repo/games";
 import { GRID, canTurn, newGame, step, tickMs, type Direction, type SnakeState } from "@repo/games/snake";
 import { startRun, type RunNotice } from "@/lib/start-run";
 import { GuestNotice } from "@/components/guest-notice";
+import { useSwipeLock } from "@/components/swipe-lock";
 import { useMessages } from "@/lib/i18n/client";
 
 const KEYS: Record<string, Direction> = {
@@ -167,12 +168,28 @@ export function SnakeGame({
     return () => window.removeEventListener("keydown", onKey);
   }, [press]);
 
-  // Deslizar: el giro se lanza en cuanto el dedo recorre lo suficiente, sin esperar a soltar.
+  // En marcha, la página no se mueve y se puede deslizar en cualquier sitio de la pantalla.
+  const playing = running && !(state?.over ?? false);
+  useSwipeLock(playing, press, SWIPE_THRESHOLD);
+
+  // Al empezar, el tablero entero a la vista.
+  const board = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (playing) board.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [playing]);
+
+  // Deslizar sobre el tablero (para empezar, y con el ratón): el giro se lanza en
+  // cuanto el dedo recorre lo suficiente, sin esperar a soltar.
   const swipeOrigin = useRef<{ x: number; y: number } | null>(null);
-  const onPointerDown = useCallback((event: ReactPointerEvent) => {
-    if (event.target instanceof Element && event.target.closest("button, a")) return;
-    swipeOrigin.current = { x: event.clientX, y: event.clientY };
-  }, []);
+  const onPointerDown = useCallback(
+    (event: ReactPointerEvent) => {
+      if (event.target instanceof Element && event.target.closest("button, a")) return;
+      // Con la partida en marcha, los toques los recoge useSwipeLock (en toda la pantalla).
+      if (playing && event.pointerType !== "mouse") return;
+      swipeOrigin.current = { x: event.clientX, y: event.clientY };
+    },
+    [playing],
+  );
   const onPointerMove = useCallback(
     (event: ReactPointerEvent) => {
       const origin = swipeOrigin.current;
@@ -241,6 +258,7 @@ export function SnakeGame({
 
       {state ? (
         <div
+          ref={board}
           className="relative touch-none select-none"
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
@@ -259,6 +277,9 @@ export function SnakeGame({
       ) : (
         <div className="aspect-square w-full animate-pulse rounded-[22px]" style={{ background: "var(--board)" }} />
       )}
+
+      {/* Cruceta en pantallas táctiles, para quien prefiera botones a deslizar. */}
+      {state && !state.over && <DPad onPress={press} />}
 
       {state?.over && <GameOver state={state} save={save} signedIn={signedIn} onRestart={daily === null ? () => void restart() : undefined} />}
 
@@ -436,6 +457,39 @@ function GameOver({
           {m.run.playAgain}
         </button>
       )}
+    </div>
+  );
+}
+
+const ARROWS: Record<Direction, string> = { up: "M12 6 5 15h14z", down: "M12 18 5 9h14z", left: "M6 12l9-7v14z", right: "M18 12 9 5v14z" };
+
+/** Cruceta: el giro va al tocar (no al soltar), como deslizar. */
+function DPad({ onPress }: { onPress: (direction: Direction) => void }) {
+  const m = useMessages();
+  const button = (direction: Direction, place: string) => (
+    <button
+      type="button"
+      aria-label={m.snake.directions[direction]}
+      onPointerDown={(event) => {
+        event.preventDefault();
+        onPress(direction);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") onPress(direction);
+      }}
+      className={`${place} grid size-16 touch-none place-items-center rounded-2xl bg-surface shadow-soft active:bg-line/60`}
+    >
+      <svg viewBox="0 0 24 24" className="size-6" aria-hidden>
+        <path d={ARROWS[direction]} fill="currentColor" />
+      </svg>
+    </button>
+  );
+  return (
+    <div role="group" aria-label={m.snake.dpad} className="hidden grid-cols-[repeat(3,4rem)] justify-center gap-2 select-none pointer-coarse:grid">
+      {button("up", "col-start-2")}
+      {button("left", "col-start-1 row-start-2")}
+      {button("down", "col-start-2 row-start-2")}
+      {button("right", "col-start-3 row-start-2")}
     </div>
   );
 }

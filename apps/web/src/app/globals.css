@@ -561,6 +561,19 @@ body {
   background-image: repeating-linear-gradient(135deg, rgb(201 42 42 / 0.28) 0 4px, transparent 4px 9px) !important;
 }
 
+/*
+ * Partida en tiempo real en marcha (components/swipe-lock): la página no se
+ * desplaza con el dedo ni recarga al tirar hacia abajo.
+ */
+html.swipe-lock,
+html.swipe-lock body {
+  overscroll-behavior: none;
+}
+
+html.swipe-lock body {
+  touch-action: none;
+}
+
 /* Aviso de instalar la app: sube desde abajo, como una hoja del sistema. */
 .install-sheet {
   animation: install-sheet-in 280ms cubic-bezier(0.2, 0.8, 0.2, 1);

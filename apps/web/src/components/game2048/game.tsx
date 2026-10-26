@@ -254,6 +254,11 @@ export function Game2048({
         </p>
       )}
 
+      {/*
+        Deslizar sobre los marcadores también mueve (con el pulgar es fácil
+        empezar fuera del tablero); el resto de la página se desplaza normal.
+      */}
+      <div className={`flex flex-col gap-4 ${state && !state.over ? "touch-none" : ""}`} onPointerDown={onPointerDown}>
       <div className="flex items-end justify-between gap-4">
         <div className="flex gap-6">
           <Stat label={m.run.points} value={state?.score ?? 0} />
@@ -281,6 +286,7 @@ export function Game2048({
       </div>
 
       {state ? <Board state={state} onPointerDown={onPointerDown} /> : <div className="board animate-pulse" />}
+      </div>
 
       {state?.over && (
         <GameOver

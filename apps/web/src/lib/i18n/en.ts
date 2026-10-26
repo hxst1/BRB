@@ -403,6 +403,8 @@ export const en: Messages = {
     summary: (score: string, tile: number) => `${score} points, highest tile ${tile}`,
   },
   snake: {
+    dpad: "D-pad",
+    directions: { up: "Up", down: "Down", left: "Left", right: "Right" },
     start: "Press an arrow key or swipe to start",
     aria: (length: number) => `Snake ${length} squares long`,
     filled: "You filled the board!",

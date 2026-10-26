@@ -407,6 +407,8 @@ export const es = {
   },
   snake: {
     start: "Pulsa una flecha o desliza para empezar",
+    dpad: "Cruceta",
+    directions: { up: "Arriba", down: "Abajo", left: "Izquierda", right: "Derecha" },
     aria: (length: number) => `Serpiente de ${length} casillas`,
     filled: "¡Has llenado el tablero!",
     crashed: "Te has chocado",

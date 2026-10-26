@@ -22,6 +22,7 @@ import { LiveMatchShell } from "@/components/live/match-shell";
 import { MARK_COLOR } from "@/components/tictactoe/match-view";
 import { createClient } from "@/lib/supabase/client";
 import { useMessages } from "@/lib/i18n/client";
+import { useSwipeLock } from "@/components/swipe-lock";
 import type { Messages } from "@/lib/i18n";
 
 /** Giros que se pueden encadenar antes del siguiente paso (p. ej. dar la vuelta en U). */
@@ -215,9 +216,15 @@ function LiveTron({
     return () => window.removeEventListener("keydown", onKey);
   }, [turn]);
 
-  // Deslizar: el giro se lanza en cuanto el dedo recorre lo suficiente.
+  // En juego, la página no se mueve y se puede deslizar en cualquier sitio de la pantalla.
+  useSwipeLock(phase === "playing", turn, SWIPE_THRESHOLD);
+
+  // Deslizar sobre el tablero (con el ratón, o con el dedo fuera de juego): el giro
+  // se lanza en cuanto el dedo recorre lo suficiente.
   const swipe = useRef<{ x: number; y: number } | null>(null);
   function onPointerDown(event: ReactPointerEvent) {
+    // En juego, los toques los recoge useSwipeLock (en toda la pantalla).
+    if (phase === "playing" && event.pointerType !== "mouse") return;
     swipe.current = { x: event.clientX, y: event.clientY };
   }
   function onPointerMove(event: ReactPointerEvent) {

@@ -20,6 +20,7 @@ import { LiveMatchShell } from "@/components/live/match-shell";
 import { MARK_COLOR } from "@/components/tictactoe/match-view";
 import { createClient } from "@/lib/supabase/client";
 import { useMessages } from "@/lib/i18n/client";
+import { useSwipeLock } from "@/components/swipe-lock";
 
 /** Cada cuánto se retransmite el estado (el anfitrión) o la pala (el invitado). */
 const SEND_INTERVAL_MS = 33;
@@ -195,6 +196,9 @@ function LiveGame({
   }, []);
 
   // Dedo o ratón: la pala sigue al puntero.
+  // En juego, la página no se mueve aunque el dedo se salga de la pista.
+  useSwipeLock(phase === "playing");
+
   function onPointer(event: React.PointerEvent<HTMLCanvasElement>) {
     const rect = event.currentTarget.getBoundingClientRect();
     myPaddle.current = clampPaddle((event.clientX - rect.left) / rect.width);
