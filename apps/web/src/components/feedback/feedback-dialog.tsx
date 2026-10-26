@@ -175,7 +175,7 @@ export function FeedbackDialog() {
   );
 }
 
-function Stars({ value, onChange }: { value: number; onChange: (value: number) => void }) {
+export function Stars({ value, onChange }: { value: number; onChange: (value: number) => void }) {
   const [hover, setHover] = useState(0);
   const m = useMessages();
   const shown = hover || value;
