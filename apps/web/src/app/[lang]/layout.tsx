@@ -8,6 +8,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { THEME_SCRIPT } from "@/lib/theme";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { ServiceWorker } from "@/components/pwa/service-worker";
+import { ExtensionBridge } from "@/components/extension-bridge";
 import { SiteHeader } from "@/components/site-header";
 import { I18nProvider } from "@/lib/i18n/client";
 import { LOCALES } from "@/lib/i18n/locales";
@@ -85,6 +86,7 @@ export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
       <body className="flex min-h-full flex-col">
         <I18nProvider locale={locale}>
         <ServiceWorker />
+        <ExtensionBridge />
         <SiteHeader />
         {children}
         <Suspense fallback={null}>

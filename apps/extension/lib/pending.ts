@@ -1,28 +1,18 @@
 import { browser } from "wxt/browser";
-import { supabase } from "./supabase";
+import { SITE_URL } from "./env";
 
-export type Counts = { home: number; chat: number; friends: number };
+type Pending = { signedIn: false } | { signedIn: true; home: number; chat: number; friends: number };
 
-/** Lo mismo que los avisos de la web: lo pendiente, los mensajes y las solicitudes. */
-export async function fetchCounts(): Promise<Counts | null> {
-  const client = supabase();
-  const { data: session } = await client.auth.getSession();
-  if (!session.session) return null;
-
-  const [{ data: pending }, { data: unread }] = await Promise.all([
-    client.rpc("get_pending_counts").maybeSingle(),
-    client.rpc("get_unread_messages"),
-  ]);
-  return {
-    home: pending ? pending.my_turn + pending.match_invites + pending.challenges : 0,
-    chat: unread ?? 0,
-    friends: pending?.friend_requests ?? 0,
-  };
+/** Lo pendiente, con la sesión de la web (app/api/pending): lo mismo que sus avisos. */
+export async function fetchTotal(): Promise<number> {
+  const response = await fetch(new URL("/api/pending", SITE_URL), { credentials: "include", cache: "no-store" });
+  if (!response.ok) return 0;
+  const pending = (await response.json()) as Pending;
+  return pending.signedIn ? pending.home + pending.chat + pending.friends : 0;
 }
 
 /** El número del icono de la extensión. */
-export async function updateBadge(counts: Counts | null) {
-  const total = counts ? counts.home + counts.chat + counts.friends : 0;
+export async function updateBadge(total: number) {
   await browser.action.setBadgeText({ text: total > 0 ? String(Math.min(total, 99)) : "" });
   await browser.action.setBadgeBackgroundColor({ color: "#ff6b6b" });
 }

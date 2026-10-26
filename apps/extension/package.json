@@ -11,22 +11,10 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
-    "@repo/avatars": "workspace:*",
-    "@repo/brand": "workspace:*",
-    "@repo/games": "workspace:*",
-    "@repo/ui": "workspace:*",
-    "@supabase/supabase-js": "^2.118.0",
-    "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "@repo/brand": "workspace:*"
   },
   "devDependencies": {
-    "@repo/db": "workspace:*",
-    "@tailwindcss/vite": "^4",
     "@types/chrome": "^0.1",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@wxt-dev/module-react": "^1.2.2",
-    "tailwindcss": "^4",
     "typescript": "^5",
     "wxt": "^0.21.4"
   }
