@@ -1,5 +1,6 @@
 "use client";
 
+import { MatchSounds, resultFor } from "@/components/match-sounds";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -117,6 +118,7 @@ export function ChessMatchView({ matchId, viewerId }: { matchId: string; viewerI
 
   return (
     <div className="flex w-full max-w-lg flex-col gap-5" style={PIECE_MARK_COLORS}>
+      <MatchSounds progress={match.moves.length} myTurn={myTurn} result={resultFor(match, me)} />
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         <PlayerBadge player={players[me]} mark={me} label={m.match.you} active={myTurn} mood={moodOf(me)} detail={side(me)} />
         <span className="hidden shrink-0 text-sm text-muted sm:inline">{m.match.versus}</span>

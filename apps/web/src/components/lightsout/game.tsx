@@ -9,6 +9,7 @@ import { LightsBoard } from "./board";
 import { LightsOutTutorial, useTutorialDone } from "./tutorial";
 import { ShareStory } from "@/components/share-story";
 import { useMessages } from "@/lib/i18n/client";
+import { playSound } from "@/lib/sound";
 
 const BEST_KEY = "lightsout:best";
 /** Cuánto se ve el aviso de nivel superado. */
@@ -113,6 +114,8 @@ function Game({ viewerId, onSaved, daily = null, onReviewTutorial }: GameProps &
       if (!state || ended) return;
       const next = press(state, cell);
       if (next.completed > state.completed) setLevelUp(next.completed);
+      // Nivel superado, sin pulsaciones o, si no, un toque.
+      playSound(next.completed > state.completed ? "level" : next.over ? "lose" : "tap");
       setState(next);
     },
     [state, ended],

@@ -7,6 +7,7 @@ import { Avatar } from "@repo/ui/avatar";
 import type { Messages } from "@/lib/i18n";
 import { ShareStory } from "@/components/share-story";
 import { useMessages } from "@/lib/i18n/client";
+import { playSound } from "@/lib/sound";
 import type { RunNotice } from "@/lib/start-run";
 import { createClient } from "@/lib/supabase/client";
 import { Board } from "@repo/ui/board-2048";
@@ -151,6 +152,18 @@ export function Game2048({
     if (special) onExit();
     else void start();
   }, [special, onExit, start]);
+
+  // Sonidos: al juntar fichas (más agudo cuanto más alta), al llegar a 2048 y al acabar.
+  const heard = useRef<Game2048State | null>(null);
+  useEffect(() => {
+    const before = heard.current;
+    heard.current = state;
+    if (!before || !state || state.seed !== before.seed || state.moves.length <= before.moves.length) return;
+    if (state.over) return playSound("lose");
+    if (maxTile(state) >= 2048 && maxTile(before) < 2048) return playSound("win");
+    const merged = state.cells.reduce((top, tile) => (tile?.mergedFrom ? Math.max(top, tile.value) : top), 0);
+    if (merged > 0) playSound("pop", { pitch: 0.85 + Math.min(Math.log2(merged), 11) * 0.03, volume: 0.8 });
+  }, [state]);
 
   const play = useCallback((direction: Direction) => {
     setState((current) => (current && !current.over ? move(current, direction) : current));

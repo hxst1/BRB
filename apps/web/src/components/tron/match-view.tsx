@@ -1,5 +1,6 @@
 "use client";
 
+import { LiveSounds } from "@/components/match-sounds";
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import {
@@ -252,6 +253,7 @@ function LiveTron({
 
   return (
     <div className="flex flex-col gap-3">
+      <LiveSounds mine={score[me]} theirs={score[rival]} playing={phase === "playing"} done={phase === "done"} />
       <div className="flex items-baseline justify-between">
         <span className="flex items-center gap-2 text-sm">
           <span className="size-3 rounded-sm" style={{ background: MARK_COLOR[me] }} />

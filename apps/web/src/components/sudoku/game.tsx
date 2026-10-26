@@ -9,6 +9,7 @@ import { GuestNotice } from "@/components/guest-notice";
 import { NO_PAUSE, PauseButton, PauseCover, endPause, pauseFromRun, playedMs, reportPause, startPause, useAutoPause, type Pause } from "@/components/pause";
 import { ShareStory } from "@/components/share-story";
 import { useMessages } from "@/lib/i18n/client";
+import { playSound } from "@/lib/sound";
 
 /** Hora actual (fuera del componente: solo se llama desde eventos y efectos). */
 const clock = () => Date.now();
@@ -211,6 +212,10 @@ export function SudokuGame({
         if (digit !== 0) for (const peer of PEERS[selected]!) notes[peer] &= ~(1 << digit);
       }
       setHistory((past) => [...past.slice(-49), { values: game.values, notes: game.notes }]);
+      // Resuelto, un número que choca con otro o, si no, un toque (las notas, más bajito).
+      if (isSolved(values, puzzle.solution)) playSound("win");
+      else if (values[selected] !== 0 && conflicts(values).has(selected)) playSound("error");
+      else playSound("tap", { volume: notesMode && digit !== 0 ? 0.5 : 1 });
       update({ ...game, values, notes });
     },
     [game, puzzle, selected, solved, paused, notesMode, update, resumeGame],

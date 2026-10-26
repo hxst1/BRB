@@ -1,0 +1,68 @@
+[
+  {
+    "name": "tap",
+    "file": "/sounds/tap.wav",
+    "use": "Mover o colocar algo: casilla, ficha, número.",
+    "seconds": 0.06
+  },
+  {
+    "name": "pop",
+    "file": "/sounds/pop.wav",
+    "use": "Algo bueno y pequeño: juntar fichas, tocar un barco, subir una carta.",
+    "seconds": 0.1
+  },
+  {
+    "name": "eat",
+    "file": "/sounds/eat.wav",
+    "use": "Snake: comer una manzana.",
+    "seconds": 0.14
+  },
+  {
+    "name": "flip",
+    "file": "/sounds/flip.wav",
+    "use": "Solitario: robar o mover una carta.",
+    "seconds": 0.07
+  },
+  {
+    "name": "error",
+    "file": "/sounds/error.wav",
+    "use": "Algo que no vale: una carta sin sitio, una reina que choca.",
+    "seconds": 0.13
+  },
+  {
+    "name": "turn",
+    "file": "/sounds/turn.wav",
+    "use": "Te toca: tu rival ha movido.",
+    "seconds": 0.49
+  },
+  {
+    "name": "level",
+    "file": "/sounds/level.wav",
+    "use": "Nivel superado (Lights Out) o algo completado.",
+    "seconds": 0.47
+  },
+  {
+    "name": "win",
+    "file": "/sounds/win.wav",
+    "use": "Partida ganada o resuelta.",
+    "seconds": 0.82
+  },
+  {
+    "name": "lose",
+    "file": "/sounds/lose.wav",
+    "use": "Partida perdida (sin dramas: suave).",
+    "seconds": 0.47
+  },
+  {
+    "name": "beep",
+    "file": "/sounds/beep.wav",
+    "use": "Cuenta atrás de las partidas en directo.",
+    "seconds": 0.1
+  },
+  {
+    "name": "go",
+    "file": "/sounds/go.wav",
+    "use": "¡Ya! Empieza la partida en directo.",
+    "seconds": 0.21
+  }
+]

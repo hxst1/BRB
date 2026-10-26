@@ -383,6 +383,14 @@ export const es = {
     download: "Descargar",
     fileName: (game: string) => `partida-${game}.png`,
   },
+  sound: {
+    title: "Sonidos",
+    hint: "Sonidos cortos y suaves en los juegos: al mover, al ganar, cuando te toca…",
+    on: "Activados",
+    off: "Silenciados",
+    mute: "Silenciar los sonidos",
+    unmute: "Activar los sonidos",
+  },
   pause: {
     pause: "Pausar",
     resume: "Seguir",

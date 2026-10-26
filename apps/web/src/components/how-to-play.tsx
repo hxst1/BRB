@@ -1,5 +1,6 @@
 "use client";
 
+import { SoundToggle } from "@/components/sound-toggle";
 import { useEffect, useRef, useState } from "react";
 import { HOW_TO_PLAY } from "@/lib/how-to-play";
 import { pictoSrc } from "@/lib/pictos";
@@ -27,6 +28,9 @@ export function HowToPlayButton({ game, name }: { game: string; name: string }) 
 
   return (
     <>
+      {/* El altavoz va al lado: el título del juego queda a la izquierda y los dos botones juntos a la derecha. */}
+      <div className="flex shrink-0 items-center gap-2">
+      <SoundToggle />
       <button
         type="button"
         onClick={() => setOpen(true)}
@@ -37,6 +41,7 @@ export function HowToPlayButton({ game, name }: { game: string; name: string }) 
       >
         ?
       </button>
+      </div>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-3 backdrop-blur-[2px] sm:items-center" onClick={() => setOpen(false)}>

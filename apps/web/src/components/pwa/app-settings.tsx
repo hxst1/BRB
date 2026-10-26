@@ -1,5 +1,6 @@
 "use client";
 
+import { SoundSetting } from "@/components/sound-toggle";
 import { useSyncExternalStore } from "react";
 import { brand } from "@repo/brand";
 import { showInstallGuide } from "./install-prompt";
@@ -26,6 +27,7 @@ export function AppSettings({ isSupporter = false, unlocked = [] }: { isSupporte
       <LanguagePicker />
       <ThemePicker />
       <TintPicker isSupporter={isSupporter} unlocked={unlocked} />
+      <SoundSetting />
 
       <div className="flex flex-col gap-1">
         <p className="text-sm font-medium">{t.notifications}</p>

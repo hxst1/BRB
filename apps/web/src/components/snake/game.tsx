@@ -6,6 +6,7 @@ import { GRID, canTurn, newGame, step, tickMs, type Direction, type SnakeState }
 import { startRun, type RunNotice } from "@/lib/start-run";
 import { GuestNotice } from "@/components/guest-notice";
 import { useSwipeLock } from "@/components/swipe-lock";
+import { playSound } from "@/lib/sound";
 import { ShareStory } from "@/components/share-story";
 import { useMessages } from "@/lib/i18n/client";
 
@@ -210,6 +211,16 @@ export function SnakeGame({
   useEffect(() => {
     if (best > storedBest) writeBest(best);
   }, [best, storedBest]);
+
+  // Sonidos: cada manzana (un poco más aguda cada vez) y el final.
+  const heard = useRef<SnakeState | null>(null);
+  useEffect(() => {
+    const before = heard.current;
+    heard.current = state;
+    if (!before || !state || state === before || state.seed !== before.seed) return;
+    if (state.over && !before.over) return playSound(state.food === null ? "win" : "lose");
+    if (state.apples > before.apples) playSound("eat", { pitch: 1 + Math.min(state.apples, 30) * 0.01 });
+  }, [state]);
 
   // Al chocar, enviar los giros para que el servidor valide la puntuación.
   const over = state?.over ?? false;

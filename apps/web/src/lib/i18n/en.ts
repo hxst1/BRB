@@ -379,6 +379,14 @@ export const en: Messages = {
     download: "Download",
     fileName: (game: string) => `game-${game}.png`,
   },
+  sound: {
+    title: "Sounds",
+    hint: "Short, soft sounds in the games: when you move, win, when it's your turn…",
+    on: "On",
+    off: "Muted",
+    mute: "Mute sounds",
+    unmute: "Turn sounds on",
+  },
   pause: {
     pause: "Pause",
     resume: "Resume",

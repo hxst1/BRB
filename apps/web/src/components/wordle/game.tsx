@@ -6,6 +6,7 @@ import type { Json } from "@repo/db";
 import { MAX_GUESSES, WORD_LENGTH, letterHints, shareGrid, type Mark } from "@repo/games/wordle";
 import { Avatar } from "@repo/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
+import { playSound } from "@/lib/sound";
 import { useMessages } from "@/lib/i18n/client";
 import type { Locale } from "@/lib/i18n/locales";
 
@@ -72,6 +73,7 @@ export function WordleGame({
   }, [toast]);
 
   const reject = useCallback((message: string) => {
+    playSound("error");
     setToast(message);
     setShake(true);
     setTimeout(() => setShake(false), 400);
@@ -91,6 +93,7 @@ export function WordleGame({
       if (!response.ok) return reject(body.error ?? m.wordle.checkError);
 
       setCurrent("");
+      playSound(body.solved ? "win" : body.finished ? "lose" : "flip");
       setGame((previous) => ({
         guesses: [...previous.guesses, body.guess],
         patterns: [...previous.patterns, body.pattern],
@@ -113,8 +116,13 @@ export function WordleGame({
     (key: string) => {
       if (game.finished) return;
       if (key === "enter") void submit();
-      else if (key === "back") setCurrent((word) => word.slice(0, -1));
-      else if (/^[a-zñ]$/.test(key)) setCurrent((word) => (word.length < WORD_LENGTH ? word + key : word));
+      else if (key === "back") {
+        playSound("tap", { volume: 0.4, pitch: 0.9 });
+        setCurrent((word) => word.slice(0, -1));
+      } else if (/^[a-zñ]$/.test(key)) {
+        playSound("tap", { volume: 0.5 });
+        setCurrent((word) => (word.length < WORD_LENGTH ? word + key : word));
+      }
     },
     [game.finished, submit],
   );

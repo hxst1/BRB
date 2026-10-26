@@ -9,6 +9,7 @@ import { GuestNotice } from "@/components/guest-notice";
 import { NO_PAUSE, PauseButton, PauseCover, endPause, pauseFromRun, playedMs, reportPause, startPause, useAutoPause, type Pause } from "@/components/pause";
 import { ShareStory } from "@/components/share-story";
 import { useMessages } from "@/lib/i18n/client";
+import { playSound } from "@/lib/sound";
 import { Crown } from "./crown";
 
 /** Hora actual (fuera del componente: solo se llama desde eventos y efectos). */
@@ -233,9 +234,14 @@ export function QueensGame({ viewerId, difficulty, onSaved }: { viewerId: string
       if (!game || solved) return;
       const next = [...game.marks];
       next[cell] = (next[cell]! + 1) % 3;
+      if (puzzle && next[cell] === QUEEN) {
+        // Una reina: resuelto, choca con otra o, si no, una burbuja.
+        const placed = new Set(next.flatMap((mark, i) => (mark === QUEEN ? [i] : [])));
+        playSound(isSolved(puzzle, placed) ? "win" : conflicts(puzzle.size, puzzle.regions, placed).has(cell) ? "error" : "pop");
+      } else playSound("tap", { volume: next[cell] === CROSS ? 0.8 : 0.5 });
       change(next);
     },
-    [game, solved, change],
+    [game, solved, puzzle, change],
   );
 
   // Teclado: Z deshace (las casillas se mueven con Tab y se cambian con Intro o espacio).
@@ -277,7 +283,10 @@ export function QueensGame({ viewerId, difficulty, onSaved }: { viewerId: string
   function onPointerUp() {
     if (!gesture) return;
     setGesture(null);
-    if (gesture.painting) change(gesture.marks);
+    if (gesture.painting) {
+      playSound("tap", { volume: 0.8 });
+      change(gesture.marks);
+    }
     else cycle(gesture.start);
   }
 

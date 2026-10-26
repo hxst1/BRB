@@ -1,5 +1,6 @@
 "use client";
 
+import { MatchSounds, resultFor } from "@/components/match-sounds";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -138,6 +139,7 @@ export function RpsMatchView({ matchId, viewerId }: { matchId: string; viewerId:
 
   return (
     <div className="flex w-full max-w-md flex-col gap-6" style={PIECE_MARK_COLORS}>
+      <MatchSounds progress={match.moves.length} myTurn={match.status === "active"} result={resultFor(match, me)} />
       <p className="text-center text-sm text-muted">{matchGame(match.game).name}</p>
 
       <div className="flex items-center justify-between gap-2 sm:gap-4">

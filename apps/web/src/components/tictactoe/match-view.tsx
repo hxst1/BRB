@@ -1,5 +1,6 @@
 "use client";
 
+import { MatchSounds, resultFor } from "@/components/match-sounds";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
@@ -135,6 +136,7 @@ export function MatchView({
 
   return (
     <div className="flex w-full max-w-md flex-col gap-6">
+      <MatchSounds progress={match.moves.length} myTurn={myTurn} result={resultFor(match, me)} />
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         <PlayerBadge
           player={players[me]}

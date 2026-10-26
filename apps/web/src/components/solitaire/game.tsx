@@ -27,6 +27,7 @@ import { GuestNotice } from "@/components/guest-notice";
 import { NO_PAUSE, PauseButton, PauseCover, endPause, pauseFromRun, playedMs, reportPause, startPause, useAutoPause, type Pause } from "@/components/pause";
 import { ShareStory } from "@/components/share-story";
 import { useMessages } from "@/lib/i18n/client";
+import { playSound } from "@/lib/sound";
 import { CardFace, Suit } from "./card";
 
 /** Hora actual (fuera del componente: solo se llama desde eventos y efectos). */
@@ -292,6 +293,11 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
       if (!game || !state || won || paused) return false;
       const next = applyMove(state, move);
       if (!next) return false;
+      // Ganada; una carta a su montón final (más aguda cuanto más alto); si no, el roce de la carta.
+      const foundation = !("draw" in move) && move.to >= "A" && move.to <= "D";
+      if (isWon(next)) playSound("win");
+      else if (foundation) playSound("pop", { pitch: 0.8 + next.foundations.reduce((sum, n) => sum + n, 0) * 0.012, volume: 0.8 });
+      else playSound("flip");
       commit({ ...game, moves: encodeMoves([...moves, move]) });
       return true;
     },
@@ -325,6 +331,7 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
   }, [game, won, paused, finishing, moves, commit]);
 
   const refuse = useCallback((card: number) => {
+    playSound("error", { volume: 0.7 });
     setRefused(card);
     setTimeout(() => setRefused((current) => (current === card ? null : current)), 320);
   }, []);

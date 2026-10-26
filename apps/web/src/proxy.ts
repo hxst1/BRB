@@ -4,7 +4,7 @@ import { supabasePublishableKey, supabaseUrl } from "@/lib/env";
 import { isLocale, LOCALE_COOKIE, pickLocale } from "@/lib/i18n/locales";
 
 /** Lo que no es una página (no va bajo app/[lang]). */
-const NOT_PAGES = /^\/(?:api|auth|icons|invita|llms\.txt|me\.webmanifest|offline|sw\.js|robots\.txt|sitemap\.xml|icon|apple-icon|manifest\.webmanifest)(?:\/|$)/;
+const NOT_PAGES = /^\/(?:api|auth|icons|sounds|invita|llms\.txt|me\.webmanifest|offline|sw\.js|robots\.txt|sitemap\.xml|icon|apple-icon|manifest\.webmanifest)(?:\/|$)/;
 
 /**
  * Las páginas viven en app/[lang]. Sin idioma en la URL, se elige (el de
@@ -72,5 +72,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|wav)$).*)"],
 };

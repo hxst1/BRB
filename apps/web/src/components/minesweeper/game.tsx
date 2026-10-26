@@ -9,6 +9,7 @@ import { GuestNotice } from "@/components/guest-notice";
 import { NO_PAUSE, PauseButton, PauseCover, endPause, playedMs, reportPause, startPause, useAutoPause, type Pause } from "@/components/pause";
 import { ShareStory } from "@/components/share-story";
 import { useMessages } from "@/lib/i18n/client";
+import { playSound } from "@/lib/sound";
 
 /** Cuánto hay que mantener pulsado para poner una bandera en el móvil. */
 const LONG_PRESS_MS = 380;
@@ -112,6 +113,10 @@ export function MinesweeperGame({
   }
 
   function finishIfOver(next: MinesweeperState) {
+    // Mina, todo despejado o, si no, un toque (más claro cuantas más casillas se abren).
+    if (next.status === "lost") playSound("lose");
+    else if (next.status === "won") playSound("win");
+    else if (next.revealed.size > (state?.revealed.size ?? 0)) playSound(next.revealed.size - (state?.revealed.size ?? 0) > 3 ? "pop" : "tap");
     setState(next);
     if (next.status === "lost" && runId.current) {
       // Perdida: se cierra en el servidor (en el reto diario, el intento queda usado).
@@ -150,6 +155,7 @@ export function MinesweeperGame({
 
   function toggleFlag(cell: number) {
     if (!state || state.status !== "playing" || state.revealed.has(cell)) return;
+    playSound("flip", { volume: 0.7 });
     setFlags((current) => {
       const next = new Set(current);
       if (next.has(cell)) next.delete(cell);
