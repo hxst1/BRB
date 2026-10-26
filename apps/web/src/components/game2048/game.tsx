@@ -5,6 +5,7 @@ import { randomSeed } from "@repo/games";
 import { maxTile, move, newGame, type Direction, type Game2048State } from "@repo/games/2048";
 import { Avatar } from "@repo/ui/avatar";
 import type { Messages } from "@/lib/i18n";
+import { ShareStory } from "@/components/share-story";
 import { useMessages } from "@/lib/i18n/client";
 import type { RunNotice } from "@/lib/start-run";
 import { createClient } from "@/lib/supabase/client";
@@ -29,7 +30,7 @@ const BEST_KEY = "2048:best";
 
 type Save =
   | { status: "saving" }
-  | { status: "saved"; score: number }
+  | { status: "saved"; score: number; runId: string }
   | { status: "rejected" }
   | { status: "error"; message: string };
 
@@ -218,7 +219,7 @@ export function Game2048({
       .then(async (response) => {
         const body = await response.json().catch(() => ({}));
         if (response.ok) {
-          setSave({ status: "saved", score: body.score });
+          setSave({ status: "saved", score: body.score, runId: id });
           setSavedRunId(id);
           onSaved();
         } else if (response.status === 422) {
@@ -382,6 +383,7 @@ function GameOver({
           {m.game2048.summary(m.format.number(state.score), maxTile(state))}
         </p>
         {message && <p className="text-sm">{message}</p>}
+        {save?.status === "saved" && <ShareStory runId={save.runId} game="2048" />}
       </div>
       <div className="flex flex-wrap items-center gap-3">
           <button type="button" onClick={onRestart} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">

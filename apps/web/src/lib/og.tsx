@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { renderSVG } from "uqr";
 import { brand } from "@repo/brand";
 import { messagesFor } from "./i18n";
 import { isLocale, type Locale } from "./i18n/locales";
@@ -69,4 +70,134 @@ export async function ogLocale(params: Promise<{ lang: string }>): Promise<Local
 export function gameOgImage(id: string, locale: Locale = "es") {
   const game = gameGuide(id, locale);
   return ogImage({ title: game.name, subtitle: messagesFor(locale).meta.ogGame(game.tagline), accent: game.accent });
+}
+
+/** Historia de Instagram (y de WhatsApp, etc.): 1080 × 1920. */
+export const STORY_SIZE = { width: 1080, height: 1920 };
+
+export type StoryData = {
+  game: string;
+  /** Dificultad o "Reto diario", debajo del nombre. */
+  detail: string | null;
+  score: string;
+  /** "¡Mi récord!" y el puesto, si esta partida es su récord. */
+  record: { label: string; rank: string | null } | null;
+  username: string;
+  /** SVG del monster. */
+  monster: string;
+  /** Icono del juego (SVG) y su color. */
+  icon: string;
+  accent: string;
+  challenge: string;
+  join: string;
+  /** Enlace de invitación, entero (para el QR) y para leerlo. */
+  url: string;
+  urlLabel: string;
+  appIcon: ArrayBuffer | null;
+};
+
+/** Texto que se lee sobre un color: oscuro sobre los claros, blanco sobre los oscuros. */
+function inkOn(hex: string): string {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  return 0.2126 * r! + 0.7152 * g! + 0.0722 * b! > 0.55 ? "#111318" : "#ffffff";
+}
+
+const svgData = (svg: string) => `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+
+/**
+ * Imagen para subir a una historia al terminar una partida: el juego, el
+ * resultado, el monster y un QR a la invitación (Instagram no deja poner el
+ * enlace desde fuera). Arriba y abajo queda margen para los controles de la
+ * app que la muestre.
+ */
+export async function storyImage(data: StoryData) {
+  const words = `${brand.name}${data.game}${data.score}${data.username}${data.challenge}${data.record?.label ?? ""}`;
+  const small = `${data.detail ?? ""}${data.record?.rank ?? ""}${data.join}${data.urlLabel}`;
+  const [bold, regular] = await Promise.all([loadFont(words, 800), loadFont(small, 500)]);
+  const qr = renderSVG(data.url, { border: 0, whiteColor: "#ffffff", blackColor: "#111318" });
+  const scoreSize = data.score.length <= 7 ? 240 : data.score.length <= 11 ? 170 : 128;
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          background: "#111318",
+          color: "#f1f2f5",
+          padding: "200px 90px 230px",
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 44 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
+            {data.appIcon && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                alt=""
+                width={92}
+                height={92}
+                src={`data:image/png;base64,${Buffer.from(data.appIcon).toString("base64")}`}
+                style={{ borderRadius: 26 }}
+              />
+            )}
+            <div style={{ fontSize: 64, fontWeight: 800, letterSpacing: -1.5 }}>{brand.name}</div>
+          </div>
+          <div style={{ display: "flex", gap: 12 }}>
+            {[...TILES, data.accent].map((color, i) => (
+              <div key={i} style={{ flex: 1, height: 22, borderRadius: 8, background: color }} />
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 40 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 200, height: 200, borderRadius: 52, background: "#1b1e25" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img alt="" width={150} height={150} src={svgData(data.icon)} />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ fontSize: data.game.length > 12 ? 84 : 112, fontWeight: 800, letterSpacing: -3, lineHeight: 1 }}>{data.game}</div>
+              {data.detail && <div style={{ fontSize: 44, fontWeight: 500, color: "#959bab" }}>{data.detail}</div>}
+            </div>
+          </div>
+          <div style={{ fontSize: scoreSize, fontWeight: 800, letterSpacing: -6, lineHeight: 1 }}>{data.score}</div>
+          {data.record && (
+            <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+              <div style={{ fontSize: 46, fontWeight: 800, color: inkOn(data.accent), background: data.accent, borderRadius: 999, padding: "10px 30px" }}>
+                {data.record.label}
+              </div>
+              {data.record.rank && <div style={{ fontSize: 46, fontWeight: 500, color: "#959bab" }}>{data.record.rank}</div>}
+            </div>
+          )}
+          <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img alt="" width={150} height={150} src={svgData(data.monster)} />
+            <div style={{ fontSize: 64, fontWeight: 800 }}>{data.username}</div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 48, background: "#1b1e25", borderRadius: 56, padding: 44 }}>
+          <div style={{ display: "flex", background: "#ffffff", borderRadius: 28, padding: 22 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img alt="" width={236} height={236} src={svgData(qr)} />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
+            <div style={{ fontSize: 76, fontWeight: 800, letterSpacing: -2, lineHeight: 1, color: data.accent }}>{data.challenge}</div>
+            <div style={{ fontSize: 40, fontWeight: 500, color: "#959bab" }}>{data.join}</div>
+            <div style={{ fontSize: 40, fontWeight: 500 }}>{data.urlLabel}</div>
+          </div>
+        </div>
+      </div>
+    ),
+    {
+      ...STORY_SIZE,
+      fonts: [
+        ...(bold ? [{ name: "Bricolage Grotesque", data: bold, weight: 800 as const, style: "normal" as const }] : []),
+        ...(regular ? [{ name: "Bricolage Grotesque", data: regular, weight: 500 as const, style: "normal" as const }] : []),
+      ],
+      headers: { "cache-control": "private, max-age=600" },
+    },
+  );
 }

@@ -357,6 +357,16 @@ export const en: Messages = {
     emptyDaily: "Nobody has played today's challenge yet. First place is up for grabs.",
     empty: "Nobody has scored yet. First place is up for grabs.",
   },
+  story: {
+    record: "My best!",
+    rank: (rank: number, players: number) => `#${rank} of ${players} worldwide`,
+    challenge: "Can you beat me?",
+    join: "Play for free at",
+    share: "Share to stories",
+    download: "Download image",
+    preparing: "Preparing the image…",
+    fileName: (game: string) => `game-${game}.png`,
+  },
   pause: {
     pause: "Pause",
     resume: "Resume",

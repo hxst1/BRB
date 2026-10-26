@@ -7,6 +7,7 @@ import { GAME_IDS, PEERS, box, col, conflicts, encodeGrid, generate, isSolved, r
 import { createClient } from "@/lib/supabase/client";
 import { GuestNotice } from "@/components/guest-notice";
 import { NO_PAUSE, PauseButton, PauseCover, endPause, pauseFromRun, playedMs, reportPause, startPause, useAutoPause, type Pause } from "@/components/pause";
+import { ShareStory } from "@/components/share-story";
 import { useMessages } from "@/lib/i18n/client";
 
 /** Hora actual (fuera del componente: solo se llama desde eventos y efectos). */
@@ -352,6 +353,7 @@ export function SudokuGame({
                         ? save.message
                         : null}
             </p>
+            {save?.status === "saved" && game.runId && <ShareStory runId={game.runId} game="sudoku" />}
           </div>
           {!daily && (
             <button type="button" onClick={() => void load(true)} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">

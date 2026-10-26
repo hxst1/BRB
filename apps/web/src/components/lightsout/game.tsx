@@ -7,6 +7,7 @@ import { startRun, type RunNotice } from "@/lib/start-run";
 import { GuestNotice } from "@/components/guest-notice";
 import { LightsBoard } from "./board";
 import { LightsOutTutorial, useTutorialDone } from "./tutorial";
+import { ShareStory } from "@/components/share-story";
 import { useMessages } from "@/lib/i18n/client";
 
 const BEST_KEY = "lightsout:best";
@@ -15,7 +16,7 @@ const LEVEL_UP_MS = 1200;
 
 type Save =
   | { status: "saving" }
-  | { status: "saved"; score: number }
+  | { status: "saved"; score: number; runId: string }
   | { status: "rejected" }
   | { status: "error"; message: string };
 
@@ -144,7 +145,7 @@ function Game({ viewerId, onSaved, daily = null, onReviewTutorial }: GameProps &
       .then(async (response) => {
         const body = await response.json().catch(() => ({}));
         if (response.ok) {
-          setSave({ status: "saved", score: body.score });
+          setSave({ status: "saved", score: body.score, runId: id });
           onSaved();
         } else if (response.status === 422) {
           setSave({ status: "rejected" });
@@ -286,6 +287,7 @@ function GameOver({
           <span className="tabular">{m.format.number(state.completed)}</span> {m.lightsOut.cleared(state.completed)}
         </p>
         {message && <p className="text-sm">{message}</p>}
+        {save?.status === "saved" && <ShareStory runId={save.runId} game="lights-out" />}
       </div>
       {onRestart && (
         <button type="button" onClick={onRestart} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">

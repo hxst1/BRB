@@ -7,6 +7,7 @@ import { startRun, type RunNotice } from "@/lib/start-run";
 import { createClient } from "@/lib/supabase/client";
 import { GuestNotice } from "@/components/guest-notice";
 import { NO_PAUSE, PauseButton, PauseCover, endPause, playedMs, reportPause, startPause, useAutoPause, type Pause } from "@/components/pause";
+import { ShareStory } from "@/components/share-story";
 import { useMessages } from "@/lib/i18n/client";
 
 /** Cuánto hay que mantener pulsado para poner una bandera en el móvil. */
@@ -17,7 +18,7 @@ const NUMBER_COLORS = ["", "var(--mark-o)", "var(--t512)", "var(--mark-x)", "var
 /** Hora actual (fuera del componente: solo se llama desde eventos y efectos). */
 const clock = () => Date.now();
 
-type Save = { status: "saving" } | { status: "saved"; time: number } | { status: "rejected" } | { status: "error"; message: string };
+type Save = { status: "saving" } | { status: "saved"; time: number; runId: string } | { status: "rejected" } | { status: "error"; message: string };
 
 /**
  * Con sesión, la partida empieza en el servidor al abrir la primera casilla
@@ -136,7 +137,7 @@ export function MinesweeperGame({
       .then(async (response) => {
         const body = await response.json().catch(() => ({}));
         if (response.ok) {
-          setSave({ status: "saved", time: body.score });
+          setSave({ status: "saved", time: body.score, runId: id });
           onSaved();
         } else if (response.status === 422) {
           setSave({ status: "rejected" });
@@ -281,6 +282,7 @@ export function MinesweeperGame({
                   ? m.minesweeper.minesShown
                   : m.minesweeper.minesShownDaily}
             </p>
+            {save?.status === "saved" && <ShareStory runId={save.runId} game="minesweeper" />}
           </div>
           {/* En el reto diario hay un solo intento. */}
           {daily === null && (

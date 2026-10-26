@@ -7,6 +7,7 @@ import { GAME_IDS, conflicts, encodeQueens, generate, isSolved, type Difficulty 
 import { createClient } from "@/lib/supabase/client";
 import { GuestNotice } from "@/components/guest-notice";
 import { NO_PAUSE, PauseButton, PauseCover, endPause, pauseFromRun, playedMs, reportPause, startPause, useAutoPause, type Pause } from "@/components/pause";
+import { ShareStory } from "@/components/share-story";
 import { useMessages } from "@/lib/i18n/client";
 import { Crown } from "./crown";
 
@@ -379,6 +380,7 @@ export function QueensGame({ viewerId, difficulty, onSaved }: { viewerId: string
                         ? save.message
                         : null}
             </p>
+            {save?.status === "saved" && game.runId && <ShareStory runId={game.runId} game="queens" />}
             {save?.status === "error" && save.retry && (
               <button type="button" onClick={() => submit(game)} className="self-start text-sm font-medium underline underline-offset-4">
                 {m.errors.retry}

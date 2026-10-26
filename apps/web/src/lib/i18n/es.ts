@@ -360,6 +360,16 @@ export const es = {
     emptyDaily: "Nadie ha jugado el reto de hoy todavía. La primera posición está libre.",
     empty: "Nadie ha puntuado todavía. La primera posición está libre.",
   },
+  story: {
+    record: "¡Mi récord!",
+    rank: (rank: number, players: number) => `${rank}.º de ${players} en el mundo`,
+    challenge: "¿Me superas?",
+    join: "Juega gratis en",
+    share: "Compartir en historias",
+    download: "Descargar imagen",
+    preparing: "Preparando la imagen…",
+    fileName: (game: string) => `partida-${game}.png`,
+  },
   pause: {
     pause: "Pausar",
     resume: "Seguir",
