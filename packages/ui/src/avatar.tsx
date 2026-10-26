@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { useId, type CSSProperties } from "react";
 import { renderMonsterSvg, resolveMonster, type Mood } from "@repo/avatars";
 import type { Json } from "@repo/db";
 
@@ -20,7 +20,9 @@ export function Avatar({
   /** Si se omite, el avatar es decorativo (el nombre suele ir al lado). */
   label?: string;
 }) {
-  const svg = renderMonsterSvg(resolveMonster(seed, parts), mood);
+  // Ids propios para los degradados del cuerpo (ver renderMonsterSvg): useId sin ":".
+  const id = `m${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
+  const svg = renderMonsterSvg(resolveMonster(seed, parts), mood, id);
   return (
     <span
       role={label ? "img" : undefined}

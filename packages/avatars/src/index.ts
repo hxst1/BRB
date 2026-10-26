@@ -452,7 +452,15 @@ export type Mood = "neutral" | "happy" | "sad";
  * SVG del monstruo. Solo interpola valores del catálogo (nunca texto del
  * usuario), así que es seguro insertarlo como HTML.
  */
-export function renderMonsterSvg(parts: MonsterParts, mood: Mood = "neutral"): string {
+export function renderMonsterSvg(parts: MonsterParts, mood: Mood = "neutral", idPrefix?: string): string {
+  const svg = drawMonster(parts, mood);
+  // Varios monsters en la misma página con el mismo degradado: el navegador usa
+  // el primer id que encuentra, y si ese SVG está oculto (display: none) el
+  // cuerpo no se pinta. Con un prefijo propio, cada uno usa el suyo.
+  return idPrefix ? svg.replaceAll('id="brb-', `id="${idPrefix}-`).replaceAll("url(#brb-", `url(#${idPrefix}-`) : svg;
+}
+
+function drawMonster(parts: MonsterParts, mood: Mood): string {
   const body: Body = BODIES[parts.body];
   const palette: Palette = PALETTES[parts.palette];
   const top: Top = TOPS[parts.top];
