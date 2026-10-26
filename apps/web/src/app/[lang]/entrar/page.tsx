@@ -29,12 +29,17 @@ export default function SignInPage({ searchParams }: PageProps<"/[lang]/entrar">
  * el formulario antes de que cargue el JavaScript, vuelve igualmente a donde estaba.
  */
 async function AuthFormForRequest({ searchParams }: { searchParams: PageProps<"/[lang]/entrar">["searchParams"] }) {
-  const { next, modo } = await searchParams;
+  const { next, modo, error } = await searchParams;
   const code = (await cookies()).get(INVITE_COOKIE)?.value ?? "";
   const [inviter, m] = await Promise.all([inviterName(code), getMessages()]);
   // /entrar?modo=registro abre directamente "Crear cuenta" (los botones de registro de la portada y los juegos).
   return (
     <>
+      {error === "enlace" && (
+        <p role="alert" className="mb-4 rounded-xl bg-surface p-3 text-sm text-danger shadow-soft">
+          {m.auth.linkUsed}
+        </p>
+      )}
       {inviter && (
         <p className="mb-4 rounded-2xl p-3 text-sm" style={{ background: "var(--cell)" }}>
           <InlinePicto name="wave" className="mr-1.5" />

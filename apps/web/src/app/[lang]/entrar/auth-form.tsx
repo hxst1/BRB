@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import { PasswordInput } from "@/components/password-input";
 import { useMessages } from "@/lib/i18n/client";
-import { authenticate, type AuthState } from "./actions";
+import { authenticate, resendConfirmation, type AuthState } from "./actions";
 
 const inputClass =
   "w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-base outline-none transition-colors focus:border-focus";
@@ -41,6 +41,10 @@ export function AuthForm({
           <strong className="text-ink">{state.confirmEmail}</strong>
           {t.confirmAfter}
         </p>
+        <form className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
+          {t.notArrived}
+          <ResendConfirmation email={state.confirmEmail} />
+        </form>
       </div>
     );
   }
@@ -154,6 +158,7 @@ export function AuthForm({
           {error}
         </p>
       )}
+      {error && state.unconfirmed && <ResendConfirmation email={state.unconfirmed} />}
 
       <button
         type="submit"
@@ -174,5 +179,41 @@ export function AuthForm({
         </button>
       </p>
     </form>
+  );
+}
+
+/**
+ * Pide otro email de confirmación. Es un botón del formulario que lo rodea
+ * (no puede haber un formulario dentro de otro), con su propia acción.
+ */
+function ResendConfirmation({ email }: { email: string }) {
+  const [state, action, pending] = useActionState(resendConfirmation, { sent: false, error: null });
+  const t = useMessages().auth;
+
+  if (state.sent) {
+    return (
+      <p role="status" className="text-sm text-muted">
+        {t.resent(email)}
+      </p>
+    );
+  }
+  return (
+    <>
+      <input type="hidden" name="resend_email" value={email} />
+      <button
+        type="submit"
+        formAction={action}
+        formNoValidate
+        disabled={pending}
+        className="self-start text-sm font-medium text-ink underline underline-offset-4 disabled:opacity-50"
+      >
+        {pending ? t.wait : t.resend}
+      </button>
+      {state.error && (
+        <p role="alert" className="text-sm text-danger">
+          {state.error}
+        </p>
+      )}
+    </>
   );
 }

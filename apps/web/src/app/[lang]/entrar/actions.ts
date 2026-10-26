@@ -16,6 +16,8 @@ export type AuthState = {
   mode: "signin" | "signup";
   /** Email al que se ha enviado la confirmación (cuando el proyecto la exige). */
   confirmEmail?: string;
+  /** Email de una cuenta que aún no está confirmada (al entrar): se le ofrece otro enlace. */
+  unconfirmed?: string;
   /** Lo que había escrito: React vacía el formulario al enviarlo y, si falla, se vuelve a rellenar. */
   fields?: { username: string; email: string; inviteCode: string; accept: boolean };
 };
@@ -106,12 +108,38 @@ async function attempt(_prev: AuthState, formData: FormData): Promise<AuthState>
     if (!data.session) return { mode, error: null, confirmEmail: email };
   } else {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error?.code === "email_not_confirmed") {
+      return { mode, error: t.notConfirmed, unconfirmed: email };
+    }
     if (error) {
       return { mode, error: error.code === "invalid_credentials" ? t.invalid : error.message };
     }
   }
 
   redirect(safeNext(formData.get("next")));
+}
+
+export type ResendState = { sent: boolean; error: string | null };
+
+/**
+ * Otro email de confirmación, para quien no abrió el primero a tiempo (el
+ * enlace caduca). Supabase solo lo envía si la cuenta existe y está sin confirmar.
+ */
+export async function resendConfirmation(_prev: ResendState, formData: FormData): Promise<ResendState> {
+  const t = messagesFor(await getRequestLocale()).auth;
+  const email = String(formData.get("resend_email") ?? "").trim();
+  if (!email) return { sent: false, error: t.needEmail };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email,
+    options: { emailRedirectTo: `${siteUrl()}/auth/callback` },
+  });
+  if (error) {
+    return { sent: false, error: error.code === "over_email_send_rate_limit" ? t.emailRateLimit : t.resendError };
+  }
+  return { sent: true, error: null };
 }
 
 /** Versiones de los términos y la privacidad que se aceptan al registrarse. */

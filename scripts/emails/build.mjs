@@ -101,11 +101,11 @@ const TEMPLATES = {
     note: t("Si no has creado ninguna cuenta, ignora este email: no pasará nada.", "If you didn't create an account, ignore this email: nothing will happen."),
   }),
   recovery: layout({
-    preheader: t("El enlace caduca en una hora.", "The link expires in an hour."),
+    preheader: t("El enlace caduca en 24 horas.", "The link expires in 24 hours."),
     title: t("Nueva contraseña", "New password"),
     intro: t(
-      "Alguien (esperamos que tú) ha pedido cambiar la contraseña de <strong style=\"color:#f1f2f5\">{{ .Email }}</strong>. Pulsa el botón para elegir una nueva. El enlace caduca en una hora y solo sirve una vez.",
-      "Someone (hopefully you) asked to change the password for <strong style=\"color:#f1f2f5\">{{ .Email }}</strong>. Tap the button to choose a new one. The link expires in an hour and only works once.",
+      "Alguien (esperamos que tú) ha pedido cambiar la contraseña de <strong style=\"color:#f1f2f5\">{{ .Email }}</strong>. Pulsa el botón para elegir una nueva. El enlace caduca en 24 horas y solo sirve una vez.",
+      "Someone (hopefully you) asked to change the password for <strong style=\"color:#f1f2f5\">{{ .Email }}</strong>. Tap the button to choose a new one. The link expires in 24 hours and only works once.",
     ),
     button: t("Elegir contraseña", "Choose a password"),
     url: link("recovery", "/entrar/nueva-contrasena"),

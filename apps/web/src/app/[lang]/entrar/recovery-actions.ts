@@ -45,8 +45,9 @@ export async function verifyEmailLink(formData: FormData): Promise<void> {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
     if (!error) redirect(safeNext(String(formData.get("next") ?? "/")));
   }
-  // Uno de confirmar la cuenta que ya no vale suele ser porque ya se usó: a entrar.
-  redirect(recovery ? "/entrar/recuperar?error=enlace" : "/entrar");
+  // Uno de confirmar la cuenta que ya no vale: ya se usó (y basta con entrar) o ha
+  // caducado (al entrar se le ofrece otro). /entrar explica las dos cosas.
+  redirect(recovery ? "/entrar/recuperar?error=enlace" : "/entrar?error=enlace");
 }
 
 export type NewPasswordState = { error: string | null };
