@@ -24,6 +24,7 @@ import {
 } from "@repo/games/solitaire";
 import { createClient } from "@/lib/supabase/client";
 import { GuestNotice } from "@/components/guest-notice";
+import { NO_PAUSE, PauseButton, PauseCover, endPause, pauseFromRun, playedMs, reportPause, startPause, useAutoPause, type Pause } from "@/components/pause";
 import { useMessages } from "@/lib/i18n/client";
 import { CardFace, Suit } from "./card";
 
@@ -37,7 +38,7 @@ type Save =
   | { status: "error"; message: string; retry: boolean };
 
 /** Lo que se guarda en el navegador para retomar la partida al volver. */
-type Stored = { runId: string | null; seed: number; startedAt: number; moves: string };
+type Stored = { runId: string | null; seed: number; startedAt: number; moves: string; pause?: Pause };
 
 const STORAGE_KEY = "solitaire";
 
@@ -74,8 +75,11 @@ async function prepare(signedIn: boolean): Promise<{ stored: Stored; notice: Run
   if (saved) {
     if (!saved.runId && !signedIn) return { stored: saved, notice: null };
     if (saved.runId && signedIn) {
-      const { data } = await createClient().from("game_runs").select("status, started_at").eq("id", saved.runId).maybeSingle();
-      if (data?.status === "playing") return { stored: { ...saved, startedAt: new Date(data.started_at).getTime() }, notice: null };
+      const { data } = await createClient().from("game_runs").select("status, started_at, paused_ms, paused_at").eq("id", saved.runId).maybeSingle();
+      if (data?.status === "playing") {
+        // El tiempo y las pausas, los del servidor.
+        return { stored: { ...saved, startedAt: new Date(data.started_at).getTime(), pause: pauseFromRun(data) }, notice: null };
+      }
     }
   }
   const fresh = (seed: number, runId: string | null): Stored => ({ runId, seed, startedAt: clock(), moves: "" });
@@ -183,6 +187,7 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
     return { state: current, moves: valid };
   }, [deal, game]);
   const won = state !== null && isWon(state);
+  const paused = (game?.pause?.since ?? null) !== null;
 
   useEffect(() => {
     let cancelled = false;
@@ -222,10 +227,10 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
 
   // Cronómetro de la pantalla (el oficial lo mide el servidor).
   useEffect(() => {
-    if (!game || won) return;
+    if (!game || won || paused) return;
     const timer = setInterval(() => setNow(clock()), 250);
     return () => clearInterval(timer);
-  }, [game, won]);
+  }, [game, won, paused]);
 
   const commit = useCallback((next: Stored) => {
     setGame(next);
@@ -283,23 +288,40 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
   /** Hace un movimiento si vale. */
   const play = useCallback(
     (move: Move): boolean => {
-      if (!game || !state || won) return false;
+      if (!game || !state || won || paused) return false;
       const next = applyMove(state, move);
       if (!next) return false;
       commit({ ...game, moves: encodeMoves([...moves, move]) });
       return true;
     },
-    [game, state, won, moves, commit],
+    [game, state, won, paused, moves, commit],
   );
+
+  const pauseGame = useCallback(() => {
+    if (!game || won || paused) return;
+    commit({ ...game, pause: startPause(game.pause ?? NO_PAUSE, clock()) });
+    reportPause(game.runId, true);
+  }, [game, won, paused, commit]);
+
+  const resumeGame = useCallback(() => {
+    if (!game || !paused) return;
+    const at = clock();
+    commit({ ...game, pause: endPause(game.pause ?? NO_PAUSE, at) });
+    setNow(at);
+    reportPause(game.runId, false);
+  }, [game, paused, commit]);
+
+  // Al cambiar de app o salir del juego, en pausa (se retoma al volver).
+  useAutoPause(pauseGame, { onLeave: true });
 
   // Todo destapado y sin mazo: las cartas suben solas a los montones finales.
   const finishing = useMemo(() => (state && !won ? finishingMoves(state) : null), [state, won]);
 
   const undo = useCallback(() => {
     // Mientras suben solas, no (el botón también está desactivado).
-    if (!game || won || finishing || moves.length === 0) return;
+    if (!game || won || paused || finishing || moves.length === 0) return;
     commit({ ...game, moves: encodeMoves(moves.slice(0, -1)) });
-  }, [game, won, finishing, moves, commit]);
+  }, [game, won, paused, finishing, moves, commit]);
 
   const refuse = useCallback((card: number) => {
     setRefused(card);
@@ -307,10 +329,10 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
   }, []);
 
   useEffect(() => {
-    if (!finishing?.length) return;
+    if (!finishing?.length || paused) return;
     const timer = setTimeout(() => play(finishing[0]!), FINISH_STEP_MS);
     return () => clearTimeout(timer);
-  }, [finishing, play]);
+  }, [finishing, paused, play]);
 
   // Teclado: espacio roba, Z deshace.
   useEffect(() => {
@@ -318,14 +340,16 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       const target = event.target as HTMLElement | null;
       if (target?.closest("input, textarea, select")) return;
-      if (event.key.toLowerCase() === "z") undo();
+      // En pausa, la primera tecla solo quita la pausa.
+      if (paused && (event.key.toLowerCase() === "z" || event.key === " ")) resumeGame();
+      else if (event.key.toLowerCase() === "z") undo();
       else if (event.key === " " && !target?.closest("button")) play({ draw: true });
       else return;
       event.preventDefault();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [undo, play]);
+  }, [undo, play, paused, resumeGame]);
 
   const g = width > 0 ? measure(width) : null;
   const places = useMemo(() => (state && g ? placeCards(state, g) : null), [state, g?.cardW]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -370,7 +394,7 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
 
   if (!game || !state) return <div className="aspect-[4/5] w-full max-w-[30rem] animate-pulse rounded-[18px] bg-line/40" />;
 
-  const elapsed = Math.max(0, now - game.startedAt);
+  const elapsed = playedMs(game.startedAt, paused ? game.pause!.since! : now, game.pause ?? NO_PAUSE);
   /** Cartas que se arrastran: la cogida y las que lleva encima. */
   const dragging = new Set<number>();
   if (drag?.moved && places) {
@@ -397,6 +421,8 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
             <span className="tabular display text-4xl font-bold">{moves.length}</span>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+        {!won && <PauseButton paused={paused} onToggle={paused ? resumeGame : pauseGame} />}
         {confirmingNew ? (
           <span className="flex items-center gap-3 text-sm">
             {t.abandon}
@@ -416,10 +442,12 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
             {t.newGame}
           </button>
         )}
+        </div>
       </div>
 
       {/* isolate: el z-index de las cartas solo cuenta dentro del tablero (si no, tapan los diálogos). */}
       <div ref={board} className="solitaire relative isolate w-full select-none" style={{ height: g && places ? tableHeight(places, g) : 0 }}>
+        {paused && <PauseCover onResume={resumeGame} />}
         {g && places && (
           <>
             {/* Huecos: mazo, montones finales y columnas. */}

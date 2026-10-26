@@ -6,6 +6,7 @@ import { randomSeed } from "@repo/games";
 import { GAME_IDS, PEERS, box, col, conflicts, encodeGrid, generate, isSolved, row, type Difficulty } from "@repo/games/sudoku";
 import { createClient } from "@/lib/supabase/client";
 import { GuestNotice } from "@/components/guest-notice";
+import { NO_PAUSE, PauseButton, PauseCover, endPause, pauseFromRun, playedMs, reportPause, startPause, useAutoPause, type Pause } from "@/components/pause";
 import { useMessages } from "@/lib/i18n/client";
 
 /** Hora actual (fuera del componente: solo se llama desde eventos y efectos). */
@@ -14,7 +15,7 @@ const clock = () => Date.now();
 type Save = { status: "saving" } | { status: "saved"; time: number } | { status: "rejected" } | { status: "error"; message: string };
 
 /** Lo que se guarda en el navegador para retomar la partida al volver. */
-type Stored = { runId: string | null; seed: number; startedAt: number; values: number[]; notes: number[] };
+type Stored = { runId: string | null; seed: number; startedAt: number; values: number[]; notes: number[]; pause?: Pause };
 
 /** Clave del progreso guardado: una por dificultad, y una por día para el reto diario. */
 const storageKey = (difficulty: Difficulty, daily: string | null) => (daily ? `sudoku:daily:${daily}` : `sudoku:${difficulty}`);
@@ -51,8 +52,11 @@ async function prepare(difficulty: Difficulty, signedIn: boolean, daily: string 
   if (saved) {
     if (!saved.runId && !signedIn) return { stored: saved, notice: null };
     if (saved.runId && signedIn) {
-      const { data } = await createClient().from("game_runs").select("status, started_at").eq("id", saved.runId).maybeSingle();
-      if (data?.status === "playing") return { stored: { ...saved, startedAt: new Date(data.started_at).getTime() }, notice: null };
+      const { data } = await createClient().from("game_runs").select("status, started_at, paused_ms, paused_at").eq("id", saved.runId).maybeSingle();
+      if (data?.status === "playing") {
+        // El tiempo y las pausas, los del servidor.
+        return { stored: { ...saved, startedAt: new Date(data.started_at).getTime(), pause: pauseFromRun(data) }, notice: null };
+      }
     }
   }
 
@@ -97,6 +101,7 @@ export function SudokuGame({
   // El sudoku sale de la semilla: se genera una vez por partida.
   const puzzle = useMemo(() => (seed === undefined ? null : generate(difficulty, seed)), [difficulty, seed]);
   const solved = game !== null && puzzle !== null && isSolved(game.values, puzzle.solution);
+  const paused = (game?.pause?.since ?? null) !== null;
   const bad = useMemo(() => (game ? conflicts(game.values) : new Set<number>()), [game]);
 
   const load = useCallback(
@@ -134,10 +139,10 @@ export function SudokuGame({
 
   // Cronómetro de la pantalla (el oficial lo mide el servidor).
   useEffect(() => {
-    if (!game || solved) return;
+    if (!game || solved || paused) return;
     const timer = setInterval(() => setNow(clock()), 250);
     return () => clearInterval(timer);
-  }, [game, solved]);
+  }, [game, solved, paused]);
 
   const update = useCallback(
     (next: Stored) => {
@@ -171,9 +176,27 @@ export function SudokuGame({
     [difficulty, daily, puzzle, onSaved, m],
   );
 
-  /** Escribe (o quita, con 0) un número en la casilla seleccionada. */
+  const pauseGame = useCallback(() => {
+    if (!game || solved || paused) return;
+    update({ ...game, pause: startPause(game.pause ?? NO_PAUSE, clock()) });
+    reportPause(game.runId, true);
+  }, [game, solved, paused, update]);
+
+  const resumeGame = useCallback(() => {
+    if (!game || !paused) return;
+    const at = clock();
+    update({ ...game, pause: endPause(game.pause ?? NO_PAUSE, at) });
+    setNow(at);
+    reportPause(game.runId, false);
+  }, [game, paused, update]);
+
+  // Al cambiar de app o salir del juego, en pausa (se retoma al volver).
+  useAutoPause(pauseGame, { onLeave: true });
+
+  /** Escribe (o quita, con 0) un número en la casilla seleccionada. En pausa, solo quita la pausa. */
   const input = useCallback(
     (digit: number) => {
+      if (paused) return resumeGame();
       if (!game || !puzzle || selected === null || solved || puzzle.puzzle[selected] !== 0) return;
       const values = [...game.values];
       const notes = [...game.notes];
@@ -189,16 +212,17 @@ export function SudokuGame({
       setHistory((past) => [...past.slice(-49), { values: game.values, notes: game.notes }]);
       update({ ...game, values, notes });
     },
-    [game, puzzle, selected, solved, notesMode, update],
+    [game, puzzle, selected, solved, paused, notesMode, update, resumeGame],
   );
 
   /** Deshace el último cambio (número o nota). */
   const undo = useCallback(() => {
     const previous = history.at(-1);
+    if (paused) return resumeGame();
     if (!game || !previous || solved) return;
     setHistory((past) => past.slice(0, -1));
     update({ ...game, values: previous.values, notes: previous.notes });
-  }, [game, history, solved, update]);
+  }, [game, history, solved, paused, update, resumeGame]);
 
   // Teclado: números, borrar, flechas y N para las notas.
   useEffect(() => {
@@ -229,7 +253,7 @@ export function SudokuGame({
   const selectedDigit = (selected !== null ? game.values[selected] : 0) || focusDigit;
   const remaining = (digit: number) => 9 - game.values.filter((value) => value === digit).length;
   const filledByPlayer = game.values.some((value, i) => value !== 0 && puzzle.puzzle[i] === 0);
-  const elapsed = Math.max(0, now - game.startedAt);
+  const elapsed = playedMs(game.startedAt, paused ? game.pause!.since! : now, game.pause ?? NO_PAUSE);
 
   return (
     <section className="flex w-full max-w-[30rem] flex-col gap-4">
@@ -238,6 +262,8 @@ export function SudokuGame({
           <span className="text-xs text-muted">{m.minesweeper.time}</span>
           <span className="tabular display text-4xl font-bold">{m.format.time(elapsed)}</span>
         </div>
+        <div className="flex items-center gap-2">
+        {!solved && <PauseButton paused={paused} onToggle={paused ? resumeGame : pauseGame} />}
         {daily ? null : confirmingNew ? (
           <span className="flex items-center gap-3 text-sm">
             {m.sudoku.abandon}
@@ -257,9 +283,12 @@ export function SudokuGame({
             {m.sudoku.newSudoku}
           </button>
         )}
+        </div>
       </div>
 
       {/* 3 × 3 cajas, cada una con su cuadrícula: así se separan sin desbordar. */}
+      <div className="relative isolate">
+      {paused && <PauseCover onResume={resumeGame} />}
       <div role="grid" aria-label="Sudoku" className="sudoku-grid">
         {BOX_CELLS.map((_, b) => (
           <div key={b} className="sudoku-box">
@@ -303,6 +332,7 @@ export function SudokuGame({
             })}
           </div>
         ))}
+      </div>
       </div>
 
       {solved ? (

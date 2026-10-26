@@ -359,6 +359,12 @@ export const es = {
     emptyDaily: "Nadie ha jugado el reto de hoy todavía. La primera posición está libre.",
     empty: "Nadie ha puntuado todavía. La primera posición está libre.",
   },
+  pause: {
+    pause: "Pausar",
+    resume: "Seguir",
+    paused: "En pausa",
+    tapToResume: "Toca para seguir. El tiempo está parado.",
+  },
   run: {
     dayChanged: "El reto ha cambiado: ya es otro día. Recarga la página para jugar el de hoy.",
     alreadyPlayedDaily: "Ya has jugado el reto de hoy. Esta partida no contará.",

@@ -356,6 +356,12 @@ export const en: Messages = {
     emptyDaily: "Nobody has played today's challenge yet. First place is up for grabs.",
     empty: "Nobody has scored yet. First place is up for grabs.",
   },
+  pause: {
+    pause: "Pause",
+    resume: "Resume",
+    paused: "Paused",
+    tapToResume: "Tap to carry on. The clock is stopped.",
+  },
   run: {
     dayChanged: "The challenge has changed: it's a new day. Reload the page to play today's.",
     alreadyPlayedDaily: "You've already played today's challenge. This game won't count.",

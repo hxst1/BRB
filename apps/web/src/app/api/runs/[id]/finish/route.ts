@@ -80,7 +80,7 @@ export async function POST(request: Request, { params }: RouteContext<"/api/runs
   // Con el cliente del usuario: RLS garantiza que la partida es suya.
   const { data: run, error: runError } = await supabase
     .from("game_runs")
-    .select("id, game, seed, status, started_at")
+    .select("id, game, seed, status, started_at, paused_ms, paused_at")
     .eq("id", id)
     .maybeSingle();
 
@@ -95,7 +95,10 @@ export async function POST(request: Request, { params }: RouteContext<"/api/runs
     return alreadyClosed();
   }
 
-  const elapsedMs = Date.now() - new Date(run.started_at).getTime();
+  // Tiempo de juego: lo transcurrido menos las pausas (también la que siga abierta).
+  const now = Date.now();
+  const pausedMs = run.paused_ms + (run.paused_at ? now - new Date(run.paused_at).getTime() : 0);
+  const elapsedMs = now - new Date(run.started_at).getTime() - pausedMs;
   const result = verify(run.game, run.seed, moves, elapsedMs);
   if (!result) {
     return apiJson({ error: "Juego desconocido" }, { status: 404 });

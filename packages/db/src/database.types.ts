@@ -155,14 +155,14 @@ isOneToOne: false
                   ]
                 },"game_runs": {
                   Row: {
-                    "daily": string | null,"finished_at": string | null,"game": string,"id": string,"max_tile": number | null,"moves": string | null,"rejection_reason": string | null,"score": number | null,"seed": number,"started_at": string,"status": string,"user_id": string
+                    "daily": string | null,"finished_at": string | null,"game": string,"id": string,"max_tile": number | null,"moves": string | null,"paused_at": string | null,"paused_ms": number,"rejection_reason": string | null,"score": number | null,"seed": number,"started_at": string,"status": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "daily"?: string | null,"finished_at"?: string | null,"game": string,"id"?: string,"max_tile"?: number | null,"moves"?: string | null,"rejection_reason"?: string | null,"score"?: number | null,"seed": number,"started_at"?: string,"status"?: string,"user_id": string
+                    "daily"?: string | null,"finished_at"?: string | null,"game": string,"id"?: string,"max_tile"?: number | null,"moves"?: string | null,"paused_at"?: string | null,"paused_ms"?: number,"rejection_reason"?: string | null,"score"?: number | null,"seed": number,"started_at"?: string,"status"?: string,"user_id": string
                   }
                   Update: {
-                    "daily"?: string | null,"finished_at"?: string | null,"game"?: string,"id"?: string,"max_tile"?: number | null,"moves"?: string | null,"rejection_reason"?: string | null,"score"?: number | null,"seed"?: number,"started_at"?: string,"status"?: string,"user_id"?: string
+                    "daily"?: string | null,"finished_at"?: string | null,"game"?: string,"id"?: string,"max_tile"?: number | null,"moves"?: string | null,"paused_at"?: string | null,"paused_ms"?: number,"rejection_reason"?: string | null,"score"?: number | null,"seed"?: number,"started_at"?: string,"status"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -719,6 +719,9 @@ isOneToOne: false
 "mark_conversation_read":
 { Args: { "friend": string }; Returns: undefined
                            },
+"pause_run":
+{ Args: { "run_id": string }; Returns: undefined
+                           },
 "record_github_contribution":
 { Args: { "github_login": string,"kind": string,"url": string,"user_id": string }; Returns: boolean
                            },
@@ -748,6 +751,9 @@ isOneToOne: false
                            },
 "respond_match":
 { Args: { "accept": boolean,"match_id": string }; Returns: undefined
+                           },
+"resume_run":
+{ Args: { "run_id": string }; Returns: undefined
                            },
 "save_push_subscription":
 { Args: { "auth": string,"endpoint": string,"p256dh": string }; Returns: undefined

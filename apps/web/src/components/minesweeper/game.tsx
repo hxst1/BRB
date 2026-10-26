@@ -6,6 +6,7 @@ import { DIFFICULTIES, GAME_IDS, chord, encodeOpened, newGame, reveal, type Diff
 import { startRun, type RunNotice } from "@/lib/start-run";
 import { createClient } from "@/lib/supabase/client";
 import { GuestNotice } from "@/components/guest-notice";
+import { NO_PAUSE, PauseButton, PauseCover, endPause, playedMs, reportPause, startPause, useAutoPause, type Pause } from "@/components/pause";
 import { useMessages } from "@/lib/i18n/client";
 
 /** Cuánto hay que mantener pulsado para poner una bandera en el móvil. */
@@ -46,11 +47,13 @@ export function MinesweeperGame({
   const [save, setSave] = useState<Save | null>(null);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [now, setNow] = useState(0);
+  const [pause, setPause] = useState<Pause>(NO_PAUSE);
   const runId = useRef<string | null>(null);
   const longPress = useRef<{ timer: ReturnType<typeof setTimeout>; fired: boolean } | null>(null);
 
   const status = state?.status ?? "playing";
   const playing = state !== null && status === "playing";
+  const paused = pause.since !== null;
 
   function restart() {
     runId.current = null;
@@ -59,14 +62,32 @@ export function MinesweeperGame({
     setNotice(null);
     setSave(null);
     setStartedAt(null);
+    setPause(NO_PAUSE);
   }
 
   // Cronómetro de la pantalla (el oficial lo mide el servidor).
   useEffect(() => {
-    if (!playing || startedAt === null) return;
+    if (!playing || startedAt === null || paused) return;
     const timer = setInterval(() => setNow(clock()), 100);
     return () => clearInterval(timer);
-  }, [playing, startedAt]);
+  }, [playing, startedAt, paused]);
+
+  function pauseGame() {
+    if (!playing || startedAt === null || paused) return;
+    setPause(startPause(pause, clock()));
+    reportPause(runId.current, true);
+  }
+
+  function resumeGame() {
+    if (!paused) return;
+    const at = clock();
+    setPause(endPause(pause, at));
+    setNow(at);
+    reportPause(runId.current, false);
+  }
+
+  // Al cambiar de app o de pestaña, en pausa.
+  useAutoPause(pauseGame);
 
   /** Primera casilla: pide la partida al servidor y coloca las minas. */
   async function firstOpen(cell: number) {
@@ -85,6 +106,7 @@ export function MinesweeperGame({
     const startedNow = clock();
     setStartedAt(startedNow);
     setNow(startedNow);
+    setPause(NO_PAUSE);
     finishIfOver(reveal(newGame(difficulty, seed), cell));
   }
 
@@ -136,6 +158,7 @@ export function MinesweeperGame({
   }
 
   function open(cell: number) {
+    if (paused) return resumeGame();
     if (starting || status !== "playing") return;
     if (state === null) {
       if (!flagMode) void firstOpen(cell);
@@ -171,7 +194,7 @@ export function MinesweeperGame({
   }
 
   // Al terminar, el cronómetro deja de actualizarse y se queda en el último valor.
-  const elapsed = startedAt === null ? 0 : now - startedAt;
+  const elapsed = startedAt === null ? 0 : playedMs(startedAt, pause.since ?? now, pause);
   const showMines = status === "lost";
 
   return (
@@ -181,6 +204,8 @@ export function MinesweeperGame({
           <Stat label={m.minesweeper.mines} value={String(mines - flags.size)} />
           <Stat label={m.minesweeper.time} value={m.format.time(Math.max(0, elapsed))} />
         </div>
+        <div className="flex items-center gap-2">
+        {playing && startedAt !== null && <PauseButton paused={paused} onToggle={paused ? resumeGame : pauseGame} />}
         <button
           type="button"
           aria-pressed={flagMode}
@@ -191,8 +216,11 @@ export function MinesweeperGame({
         >
           <FlagIcon /> {flagMode ? m.minesweeper.flagging : m.minesweeper.flagMode}
         </button>
+        </div>
       </div>
 
+      <div className="relative isolate">
+      {paused && <PauseCover onResume={resumeGame} />}
       <div
         role="grid"
         aria-label={m.minesweeper.boardAria(columns, rows, mines)}
@@ -229,6 +257,7 @@ export function MinesweeperGame({
             </button>
           );
         })}
+      </div>
       </div>
 
       {status !== "playing" && state && (
