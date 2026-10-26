@@ -383,6 +383,11 @@ export const es = {
     download: "Descargar",
     fileName: (game: string) => `partida-${game}.png`,
   },
+  modes: {
+    label: "Modo de juego",
+    game: "Partida",
+    practice: "Práctica",
+  },
   sound: {
     title: "Sonidos",
     hint: "Sonidos cortos y suaves en los juegos: al mover, al ganar, cuando te toca…",
@@ -446,6 +451,13 @@ export const es = {
     summary: (score: string, apples: number) => `${score} puntos, ${apples === 1 ? "1 manzana" : `${apples} manzanas`}`,
   },
   lightsOut: {
+    practice: {
+      hint: "Práctica: pulsaciones sin límite y el nivel que quieras. No cuenta para el ranking.",
+      easier: "Nivel anterior",
+      harder: "Nivel siguiente",
+      restart: "Reiniciar",
+      newBoard: "Otro tablero",
+    },
     tutorial: {
       step: (n: number, total: number) => `Tutorial · ${n} de ${total}`,
       ready: "Tutorial completado",

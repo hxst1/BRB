@@ -69,6 +69,11 @@ async function prepareGame(signedIn: boolean, challengeId: string | null, daily:
   };
 }
 
+/** Partida de práctica: en local, sin pedirla al servidor. */
+function localGame(): PreparedGame {
+  return { game: newGame(randomSeed()), runId: null, notice: null, special: false };
+}
+
 function readBest(): number {
   try {
     return Number(localStorage.getItem(BEST_KEY)) || 0;
@@ -91,6 +96,7 @@ export function Game2048({
   daily = false,
   onSaved,
   onExit,
+  practice = false,
 }: {
   viewerId: string | null;
   /** Reto que se está jugando (llega por ?reto=), o null para una partida normal. */
@@ -100,6 +106,8 @@ export function Game2048({
   onSaved: () => void;
   /** Salir de un reto (de un amigo o el diario) a una partida normal. */
   onExit: () => void;
+  /** Modo práctica: en local, con deshacer y sin contar para el ranking ni para tu récord. */
+  practice?: boolean;
 }) {
   const m = useMessages();
   const signedIn = viewerId !== null;
@@ -126,7 +134,10 @@ export function Game2048({
     setState(next.game);
   }, []);
 
-  const start = useCallback(async () => apply(await prepareGame(signedIn, null, false)), [apply, signedIn]);
+  const start = useCallback(
+    async () => apply(practice ? localGame() : await prepareGame(signedIn, null, false)),
+    [apply, signedIn, practice],
+  );
 
   // En desarrollo React monta los efectos dos veces. Si cada montaje pidiera su
   // propia partida, el servidor podría atenderlas en otro orden y quedarnos con
@@ -134,9 +145,9 @@ export function Game2048({
   const initialGame = useRef<{ key: string; promise: Promise<PreparedGame> } | null>(null);
 
   useEffect(() => {
-    const key = `${signedIn}:${challengeId}:${daily}`;
+    const key = `${signedIn}:${challengeId}:${daily}:${practice}`;
     if (initialGame.current?.key !== key) {
-      initialGame.current = { key, promise: prepareGame(signedIn, challengeId, daily) };
+      initialGame.current = { key, promise: practice ? Promise.resolve(localGame()) : prepareGame(signedIn, challengeId, daily) };
     }
     let cancelled = false;
     initialGame.current.promise.then((next) => {
@@ -145,7 +156,7 @@ export function Game2048({
     return () => {
       cancelled = true;
     };
-  }, [apply, signedIn, challengeId, daily]);
+  }, [apply, signedIn, challengeId, daily, practice]);
 
   /** Salir de un reto lleva a una partida normal (la página se vuelve a montar sin el reto). */
   const restart = useCallback(() => {
@@ -165,6 +176,29 @@ export function Game2048({
     if (merged > 0) playSound("pop", { pitch: 0.85 + Math.min(Math.log2(merged), 11) * 0.03, volume: 0.8 });
   }, [state]);
 
+  // Práctica: cada movimiento guarda el tablero de antes, para deshacer (también tras perder).
+  const [history, setHistory] = useState<Game2048State[]>([]);
+  const previous = useRef<Game2048State | null>(null);
+  const undoing = useRef(false);
+  useEffect(() => {
+    const before = previous.current;
+    previous.current = state;
+    if (undoing.current) {
+      undoing.current = false;
+      return;
+    }
+    if (!practice || !before || !state) return;
+    if (state.seed !== before.seed) setHistory([]);
+    else if (state.moves.length > before.moves.length) setHistory((past) => [...past.slice(-199), before]);
+  }, [state, practice]);
+  const undo = useCallback(() => {
+    const last = history.at(-1);
+    if (!practice || !last) return;
+    undoing.current = true;
+    setHistory((past) => past.slice(0, -1));
+    setState(last);
+  }, [history, practice]);
+
   const play = useCallback((direction: Direction) => {
     setState((current) => (current && !current.over ? move(current, direction) : current));
   }, []);
@@ -174,6 +208,10 @@ export function Game2048({
     function onKey(event: KeyboardEvent) {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
       if (event.target instanceof Element && event.target.closest("input, textarea, select")) return;
+      if (practice && event.key.toLowerCase() === "z") {
+        event.preventDefault();
+        return undo();
+      }
       const direction = KEYS[event.key.length === 1 ? event.key.toLowerCase() : event.key];
       if (!direction) return;
       event.preventDefault();
@@ -181,7 +219,7 @@ export function Game2048({
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [play]);
+  }, [play, practice, undo]);
 
   // Deslizar con el dedo o arrastrando con el ratón
   const swipeOrigin = useRef<{ x: number; y: number } | null>(null);
@@ -211,7 +249,8 @@ export function Game2048({
   }, [play]);
 
   // Récord local (por dispositivo; el oficial es el del ranking)
-  const best = Math.max(storedBest, state?.score ?? 0);
+  // En práctica (con deshacer) no se bate el récord.
+  const best = practice ? storedBest : Math.max(storedBest, state?.score ?? 0);
   useEffect(() => {
     if (best > storedBest) writeBest(best);
   }, [best, storedBest]);
@@ -276,7 +315,8 @@ export function Game2048({
       <div className="flex items-end justify-between gap-4">
         <div className="flex gap-6">
           <Stat label={m.run.points} value={state?.score ?? 0} />
-          {challengeLive ? <Stat label={m.game2048.target} value={challenge.targetScore} /> : <Stat label={m.run.yourRecord} value={best} />}
+          {/* En práctica no hay récord que batir: así caben "Deshacer" y "Nueva partida". */}
+          {challengeLive ? <Stat label={m.game2048.target} value={challenge.targetScore} /> : !practice && <Stat label={m.run.yourRecord} value={best} />}
         </div>
         {confirmingExit ? (
           <span className="flex items-center gap-3 text-sm">
@@ -289,13 +329,25 @@ export function Game2048({
             </button>
           </span>
         ) : (
-          <button
-            type="button"
-            onClick={() => (midAttempt ? setConfirmingExit(true) : restart())}
-            className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium shadow-soft transition-colors hover:border-muted"
-          >
-            {m.run.newGame}
-          </button>
+          <div className="flex items-center gap-2">
+            {practice && (
+              <button
+                type="button"
+                onClick={undo}
+                disabled={history.length === 0}
+                className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium shadow-soft transition-colors hover:border-muted disabled:opacity-40"
+              >
+                {m.sudoku.undo}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => (midAttempt ? setConfirmingExit(true) : restart())}
+              className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-medium shadow-soft transition-colors hover:border-muted"
+            >
+              {m.run.newGame}
+            </button>
+          </div>
         )}
       </div>
 

@@ -379,6 +379,11 @@ export const en: Messages = {
     download: "Download",
     fileName: (game: string) => `game-${game}.png`,
   },
+  modes: {
+    label: "Game mode",
+    game: "Ranked",
+    practice: "Practice",
+  },
   sound: {
     title: "Sounds",
     hint: "Short, soft sounds in the games: when you move, win, when it's your turn…",
@@ -442,6 +447,13 @@ export const en: Messages = {
     summary: (score: string, apples: number) => `${score} points, ${apples === 1 ? "1 apple" : `${apples} apples`}`,
   },
   lightsOut: {
+    practice: {
+      hint: "Practice: unlimited presses and any level you like. It doesn't count for the ranking.",
+      easier: "Previous level",
+      harder: "Next level",
+      restart: "Restart",
+      newBoard: "New board",
+    },
     tutorial: {
       step: (n: number, total: number) => `Tutorial · ${n} of ${total}`,
       ready: "Tutorial complete",

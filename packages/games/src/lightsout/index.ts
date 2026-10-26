@@ -87,8 +87,9 @@ function startLevel(state: Omit<LightsOutState, "size" | "lights" | "pressesLeft
   return { ...state, rng, lights, size: sizeForLevel(state.level), pressesLeft: budgetForLevel(state.level) };
 }
 
-export function newGame(seed: number): LightsOutState {
-  return startLevel({ seed, rng: createRng(seed), level: 1, completed: 0, presses: "", over: false });
+/** Partida nueva. `level` solo para el modo práctica: las que cuentan empiezan siempre en el 1. */
+export function newGame(seed: number, level = 1): LightsOutState {
+  return startLevel({ seed, rng: createRng(seed), level, completed: 0, presses: "", over: false });
 }
 
 const ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
