@@ -153,6 +153,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"game_launches": {
+                  Row: {
+                    "announced_at": string,"game": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "announced_at"?: string,"game": string
+                  }
+                  Update: {
+                    "announced_at"?: string,"game"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"game_runs": {
                   Row: {
                     "daily": string | null,"finished_at": string | null,"game": string,"id": string,"max_tile": number | null,"moves": string | null,"paused_at": string | null,"paused_ms": number,"rejection_reason": string | null,"score": number | null,"seed": number,"started_at": string,"status": string,"user_id": string

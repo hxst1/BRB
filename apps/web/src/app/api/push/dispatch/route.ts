@@ -5,6 +5,8 @@ import type { Tables } from "@repo/db";
 import { matchGame, matchGameKey, matchHref } from "@/lib/games";
 import type { Messages } from "@/lib/i18n";
 import { sendPush, type PushMessage } from "@/lib/push";
+import { launchMessage, launchesFor, pendingLaunches, type Launch } from "@/lib/launches";
+import { GAME_GUIDES } from "@/lib/seo";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
@@ -17,7 +19,8 @@ type Change =
   | { table: "messages"; type: "INSERT"; record: Tables<"messages"> }
   | { table: "friendships"; type: "INSERT"; record: Tables<"friendships"> }
   | { table: "matches"; type: "UPDATE"; record: Tables<"matches">; old_record: Tables<"matches"> }
-  | { table: "streaks"; type: "REMINDER"; records: { user_id: string; streak_days: number }[] };
+  | { table: "streaks"; type: "REMINDER"; records: { user_id: string; streak_days: number }[] }
+  | { table: "launches"; type: "CHECK" };
 
 /** `message` redacta el aviso con los textos del idioma de quien lo recibe. */
 type Notification = { userId: string; message: (m: Messages) => PushMessage };
@@ -42,7 +45,54 @@ function truncate(text: string, max = 120): string {
   return text.length > max ? `${text.slice(0, max - 1)}…` : text;
 }
 
+/**
+ * Juegos nuevos (pg_cron cada hora, ver la migración game_launch_push): se
+ * apuntan en game_launches antes de enviar, así que ninguno sale dos veces
+ * aunque se solapen dos llamadas.
+ */
+async function launchNotifications(): Promise<Notification[]> {
+  const admin = createAdminClient();
+  const { data: announced } = await admin.from("game_launches").select("game");
+  const games: Launch[] = GAME_GUIDES.map((game) => ({ id: game.id, path: game.path, addedAt: Date.parse(game.addedAt) }));
+  const pending = pendingLaunches(games, new Set((announced ?? []).map((row) => row.game)), Date.now());
+  if (pending.length === 0) return [];
+
+  const { data: claimed } = await admin
+    .from("game_launches")
+    .upsert(
+      pending.map((game) => ({ game: game.id })),
+      { onConflict: "game", ignoreDuplicates: true },
+    )
+    .select("game");
+  const launches = pending.filter((game) => (claimed ?? []).some((row) => row.game === game.id));
+  if (launches.length === 0) return [];
+
+  const { data: subscriptions } = await admin.from("push_subscriptions").select("user_id");
+  const userIds = [...new Set((subscriptions ?? []).map((row) => row.user_id))];
+  if (userIds.length === 0) return [];
+  const [{ data: profiles }, { data: seen }] = await Promise.all([
+    admin.from("profiles").select("id, created_at").in("id", userIds),
+    admin
+      .from("seen_announcements")
+      .select("user_id, announcement")
+      .in("user_id", userIds)
+      .in(
+        "announcement",
+        launches.map((game) => game.id),
+      ),
+  ]);
+
+  return (profiles ?? []).flatMap((profile) => {
+    const mine = launchesFor(launches, {
+      createdAt: Date.parse(profile.created_at),
+      seen: new Set((seen ?? []).filter((row) => row.user_id === profile.id).map((row) => row.announcement)),
+    });
+    return mine.length > 0 ? [{ userId: profile.id, message: (m: Messages) => launchMessage(m, mine) }] : [];
+  });
+}
+
 async function notificationsFor(change: Change): Promise<Notification[]> {
+  if (change.table === "launches") return launchNotifications();
   if (change.table === "streaks") {
     return change.records.map((r) => ({
       userId: r.user_id,
@@ -196,7 +246,7 @@ export async function POST(request: Request) {
   if (!authorized(request)) return Response.json({ error: "No autorizado" }, { status: 401 });
 
   const change = (await request.json().catch(() => null)) as Change | null;
-  if (!change || !["messages", "friendships", "matches", "streaks"].includes(change.table)) {
+  if (!change || !["messages", "friendships", "matches", "streaks", "launches"].includes(change.table)) {
     return Response.json({ error: "Evento no válido" }, { status: 400 });
   }
 

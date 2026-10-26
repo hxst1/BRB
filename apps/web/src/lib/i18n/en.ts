@@ -1005,6 +1005,10 @@ export const en: Messages = {
     },
   },
   push: {
+    newGame: (name: string) => `New game: ${name}`,
+    newGameBody: (tagline: string) => `${tagline}. Try it now.`,
+    newGames: (names: string[]) => `New games: ${names.slice(0, -1).join(", ")} and ${names.at(-1)}`,
+    newGamesBody: "They're ready to play. Come and try them.",
     checkmated: (name: string) => `${name} checkmated you. Rematch?`,
     someone: "Someone",
     rival: "Your opponent",
