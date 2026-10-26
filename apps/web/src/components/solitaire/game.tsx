@@ -418,7 +418,8 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
         )}
       </div>
 
-      <div ref={board} className="solitaire relative w-full select-none" style={{ height: g && places ? tableHeight(places, g) : 0 }}>
+      {/* isolate: el z-index de las cartas solo cuenta dentro del tablero (si no, tapan los diálogos). */}
+      <div ref={board} className="solitaire relative isolate w-full select-none" style={{ height: g && places ? tableHeight(places, g) : 0 }}>
         {g && places && (
           <>
             {/* Huecos: mazo, montones finales y columnas. */}
