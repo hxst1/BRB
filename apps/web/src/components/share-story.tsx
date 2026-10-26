@@ -55,13 +55,14 @@ export function ShareStory({ runId, game }: { runId: string; game: string }) {
       type="button"
       onClick={share}
       disabled={!file}
-      className="mt-1 inline-flex items-center gap-2 self-start rounded-full border border-line bg-surface px-3.5 py-1.5 text-sm font-medium transition-colors hover:border-muted disabled:opacity-60"
+      // Como el botón secundario de los paneles de fin de partida ("Retar a un amigo").
+      className="inline-flex items-center justify-center gap-2 rounded-full border border-line bg-surface px-5 py-2.5 font-semibold transition-colors hover:border-muted disabled:opacity-60"
     >
       <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
-        <rect x="5" y="2.5" width="14" height="19" rx="4" fill="none" stroke="currentColor" strokeWidth="2" />
-        <circle cx="12" cy="11" r="3.2" fill="none" stroke="currentColor" strokeWidth="2" />
+        <path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      {!file ? m.story.preparing : canShare ? m.story.share : m.story.download}
+      {/* Mientras se prepara la imagen, el mismo texto (desactivado): sin saltos. */}
+      {file && !canShare ? m.story.download : m.story.share}
     </button>
   );
 }

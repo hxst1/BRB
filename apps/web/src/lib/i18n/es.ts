@@ -379,9 +379,8 @@ export const es = {
     rank: (rank: number, players: number) => `${rank}.º de ${players} en el mundo`,
     challenge: "¿Me superas?",
     join: "Juega gratis en",
-    share: "Compartir en historias",
-    download: "Descargar imagen",
-    preparing: "Preparando la imagen…",
+    share: "Compartir",
+    download: "Descargar",
     fileName: (game: string) => `partida-${game}.png`,
   },
   pause: {

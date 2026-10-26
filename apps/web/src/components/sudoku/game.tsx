@@ -353,13 +353,16 @@ export function SudokuGame({
                         ? save.message
                         : null}
             </p>
+          </div>
+          {/* Otro (en el reto diario hay un solo intento) y, debajo, compartir. */}
+          <div className="flex shrink-0 flex-col gap-2">
+            {!daily && (
+              <button type="button" onClick={() => void load(true)} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
+                {m.sudoku.another}
+              </button>
+            )}
             {save?.status === "saved" && game.runId && <ShareStory runId={game.runId} game="sudoku" />}
           </div>
-          {!daily && (
-            <button type="button" onClick={() => void load(true)} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-              {m.sudoku.another}
-            </button>
-          )}
         </div>
       ) : (
         <div className="flex flex-col gap-2">

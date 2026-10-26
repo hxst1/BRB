@@ -375,9 +375,8 @@ export const en: Messages = {
     rank: (rank: number, players: number) => `#${rank} of ${players} worldwide`,
     challenge: "Can you beat me?",
     join: "Play for free at",
-    share: "Share to stories",
-    download: "Download image",
-    preparing: "Preparing the image…",
+    share: "Share",
+    download: "Download",
     fileName: (game: string) => `game-${game}.png`,
   },
   pause: {

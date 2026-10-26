@@ -282,14 +282,16 @@ export function MinesweeperGame({
                   ? m.minesweeper.minesShown
                   : m.minesweeper.minesShownDaily}
             </p>
+          </div>
+          {/* Otra partida (en el reto diario hay un solo intento) y, debajo, compartir. */}
+          <div className="flex shrink-0 flex-col gap-2">
+            {daily === null && (
+              <button type="button" onClick={restart} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
+                {m.run.playAgain}
+              </button>
+            )}
             {save?.status === "saved" && <ShareStory runId={save.runId} game="minesweeper" />}
           </div>
-          {/* En el reto diario hay un solo intento. */}
-          {daily === null && (
-            <button type="button" onClick={restart} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-              {m.run.playAgain}
-            </button>
-          )}
         </div>
       )}
 

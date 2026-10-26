@@ -543,16 +543,19 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
                         ? save.message
                         : null}
             </p>
-            {save?.status === "saved" && game.runId && <ShareStory runId={game.runId} game="solitaire" />}
             {save?.status === "error" && save.retry && (
               <button type="button" onClick={() => submit(game)} className="self-start text-sm font-medium underline underline-offset-4">
                 {m.errors.retry}
               </button>
             )}
           </div>
-          <button type="button" onClick={() => void restart()} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-            {t.another}
-          </button>
+          {/* Otra y, debajo, compartir: del mismo ancho. */}
+          <div className="flex shrink-0 flex-col gap-2">
+            <button type="button" onClick={() => void restart()} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
+              {t.another}
+            </button>
+            {save?.status === "saved" && game.runId && <ShareStory runId={game.runId} game="solitaire" />}
+          </div>
         </div>
       ) : (
         <div className="flex gap-2">

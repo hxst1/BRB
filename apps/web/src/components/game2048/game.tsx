@@ -383,7 +383,6 @@ function GameOver({
           {m.game2048.summary(m.format.number(state.score), maxTile(state))}
         </p>
         {message && <p className="text-sm">{message}</p>}
-        {save?.status === "saved" && <ShareStory runId={save.runId} game="2048" />}
       </div>
       <div className="flex flex-wrap items-center gap-3">
           <button type="button" onClick={onRestart} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
@@ -398,6 +397,7 @@ function GameOver({
               {m.run.challengeFriend}
             </button>
           )}
+          {save?.status === "saved" && <ShareStory runId={save.runId} game="2048" />}
       </div>
     </div>
   );

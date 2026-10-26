@@ -380,16 +380,19 @@ export function QueensGame({ viewerId, difficulty, onSaved }: { viewerId: string
                         ? save.message
                         : null}
             </p>
-            {save?.status === "saved" && game.runId && <ShareStory runId={game.runId} game="queens" />}
             {save?.status === "error" && save.retry && (
               <button type="button" onClick={() => submit(game)} className="self-start text-sm font-medium underline underline-offset-4">
                 {m.errors.retry}
               </button>
             )}
           </div>
-          <button type="button" onClick={() => void load(true)} className="shrink-0 rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-            {m.sudoku.another}
-          </button>
+          {/* Otra y, debajo, compartir: del mismo ancho. */}
+          <div className="flex shrink-0 flex-col gap-2">
+            <button type="button" onClick={() => void load(true)} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
+              {m.sudoku.another}
+            </button>
+            {save?.status === "saved" && game.runId && <ShareStory runId={game.runId} game="queens" />}
+          </div>
         </div>
       ) : (
         <div className="flex gap-2">
