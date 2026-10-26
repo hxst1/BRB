@@ -86,7 +86,10 @@ export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
       <body className="flex min-h-full flex-col">
         <I18nProvider locale={locale}>
         <ServiceWorker />
-        <ExtensionBridge />
+        {/* Lee la ruta: con cacheComponents, dentro de Suspense para no frenar el resto. */}
+        <Suspense fallback={null}>
+          <ExtensionBridge />
+        </Suspense>
         <SiteHeader />
         {children}
         <Suspense fallback={null}>
