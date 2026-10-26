@@ -580,17 +580,17 @@ isOneToOne: false
 { Args: { "action": string,"admin_id": string,"reason": string,"target_user": string }; Returns: undefined
                            },
 "admin_referrer_hourly":
-{ Args: { "needle": string,"since": string }; Returns: {
+{ Args: { "needles": (string)[],"since": string }; Returns: {
               "hour": string,"pageviews": number,"signups": number,"visitors": number
             }[]
                            },
 "admin_referrer_summary":
-{ Args: { "needle": string,"since": string }; Returns: {
+{ Args: { "needles": (string)[],"since": string }; Returns: {
               "avg_seconds": number,"pageviews": number,"signups": number,"visitors": number
             }[]
                            },
 "admin_referrer_top":
-{ Args: { "dimension": string,"max_rows"?: number,"needle": string,"since": string }; Returns: {
+{ Args: { "dimension": string,"max_rows"?: number,"needles": (string)[],"since": string }; Returns: {
               "signups": number,"value": string,"visitors": number
             }[]
                            },
