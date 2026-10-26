@@ -169,7 +169,7 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
 
   return (
     <div className="flex w-full max-w-md flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-2 sm:gap-4">
         <PlayerBadge
           player={players[me]}
           mark={me}
@@ -178,7 +178,7 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
           mood={moodOf(me)}
           detail={<Afloat count={afloat(me)} />}
         />
-        <span className="text-sm text-muted">{m.match.versus}</span>
+        <span className="hidden shrink-0 text-sm text-muted sm:inline">{m.match.versus}</span>
         <PlayerBadge
           player={players[rival]}
           mark={rival}
@@ -308,5 +308,5 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
 
 function Afloat({ count }: { count: number }) {
   const m = useMessages();
-  return <span className="text-sm text-muted">{m.battleship.afloat(count)}</span>;
+  return <span className="text-sm leading-tight text-muted">{m.battleship.afloat(count)}</span>;
 }

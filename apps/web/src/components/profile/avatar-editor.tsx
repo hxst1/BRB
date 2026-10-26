@@ -87,7 +87,7 @@ export function AvatarEditor({
   }
 
   return (
-    <section aria-labelledby="avatar-title" className="grid gap-6 lg:grid-cols-[auto_minmax(0,1fr)] lg:gap-12">
+    <section aria-labelledby="avatar-title" className="grid grid-cols-1 gap-6 lg:grid-cols-[auto_minmax(0,1fr)] lg:gap-12">
       <h2 id="avatar-title" className="sr-only">
         {m.home.yourMonster}
       </h2>

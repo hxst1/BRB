@@ -15,7 +15,7 @@ export function SudokuScreen({ viewerId }: { viewerId: string | null }) {
   const refresh = useCallback(() => setRefreshKey((key) => key + 1), []);
 
   return (
-    <div className="mx-auto grid w-full max-w-[30rem] gap-12 lg:max-w-none lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-16">
+    <div className="mx-auto grid grid-cols-1 w-full max-w-[30rem] gap-12 lg:max-w-none lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-16">
       <div className="flex flex-col gap-4">
         <div role="radiogroup" aria-label={m.levels.label} className="inline-flex self-start rounded-full bg-line/60 p-1">
           {LEVELS.map((level) => (

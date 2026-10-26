@@ -117,7 +117,7 @@ async function SettingsSection({ viewer }: { viewer: Viewer }) {
 
   // En escritorio, dos columnas: la app y los mensajes; tu cuenta, enlaces y borrar la cuenta.
   return (
-    <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-10">
+    <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:gap-10">
       <div className="flex flex-col gap-8">
         <AppSettings isSupporter={viewer.supporter_tier !== null} unlocked={(achievements ?? []).map((a) => a.achievement)} />
         <FeedbackSection items={feedback ?? []} />

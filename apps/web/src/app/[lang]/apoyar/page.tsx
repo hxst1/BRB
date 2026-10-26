@@ -47,7 +47,7 @@ async function SupportForViewer() {
         <Avatar seed={seed} parts={{ ...(parts as object), palette: "gold", top: "sunglasses" }} size={88} />
       </div>
 
-      <ul className="grid gap-3 sm:grid-cols-2">
+      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {m.support.perks.map((perk) => (
           <li key={perk.title} className="rounded-2xl border border-line p-4">
             <p className="font-semibold">{perk.title}</p>

@@ -67,7 +67,7 @@ export function NowSection({ items, waiting }: { items: NowItem[]; waiting: Wait
       {items.length === 0 ? (
         <p className="mt-3 text-muted">{m.now.empty}</p>
       ) : (
-        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+        <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
           {shown.map((item) => (
             <li key={item.key} className={fresh.has(item.key) ? "now-enter" : undefined}>
               <NowRow item={item} />

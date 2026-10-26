@@ -28,7 +28,7 @@ export function Game2048Screen({
   const exit = useCallback(() => (daily ? router.push("/2048") : router.replace("/2048")), [daily, router]);
 
   return (
-    <div className="mx-auto grid w-full max-w-[30rem] gap-12 lg:max-w-none lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-16">
+    <div className="mx-auto grid grid-cols-1 w-full max-w-[30rem] gap-12 lg:max-w-none lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-16">
       {/* La key reinicia el juego al entrar o salir de un reto. */}
       <Game2048
         key={challenge?.id ?? (daily ? "daily" : "normal")}

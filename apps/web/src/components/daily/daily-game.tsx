@@ -36,7 +36,7 @@ export function DailyGame({ game, day, viewerId }: { game: string; day: string; 
     ) : null;
 
   return (
-    <div className="mx-auto grid w-full max-w-[30rem] gap-12 lg:max-w-none lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-16">
+    <div className="mx-auto grid grid-cols-1 w-full max-w-[30rem] gap-12 lg:max-w-none lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-16">
       <div className="flex flex-col gap-4">{board}</div>
       <DailyLeaderboard game={game} viewerId={viewerId} refreshKey={refreshKey} />
     </div>

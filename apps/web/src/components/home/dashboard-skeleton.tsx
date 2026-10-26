@@ -21,7 +21,7 @@ export function DashboardSkeleton() {
 
       <div className="mt-12">
         <div className={`h-7 w-24 rounded-lg ${block}`} />
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
           <div className={`h-17 ${block}`} />
           <div className={`h-17 ${block}`} />
         </div>

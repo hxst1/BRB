@@ -135,7 +135,7 @@ export function MatchView({
 
   return (
     <div className="flex w-full max-w-md flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-2 sm:gap-4">
         <PlayerBadge
           player={players[me]}
           mark={me}
@@ -144,7 +144,7 @@ export function MatchView({
           mood={moodOf(me)}
           detail={game === "connect4" ? <Disc mark={me} /> : undefined}
         />
-        <span className="text-sm text-muted">{m.match.versus}</span>
+        <span className="hidden shrink-0 text-sm text-muted sm:inline">{m.match.versus}</span>
         <PlayerBadge
           player={players[rival]}
           mark={rival}
@@ -279,15 +279,21 @@ export function PlayerBadge({
 }) {
   const m = useMessages();
   return (
-    <div className={`flex items-center gap-3 ${alignEnd ? "flex-row-reverse text-right" : ""}`}>
+    // min-w-0: con un nombre largo, el nombre se corta en vez de empujar al rival fuera de la pantalla.
+    <div className={`flex min-w-0 items-center gap-2 sm:gap-3 ${alignEnd ? "flex-row-reverse text-right" : ""}`}>
       <span
-        className={`grid size-16 place-items-center rounded-2xl bg-surface transition-shadow ${active ? "shadow-lift" : "shadow-soft"}`}
+        className={`grid size-13 shrink-0 place-items-center rounded-2xl bg-surface transition-shadow sm:size-16 [&>.monster]:!size-11 sm:[&>.monster]:!size-13 ${
+          active ? "shadow-lift" : "shadow-soft"
+        }`}
         style={active ? { boxShadow: `0 0 0 3px ${MARK_COLOR[mark]}` } : undefined}
       >
         <Avatar seed={player.avatar_seed} parts={player.avatar_parts} size={52} mood={mood} />
       </span>
-      <span className="flex min-w-0 flex-col">
-        <span className="truncate font-semibold">{label ?? player.username}</span>
+      {/* Solo se recorta el nombre: "Tú" y el detalle (que puede partirse en dos líneas) se ven siempre. */}
+      <span className={`flex flex-col ${alignEnd ? "items-end" : "items-start"} ${label ? "whitespace-nowrap" : "min-w-0"}`}>
+        <span className="max-w-full truncate font-semibold" title={label ? undefined : player.username}>
+          {label ?? player.username}
+        </span>
         {detail ?? (
           <span className="text-lg leading-none font-bold" style={{ color: MARK_COLOR[mark] }} aria-label={m.match.playsWith(mark.toUpperCase())}>
             {mark === "x" ? "×" : "○"}

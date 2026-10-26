@@ -117,9 +117,9 @@ export function ChessMatchView({ matchId, viewerId }: { matchId: string; viewerI
 
   return (
     <div className="flex w-full max-w-lg flex-col gap-5" style={PIECE_MARK_COLORS}>
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-2 sm:gap-4">
         <PlayerBadge player={players[me]} mark={me} label={m.match.you} active={myTurn} mood={moodOf(me)} detail={side(me)} />
-        <span className="text-sm text-muted">{m.match.versus}</span>
+        <span className="hidden shrink-0 text-sm text-muted sm:inline">{m.match.versus}</span>
         <PlayerBadge
           player={players[rival]}
           mark={rival}

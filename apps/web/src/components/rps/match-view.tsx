@@ -140,9 +140,9 @@ export function RpsMatchView({ matchId, viewerId }: { matchId: string; viewerId:
     <div className="flex w-full max-w-md flex-col gap-6" style={PIECE_MARK_COLORS}>
       <p className="text-center text-sm text-muted">{matchGame(match.game).name}</p>
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-2 sm:gap-4">
         <PlayerBadge player={players[me]} mark={me} label={m.match.you} active={canChoose} mood={moodOf(me)} detail={score(me)} />
-        <span className="text-sm text-muted">{m.match.versus}</span>
+        <span className="hidden shrink-0 text-sm text-muted sm:inline">{m.match.versus}</span>
         <PlayerBadge player={players[rival]} mark={rival} active={false} mood={moodOf(rival)} detail={score(rival)} alignEnd />
       </div>
 

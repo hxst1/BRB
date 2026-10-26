@@ -74,7 +74,7 @@ export function FirstSteps({ viewerId, steps }: { viewerId: string; steps: First
               ))}
             </div>
 
-            <ol className="mt-3 grid gap-1.5 sm:mt-4 sm:grid-cols-3 sm:gap-2">
+            <ol className="mt-3 grid grid-cols-1 gap-1.5 sm:mt-4 sm:grid-cols-3 sm:gap-2">
               {steps.map((step) => (
                 <li key={step.id}>
                   <Step step={step} />

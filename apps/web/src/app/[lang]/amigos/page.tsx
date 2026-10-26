@@ -39,7 +39,7 @@ async function FriendsForViewer({ searchParams }: { searchParams: PageProps<"/[l
   const { data: friendCode } = await supabase.from("friend_codes").select("code").eq("user_id", viewerId).single();
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:gap-16">
+    <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:gap-16">
       <div>{friendCode && <FriendCode code={friendCode.code} />}</div>
       <Friends viewerId={viewerId} initialCode={invite === friendCode?.code ? "" : invite} />
     </div>

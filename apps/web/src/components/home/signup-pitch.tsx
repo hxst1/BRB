@@ -30,7 +30,7 @@ export async function SignupPerks() {
         </h2>
         <p className="text-muted">{m.signup.perksIntro}</p>
       </div>
-      <ul className="grid gap-4 sm:grid-cols-2">
+      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {m.signup.perks.map((perk) => (
           <li key={perk.title} className="flex gap-3">
             <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-2xl" style={{ background: "var(--cell)" }}>
