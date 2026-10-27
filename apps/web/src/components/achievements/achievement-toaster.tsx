@@ -98,8 +98,11 @@ export function AchievementToaster({ viewerId, avatarSeed, avatarParts }: { view
         role="status"
         className="install-sheet pointer-events-auto relative flex w-full max-w-sm items-center gap-3 rounded-3xl bg-surface p-3 pr-10 shadow-lift ring-2 ring-[var(--t256)]"
       >
-        <span className="monster-cheer grid size-16 shrink-0 place-items-center rounded-2xl" style={{ background: rewardBackground(current.reward) }}>
-          <Avatar seed={avatarSeed} parts={preview} size={52} mood="happy" />
+        {/* El salto va en un span propio: .monster-cheer pone display: inline-block y anularía el grid que centra el monster. */}
+        <span className="grid size-16 shrink-0 place-items-center rounded-2xl" style={{ background: rewardBackground(current.reward) }}>
+          <span className="monster-cheer">
+            <Avatar seed={avatarSeed} parts={preview} size={52} mood="happy" />
+          </span>
         </span>
         <span className="flex min-w-0 flex-col gap-1">
           <span className="text-xs text-muted">{m.achievements.unlocked}</span>
