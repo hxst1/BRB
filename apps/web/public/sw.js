@@ -55,10 +55,20 @@ self.addEventListener("notificationclick", (event) => {
   event.waitUntil(
     (async () => {
       const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-      const existing = windows.find((client) => new URL(client.url).origin === self.location.origin);
+      const ours = windows.filter((client) => new URL(client.url).origin === self.location.origin);
+      // La ventana de la app antes que la web metida en la extensión (un iframe).
+      const existing = ours.find((client) => client.frameType === "top-level") || ours[0];
       if (existing) {
-        await existing.focus();
-        return existing.navigate(url);
+        await existing.focus().catch(() => undefined);
+        // navigate() no existe en iPhone y falla en las ventanas que este service
+        // worker no controla: entonces le pide a la propia app que cambie de página.
+        try {
+          if (existing.navigate && (await existing.navigate(url))) return;
+        } catch {
+          // Sigue abajo.
+        }
+        existing.postMessage({ type: "navigate", url });
+        return;
       }
       return self.clients.openWindow(url);
     })(),
