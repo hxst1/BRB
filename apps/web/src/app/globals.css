@@ -811,11 +811,14 @@ html[data-splash="out"] #splash {
  * la página entra por el lado de su pestaña; si no, un fundido corto.
  * ------------------------------------------------------------------------- */
 
-/* Si un navegador no aplica las clases de abajo (nav-forward…), la página no
- * hace el fundido cruzado de serie (las dos a la vez, una encima de otra): la
- * vieja se va y luego entra la nueva. Las reglas con nombre o clase mandan. */
+/* La página vieja sale con un fundido corto y luego entra la nueva: nunca se
+ * ven las dos a la vez. Sin `reverse` ni variables en los fotogramas, que
+ * Safari no aplica a estas capas; y la vieja tiene opacidad 0 de base, así que
+ * si su animación no corre, desaparece en vez de quedarse encima. Las reglas
+ * con (*) son la reserva si el navegador no aplica las clases (nav-forward…). */
 ::view-transition-old(*) {
-  animation: 100ms ease-in both page-fade-in reverse;
+  opacity: 0;
+  animation: 100ms ease-in both page-fade-out;
 }
 
 ::view-transition-new(*) {
@@ -834,35 +837,31 @@ html[data-splash="out"] #splash {
 }
 
 ::view-transition-old(.nav-forward) {
-  --slide-offset: -48px;
   animation:
-    120ms ease-in both page-fade-in reverse,
-    360ms cubic-bezier(0.4, 0, 0.2, 1) both page-slide reverse;
+    120ms ease-in both page-fade-out,
+    360ms cubic-bezier(0.4, 0, 0.2, 1) both page-slide-to-left;
 }
 
 ::view-transition-new(.nav-forward) {
-  --slide-offset: 48px;
   animation:
     220ms ease-out 120ms both page-fade-in,
-    360ms cubic-bezier(0.2, 0.8, 0.2, 1) both page-slide;
+    360ms cubic-bezier(0.2, 0.8, 0.2, 1) both page-slide-from-right;
 }
 
 ::view-transition-old(.nav-back) {
-  --slide-offset: 48px;
   animation:
-    120ms ease-in both page-fade-in reverse,
-    360ms cubic-bezier(0.4, 0, 0.2, 1) both page-slide reverse;
+    120ms ease-in both page-fade-out,
+    360ms cubic-bezier(0.4, 0, 0.2, 1) both page-slide-to-right;
 }
 
 ::view-transition-new(.nav-back) {
-  --slide-offset: -48px;
   animation:
     220ms ease-out 120ms both page-fade-in,
-    360ms cubic-bezier(0.2, 0.8, 0.2, 1) both page-slide;
+    360ms cubic-bezier(0.2, 0.8, 0.2, 1) both page-slide-from-left;
 }
 
 ::view-transition-old(.page-fade) {
-  animation: 100ms ease-in both page-fade-in reverse;
+  animation: 100ms ease-in both page-fade-out;
 }
 
 ::view-transition-new(.page-fade) {
@@ -896,7 +895,6 @@ html:active-view-transition .tab-bar {
   animation: none;
 }
 
-/* Con los dos extremos: sin el "to", Safari puede no animar las capas de la transición. */
 @keyframes page-fade-in {
   from {
     opacity: 0;
@@ -906,12 +904,48 @@ html:active-view-transition .tab-bar {
   }
 }
 
-@keyframes page-slide {
+@keyframes page-fade-out {
   from {
-    translate: var(--slide-offset) 0;
+    opacity: 1;
   }
   to {
-    translate: 0 0;
+    opacity: 0;
+  }
+}
+
+@keyframes page-slide-from-right {
+  from {
+    transform: translateX(48px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes page-slide-from-left {
+  from {
+    transform: translateX(-48px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes page-slide-to-left {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateX(-48px);
+  }
+}
+
+@keyframes page-slide-to-right {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateX(48px);
   }
 }
 
