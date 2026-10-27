@@ -24,7 +24,7 @@ export function Connect4Board({
 }) {
   const m = useMessages();
   return (
-    <div className="c4-board" role="group" aria-label="Tablero de 4 en raya">
+    <div className="c4-board" role="group" aria-label={m.boards.connect4}>
       {Array.from({ length: COLUMNS }, (_, column) => {
         const target = dropRow(board, column);
         const open = canPlay && target >= 0;

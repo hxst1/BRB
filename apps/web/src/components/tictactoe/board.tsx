@@ -1,4 +1,5 @@
 import type { Cell } from "@repo/games/tictactoe";
+import { useMessages } from "@/lib/i18n/client";
 
 /** Trazos en SVG que se dibujan al aparecer (ver .ttt-mark en globals.css). */
 function MarkGlyph({ mark }: { mark: "x" | "o" }) {
@@ -14,18 +15,6 @@ function MarkGlyph({ mark }: { mark: "x" | "o" }) {
   );
 }
 
-const CELL_NAMES = [
-  "arriba a la izquierda",
-  "arriba en el centro",
-  "arriba a la derecha",
-  "en el centro a la izquierda",
-  "en el centro",
-  "en el centro a la derecha",
-  "abajo a la izquierda",
-  "abajo en el centro",
-  "abajo a la derecha",
-];
-
 export function TicTacToeBoard({
   board,
   line,
@@ -37,8 +26,9 @@ export function TicTacToeBoard({
   canPlay: boolean;
   onPlay: (cell: number) => void;
 }) {
+  const m = useMessages();
   return (
-    <div className="ttt-board" role="grid" aria-label="Tablero de 3 en raya">
+    <div className="ttt-board" role="grid" aria-label={m.boards.tictactoe}>
       {board.map((value, index) => {
         const empty = value === null;
         return (
@@ -48,7 +38,7 @@ export function TicTacToeBoard({
             role="gridcell"
             disabled={!canPlay || !empty}
             onClick={() => onPlay(index)}
-            aria-label={`Casilla ${CELL_NAMES[index]}${value ? `: ${value.toUpperCase()}` : ""}`}
+            aria-label={m.boards.cell(m.boards.cells[index]!, value ? value.toUpperCase() : null)}
             className={`ttt-cell ${line?.includes(index) ? "ttt-cell-win" : ""} ${canPlay && empty ? "ttt-cell-open" : ""}`}
           >
             {value && <MarkGlyph mark={value} />}

@@ -2,17 +2,19 @@
 
 import Link from "next/link";
 import { signupHref } from "@/lib/signup";
+import { isGamePage } from "@/lib/seo";
 import { useMessages, usePagePath } from "@/lib/i18n/client";
 
 /**
  * En el móvil, para quien no ha iniciado sesión: una barra abajo (donde los
  * registrados tienen las pestañas) que invita a crear la cuenta. Fuera de la
- * pantalla de entrar, que ya es eso.
+ * pantalla de entrar, que ya es eso, y de los juegos, que ya lo dicen en la
+ * propia página (y la barra taparía los controles).
  */
 export function GuestBar() {
   const pathname = usePagePath();
   const m = useMessages();
-  if (pathname.startsWith("/entrar") || pathname === "/cuenta-borrada") return null;
+  if (pathname.startsWith("/entrar") || pathname === "/cuenta-borrada" || isGamePage(pathname)) return null;
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:hidden">

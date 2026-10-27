@@ -6,6 +6,7 @@ import { Avatar } from "@repo/ui/avatar";
 import { ACHIEVEMENT_EVENT } from "@/components/achievements/achievement-toaster";
 import { achievementById, achievementVisible } from "@/lib/achievements";
 import { signupHref } from "@/lib/signup";
+import { isGamePage } from "@/lib/seo";
 import { useMessages, usePagePath } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 
@@ -75,7 +76,8 @@ export function ProductHuntWelcome({ signedIn }: { signedIn: boolean }) {
       });
   }, [signedIn]);
 
-  if (!invite || pathname.startsWith("/entrar")) return null;
+  // En los juegos taparía los controles: sale en el resto de páginas.
+  if (!invite || pathname.startsWith("/entrar") || isGamePage(pathname)) return null;
 
   function close() {
     write(DISMISSED_KEY, "1");

@@ -427,7 +427,7 @@ export const en: Messages = {
     safeToday: "Streak safe for today!",
     playToday: "Play a game today to keep it",
     start: "Play a game to light your flame",
-    tiers: { out: "Out", spark: "Spark", flame: "Flame", bonfire: "Bonfire", blue: "Blue flame", gold: "Golden flame" },
+    tiers: { out: "Not lit yet", spark: "Spark", flame: "Flame", bonfire: "Bonfire", blue: "Blue flame", gold: "Golden flame" },
     nextTier: (n: number, name: string) => `${name} in ${n} ${n === 1 ? "day" : "days"}`,
     best: (n: number) => `best: ${n}`,
     week: "Last week",
@@ -830,6 +830,12 @@ export const en: Messages = {
     roundYours: "Your round!",
     roundTheirs: "Your opponent's round",
     now: "Go!",
+  },
+  boards: {
+    tictactoe: "Tic-tac-toe board",
+    connect4: "Connect Four board",
+    cells: ["top left", "top centre", "top right", "middle left", "centre", "middle right", "bottom left", "bottom centre", "bottom right"],
+    cell: (name: string, mark: string | null) => `Square ${name}${mark ? `: ${mark}` : ""}`,
   },
   connect4: {
     column: (n: number, filled: number | null) => `Column ${n}${filled === null ? ", full" : filled > 0 ? `, ${filled} ${filled === 1 ? "piece" : "pieces"}` : ", empty"}`,

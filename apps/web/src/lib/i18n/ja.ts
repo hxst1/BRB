@@ -434,7 +434,7 @@ export const ja: Messages = {
     safeToday: "今日の連続記録はキープ！",
     playToday: "今日1回遊んでキープしよう",
     start: "1回遊んで炎をともそう",
-    tiers: { out: "消えた", spark: "火花", flame: "炎", bonfire: "たき火", blue: "青い炎", gold: "金の炎" },
+    tiers: { out: "まだ火がない", spark: "火花", flame: "炎", bonfire: "たき火", blue: "青い炎", gold: "金の炎" },
     nextTier: (n: number, name: string) => `あと${n}日で${name}`,
     best: (n: number) => `最高：${n}`,
     week: "この1週間",
@@ -837,6 +837,12 @@ export const ja: Messages = {
     roundYours: "このラウンドはあなたの勝ち！",
     roundTheirs: "このラウンドは相手の勝ち",
     now: "GO！",
+  },
+  boards: {
+    tictactoe: "○×ゲームの盤面",
+    connect4: "四目並べの盤面",
+    cells: ["左上", "上中央", "右上", "左中央", "中央", "右中央", "左下", "下中央", "右下"],
+    cell: (name: string, mark: string | null) => `${name}のマス${mark ? `：${mark}` : ""}`,
   },
   connect4: {
     column: (n: number, filled: number | null) => `${n}列目${filled === null ? "、満杯" : filled > 0 ? `、コマ${filled}個` : "、空き"}`,

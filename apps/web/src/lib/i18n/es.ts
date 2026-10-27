@@ -432,7 +432,7 @@ export const es = {
     safeToday: "¡Racha a salvo por hoy!",
     playToday: "Juega una partida hoy para no perderla",
     start: "Juega una partida para encender tu llama",
-    tiers: { out: "Apagada", spark: "Chispa", flame: "Llama", bonfire: "Hoguera", blue: "Llama azul", gold: "Llama dorada" },
+    tiers: { out: "Sin encender", spark: "Chispa", flame: "Llama", bonfire: "Hoguera", blue: "Llama azul", gold: "Llama dorada" },
     nextTier: (n: number, name: string) => `${name} en ${n} ${n === 1 ? "día" : "días"}`,
     best: (n: number) => `récord: ${n}`,
     week: "Última semana",
@@ -835,6 +835,12 @@ export const es = {
     roundYours: "¡Ronda para ti!",
     roundTheirs: "Ronda para tu rival",
     now: "¡Ya!",
+  },
+  boards: {
+    tictactoe: "Tablero de 3 en raya",
+    connect4: "Tablero de 4 en raya",
+    cells: ["arriba a la izquierda", "arriba en el centro", "arriba a la derecha", "en el centro a la izquierda", "en el centro", "en el centro a la derecha", "abajo a la izquierda", "abajo en el centro", "abajo a la derecha"],
+    cell: (name: string, mark: string | null): string => `Casilla ${name}${mark ? `: ${mark}` : ""}`,
   },
   connect4: {
     column: (n: number, filled: number | null) => `Columna ${n}${filled === null ? ", llena" : filled > 0 ? `, ${filled} ${filled === 1 ? "ficha" : "fichas"}` : ", vacía"}`,

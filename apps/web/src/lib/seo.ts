@@ -52,6 +52,11 @@ const GAMES: GameMeta[] = [
 
 const TEXTS: Record<Locale, Record<GameMeta["id"], GameTexts>> = { es: GAMES_ES, en: GAMES_EN, ja: GAMES_JA };
 
+/** ¿Es la página de un juego (o de una de sus partidas, o el reto diario)? */
+export function isGamePage(pathname: string): boolean {
+  return pathname.startsWith("/reto-diario") || GAMES.some((game) => pathname === game.path || pathname.startsWith(`${game.path}/`));
+}
+
 /** Los juegos con sus textos en un idioma. */
 export function guidesFor(locale: Locale): GameGuide[] {
   return GAMES.map((game) => ({ ...game, ...TEXTS[locale][game.id] }));

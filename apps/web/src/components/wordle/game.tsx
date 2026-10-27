@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useState, type CSSProperties, useRef } from "react";
 import { brand } from "@repo/brand";
 import type { Json } from "@repo/db";
 import { MAX_GUESSES, WORD_LENGTH, letterHints, shareGrid, type Mark } from "@repo/games/wordle";
@@ -148,13 +148,21 @@ export function WordleGame({
     return { letters: "", pattern: null };
   });
 
+  // La fila en la que se escribe, siempre a la vista (en el móvil el teclado tapa la parte de abajo).
+  const activeRow = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    activeRow.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [game.guesses.length]);
+
   async function share() {
     const score = game.solved ? game.guesses.length : "X";
     const text = `${brand.name} Wordle ${dayLabel}: ${score}/${MAX_GUESSES}\n\n${shareGrid(game.patterns)}`;
+    // Con el enlace: quien lo vea puede jugar la palabra de hoy.
+    const url = `${window.location.origin}/wordle`;
     try {
-      if (navigator.share) await navigator.share({ text });
+      if (navigator.share) await navigator.share({ text, url });
       else {
-        await navigator.clipboard.writeText(text);
+        await navigator.clipboard.writeText(`${text}\n${url}`);
         setCopied(true);
         setTimeout(() => setCopied(false), TOAST_MS);
       }
@@ -171,7 +179,9 @@ export function WordleGame({
             <div
               key={r}
               role="row"
-              className={`grid grid-cols-5 gap-1.5 ${row.active && shake ? "wordle-shake" : ""}`}
+              ref={row.active ? activeRow : undefined}
+              // Que al subirla quede por encima del teclado y de la barra de pestañas (móvil).
+              className={`grid scroll-mb-[19rem] grid-cols-5 gap-1.5 sm:scroll-mb-6 ${row.active && shake ? "wordle-shake" : ""}`}
             >
               {Array.from({ length: WORD_LENGTH }, (_, i) => {
                 const letter = row.letters[i] ?? "";

@@ -174,6 +174,12 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
 
       {showFirstSteps && <FirstSteps viewerId={viewer.id} steps={firstSteps} />}
 
+      {now.length > 0 && (
+        <div className="mt-10">
+          <NowSection items={now} waiting={waiting} />
+        </div>
+      )}
+
       {/* Hoy: la racha en grande y los retos del día. */}
       {streak && (
         <div className="mt-10 flex flex-col gap-6">
@@ -182,9 +188,12 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
         </div>
       )}
 
-      <div className="mt-12">
-        <NowSection items={now} waiting={waiting} />
-      </div>
+      {/* Si hay algo pendiente (te toca, te retan…), va antes que la racha y los retos. */}
+      {now.length === 0 && (
+        <div className="mt-12">
+          <NowSection items={now} waiting={waiting} />
+        </div>
+      )}
     </>
   );
 }
