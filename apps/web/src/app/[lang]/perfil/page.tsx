@@ -78,7 +78,8 @@ async function Profile({ searchParams }: { searchParams: PageProps<"/[lang]/perf
       </nav>
 
       {/* Cada pestaña carga solo lo suyo. */}
-      <Loading key={section} skeleton={SECTION_SKELETONS[section]}>
+      {/* El monstruo y los récords ya salen casi enteros en su esqueleto: sin fundido. */}
+      <Loading key={section} skeleton={SECTION_SKELETONS[section]} fade={section === "logros" || section === "ajustes"}>
         {section === "monster" && <MonsterSection viewer={viewer} />}
         {section === "logros" && <AchievementsSection viewer={viewer} />}
         {section === "records" && <Records viewerId={viewer.id} />}

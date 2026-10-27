@@ -26,13 +26,8 @@ export default function Home() {
 /** Con sesión, la portada es tu panel; sin ella, la presentación. */
 async function HomeForViewer() {
   const viewer = await getViewer();
-  if (!viewer) {
-    return (
-      <div className="reveal contents">
-        <Landing />
-      </div>
-    );
-  }
+  // Sin fundido: el esqueleto ya enseña sus mismos textos, y fundirlos los haría parpadear.
+  if (!viewer) return <Landing />;
   // El panel hace muchas consultas: mientras, su esqueleto (el de fuera es solo para saber si hay sesión).
   return (
     <Loading skeleton={<DashboardSkeleton />}>

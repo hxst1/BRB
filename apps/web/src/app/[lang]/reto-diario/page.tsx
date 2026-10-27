@@ -40,7 +40,8 @@ const toCard = (row: Pick<DailyStatus, "slot" | "game"> & Partial<DailyStatus>):
 export default function DailyPage({ searchParams }: PageProps<"/[lang]/reto-diario">) {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pt-4 pb-16 sm:px-6">
-      <Loading skeleton={<DailyPageSkeleton />}>
+      {/* Sin fundido: el esqueleto ya enseña el título y la entradilla, que parpadearían. */}
+      <Loading skeleton={<DailyPageSkeleton />} fade={false}>
         <DailyForViewer searchParams={searchParams} />
       </Loading>
     </main>

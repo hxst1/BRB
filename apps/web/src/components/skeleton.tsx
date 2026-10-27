@@ -58,11 +58,13 @@ export function ToggleSkeleton({
 /**
  * Suspense con esqueleto. Lo que llega lo sustituye con un fundido corto
  * (.reveal, en globals.css); el envoltorio no cuenta para la maquetación.
+ * `fade={false}` cuando el esqueleto ya enseña casi todo el texto de verdad:
+ * fundirlo lo haría parpadear.
  */
-export function Loading({ skeleton, children }: { skeleton: ReactNode; children: ReactNode }) {
+export function Loading({ skeleton, fade = true, children }: { skeleton: ReactNode; fade?: boolean; children: ReactNode }) {
   return (
     <Suspense fallback={skeleton}>
-      <div className="reveal contents">{children}</div>
+      <div className={fade ? "reveal contents" : "contents"}>{children}</div>
     </Suspense>
   );
 }
