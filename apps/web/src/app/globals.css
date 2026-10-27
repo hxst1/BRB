@@ -834,7 +834,17 @@ html[data-splash="out"] #splash {
   animation: 200ms ease-out 60ms both page-fade-in;
 }
 
-/* La cabecera y la barra de pestañas se quedan quietas encima. */
+/* La cabecera y la barra de pestañas se quedan quietas encima. Solo durante la
+ * transición: con view-transition-name todo el rato serían una capa aislada, y
+ * el desenfoque del fondo de la barra (backdrop-filter) no vería la página. */
+html:active-view-transition .site-header {
+  view-transition-name: site-header;
+}
+
+html:active-view-transition .tab-bar {
+  view-transition-name: tab-bar;
+}
+
 ::view-transition-group(site-header),
 ::view-transition-group(tab-bar) {
   animation: none;

@@ -42,13 +42,9 @@ async function getNavCounts(): Promise<NavCounts> {
 export function SiteHeader() {
   // En el móvil, 12 px más de margen arriba: la zona de estado del iPhone difumina lo que queda muy pegado.
   return (
-    // Con nombre propio: en las transiciones entre páginas la cabecera no se mueve (ver template.tsx).
-    // Ese nombre la convierte en una capa propia, y la barra de pestañas (fija, dentro de ella) quedaría
-    // por debajo del contenido de la página: por eso la cabecera entera va por encima (z-30).
-    <header
-      style={{ viewTransitionName: "site-header" }}
-      className="relative z-30 mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 pt-7 pb-4 sm:px-6 sm:py-4"
-    >
+    // .site-header: durante las transiciones entre páginas no se mueve (globals.css). Va por encima
+    // del contenido (z-30) para que la barra de pestañas, fija y dentro de ella, también lo esté.
+    <header className="site-header relative z-30 mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 pt-7 pb-4 sm:px-6 sm:py-4">
       <Link href="/" className="display text-2xl font-bold">
         {brand.name}
       </Link>

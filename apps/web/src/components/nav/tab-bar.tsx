@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type CSSProperties, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { Badge } from "./badge";
@@ -53,10 +53,9 @@ export function TabBar({ counts, avatarSeed, avatarParts }: { counts: NavCounts;
   return (
     <nav
       aria-label={m.nav.main}
-      style={{ viewTransitionName: "tab-bar" } as CSSProperties}
       className="tab-bar pointer-events-none fixed inset-x-0 bottom-0 z-20 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:hidden"
     >
-      <ul className="pointer-events-auto relative mx-auto grid max-w-md grid-cols-6 overflow-hidden rounded-full border border-line bg-surface/85 shadow-lift backdrop-blur-md">
+      <ul className="pointer-events-auto relative mx-auto grid max-w-md grid-cols-6 overflow-hidden rounded-full border border-line bg-surface/75 shadow-lift backdrop-blur-xl backdrop-saturate-150">
         <span
           aria-hidden
           className="tab-indicator absolute inset-y-0 left-0 bg-ink"
