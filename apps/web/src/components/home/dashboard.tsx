@@ -1,12 +1,9 @@
 import Link from "next/link";
-import { replay as replayChess } from "@repo/games/chess";
-import { replay as replayConnect4 } from "@repo/games/connect4";
-import { replay } from "@repo/games/tictactoe";
 import type { Functions, Match } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { DailyCard } from "@/components/daily/daily-summary";
 import { LevelBar } from "@/components/level-bar";
-import { battleshipMyTurn } from "@/components/tictactoe/data";
+import { battleshipMyTurn, isTurnBased, turnOf } from "@/components/tictactoe/data";
 import { CHALLENGE_EXPIRY_MS, matchGameKey, matchHref } from "@/lib/games";
 import { getLocale, getMessages } from "@/lib/i18n/server";
 import type { Messages } from "@/lib/i18n";
@@ -23,15 +20,12 @@ type GameTally = { myTurn: number; invites: number; waiting: number };
 const FIRST_STEPS_DAYS = 14;
 
 /**
- * ¿Le toca al usuario? 3 y 4 en raya, por los movimientos; piedra, papel o
- * tijera y hundir la flota, si no está en `waiting` (ver fetchChosen).
+ * ¿Le toca al usuario? En los juegos por turnos, por los movimientos; piedra,
+ * papel o tijera y hundir la flota, si no está en `waiting` (ver fetchChosen).
  */
 function myTurnIn(match: Match, viewerId: string, waiting: ReadonlySet<string>): boolean {
-  const mark = match.player_x === viewerId ? "x" : "o";
-  if (match.game === "tictactoe") return replay(match.moves)?.turn === mark;
-  if (match.game === "connect4") return replayConnect4(match.moves)?.turn === mark;
-  if (match.game === "chess") return replayChess(match.moves)?.turn === mark;
-  if (match.game === "pong" || match.game === "tron") return true;
+  if (isTurnBased(match.game)) return turnOf(match) === (match.player_x === viewerId ? "x" : "o");
+  if (match.game === "pong" || match.game === "tron" || match.game === "typing") return true;
   return !waiting.has(match.id);
 }
 
@@ -112,12 +106,15 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
   const invites: NowItem[] = [];
   const waiting: WaitingItem[] = [];
   const expiresAt = (match: Match) => new Date(new Date(match.created_at).getTime() + CHALLENGE_EXPIRY_MS);
-  const tally: Record<"tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron" | "chess", GameTally> = {
+  const tally: Record<"tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron" | "chess" | "reversi" | "dots" | "typing", GameTally> = {
     tictactoe: { myTurn: 0, invites: 0, waiting: 0 },
     connect4: { myTurn: 0, invites: 0, waiting: 0 },
     battleship: { myTurn: 0, invites: 0, waiting: 0 },
     tron: { myTurn: 0, invites: 0, waiting: 0 },
     chess: { myTurn: 0, invites: 0, waiting: 0 },
+    reversi: { myTurn: 0, invites: 0, waiting: 0 },
+    dots: { myTurn: 0, invites: 0, waiting: 0 },
+    typing: { myTurn: 0, invites: 0, waiting: 0 },
     rps: { myTurn: 0, invites: 0, waiting: 0 },
     pong: { myTurn: 0, invites: 0, waiting: 0 },
   };
@@ -265,6 +262,9 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
             battleship: <MatchStats m={m} counts={tally.battleship} />,
             tron: <MatchStats m={m} counts={tally.tron} />,
             chess: <MatchStats m={m} counts={tally.chess} />,
+            reversi: <MatchStats m={m} counts={tally.reversi} />,
+            dots: <MatchStats m={m} counts={tally.dots} />,
+            typing: <MatchStats m={m} counts={tally.typing} />,
             rps: <MatchStats m={m} counts={tally.rps} />,
             pong: <MatchStats m={m} counts={tally.pong} />,
           }}

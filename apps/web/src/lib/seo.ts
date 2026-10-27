@@ -44,6 +44,9 @@ const GAMES: GameMeta[] = [
   { id: "pong", path: "/pong", mode: "friends", accent: "#22b8cf", addedAt: "2026-10-20T12:58:27+02:00" },
   { id: "tron", path: "/tron", mode: "friends", accent: "#ff6b6b", addedAt: "2026-10-21T23:43:17+02:00" },
   { id: "chess", path: "/ajedrez", mode: "friends", accent: "#845ef7", addedAt: "2026-10-23T12:00:00+02:00" },
+  { id: "reversi", path: "/reversi", mode: "friends", accent: "#40c057", addedAt: "2026-10-27T10:39:00+01:00" },
+  { id: "dots", path: "/puntos-y-cajas", mode: "friends", accent: "#fab005", addedAt: "2026-10-27T10:39:00+01:00" },
+  { id: "typing", path: "/carrera-de-tecleo", mode: "friends", accent: "#4c6ef5", addedAt: "2026-10-27T10:39:00+01:00" },
 ];
 
 const TEXTS: Record<Locale, Record<GameMeta["id"], GameTexts>> = { es: GAMES_ES, en: GAMES_EN };

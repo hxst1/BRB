@@ -471,6 +471,52 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"typing_races": {
+                  Row: {
+                    "language": string,"match_id": string,"starts_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "language": string,"match_id": string,"starts_at": string
+                  }
+                  Update: {
+                    "language"?: string,"match_id"?: string,"starts_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "typing_races_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: true
+      referencedRelation: "matches"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"typing_ready": {
+                  Row: {
+                    "match_id": string,"player_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "match_id": string,"player_id": string
+                  }
+                  Update: {
+                    "match_id"?: string,"player_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "typing_ready_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "matches"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "typing_ready_player_id_fkey"
+      columns: ["player_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"user_achievements": {
                   Row: {
                     "achievement": string,"unlocked_at": string,"user_id": string
@@ -664,6 +710,9 @@ isOneToOne: false
 "finish_run":
 { Args: { "max_tile": number,"moves": string,"run_id": string,"score": number }; Returns: undefined
                            },
+"finish_typing_race":
+{ Args: { "match_id": string,"min_ms": number,"player_id": string }; Returns: number
+                           },
 "get_battleship_status":
 { Args: Record<PropertyKey, never>; Returns: {
               "match_id": string,"me_ready": boolean,"rival_ready": boolean
@@ -840,6 +889,11 @@ isOneToOne: false
 "start_run":
 { Args: { "game": string }; Returns: {
               "id": string,"seed": number
+            }[]
+                           },
+"start_typing_race":
+{ Args: { "countdown_ms": number,"language": string,"match_id": string,"player_id": string }; Returns: {
+              "race_language": string,"server_now": string,"starts_at": string
             }[]
                            },
 "submit_battleship_fleet":

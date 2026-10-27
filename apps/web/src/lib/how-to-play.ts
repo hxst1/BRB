@@ -9,6 +9,33 @@ import type { Picto } from "./pictos";
 export type HowToPlay = { goal: string; steps: { icon: Picto; text: string }[] };
 
 const HOW_TO_PLAY_ES: Record<string, HowToPlay> = {
+  reversi: {
+    goal: "Acaba con más fichas de tu color que tu amigo.",
+    steps: [
+      { icon: "wave", text: "Reta a un amigo. Empiezan las rojas." },
+      { icon: "tap", text: "Pon una ficha en una casilla marcada: tiene que encerrar fichas de tu amigo entre ella y otra tuya." },
+      { icon: "repeat", text: "Las fichas encerradas se dan la vuelta y pasan a ser tuyas." },
+      { icon: "trophy", text: "Cuando nadie puede jugar, gana quien tenga más fichas." },
+    ],
+  },
+  dots: {
+    goal: "Cierra más cajas que tu amigo.",
+    steps: [
+      { icon: "pencil", text: "Por turnos, traza una raya entre dos puntos." },
+      { icon: "box", text: "Si pones el cuarto lado de una caja, es tuya." },
+      { icon: "repeat", text: "Cada vez que cierras una caja, vuelves a jugar." },
+      { icon: "trophy", text: "Cuando están todas cerradas, gana quien tenga más." },
+    ],
+  },
+  typing: {
+    goal: "Escribe el texto antes que tu amigo.",
+    steps: [
+      { icon: "wave", text: "Reta a un amigo y entrad los dos a la partida." },
+      { icon: "timer", text: "Tras una cuenta atrás, sale el texto. El mismo para los dos." },
+      { icon: "keyboard", text: "Escríbelo tal cual. Si te equivocas, borra para seguir." },
+      { icon: "fast", text: "Gana quien acabe primero." },
+    ],
+  },
   chess: {
     goal: "Da jaque mate al rey de tu amigo: amenázalo sin que pueda escapar.",
     steps: [
@@ -148,6 +175,33 @@ const HOW_TO_PLAY_ES: Record<string, HowToPlay> = {
 };
 
 const HOW_TO_PLAY_EN: Record<string, HowToPlay> = {
+  reversi: {
+    goal: "Finish with more pieces of your colour than your friend.",
+    steps: [
+      { icon: "wave", text: "Challenge a friend. Red moves first." },
+      { icon: "tap", text: "Place a piece on a marked square: it has to trap your friend's pieces between it and another of yours." },
+      { icon: "repeat", text: "Trapped pieces flip over and become yours." },
+      { icon: "trophy", text: "When nobody can play, whoever has the most pieces wins." },
+    ],
+  },
+  dots: {
+    goal: "Close more boxes than your friend.",
+    steps: [
+      { icon: "pencil", text: "Taking turns, draw a line between two dots." },
+      { icon: "box", text: "Draw the fourth side of a box and it's yours." },
+      { icon: "repeat", text: "Every time you close a box, you go again." },
+      { icon: "trophy", text: "When they're all closed, whoever has the most wins." },
+    ],
+  },
+  typing: {
+    goal: "Type the text before your friend does.",
+    steps: [
+      { icon: "wave", text: "Challenge a friend and both join the game." },
+      { icon: "timer", text: "After a countdown, the text appears. The same for both of you." },
+      { icon: "keyboard", text: "Type it exactly. If you make a mistake, delete it to carry on." },
+      { icon: "fast", text: "Whoever finishes first wins." },
+    ],
+  },
   chess: {
     goal: "Checkmate your friend's king: attack it so it has nowhere to escape.",
     steps: [

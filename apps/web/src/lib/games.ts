@@ -8,6 +8,9 @@ export const MATCH_GAMES = {
   pong: { name: "Pong", path: "/pong" },
   tron: { name: "Tron", path: "/tron" },
   chess: { name: "Ajedrez", path: "/ajedrez" },
+  reversi: { name: "Reversi", path: "/reversi" },
+  dots: { name: "Puntos y cajas", path: "/puntos-y-cajas" },
+  typing: { name: "Carrera de tecleo", path: "/carrera-de-tecleo" },
 } as const;
 
 /** Un reto pendiente se retira solo pasado este tiempo (ver expire_challenges). */

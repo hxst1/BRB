@@ -82,7 +82,7 @@ export function ChallengeEmbed({
         case "active": {
           if (!isTurnBased(match.game)) {
             // Piedra, papel o tijera: quién ha elegido es secreto. Pong: se juega en directo.
-            status = match.game === "pong" || match.game === "tron" ? m.embed.acceptedLive : m.embed.inPlay;
+            status = match.game === "pong" || match.game === "tron" || match.game === "typing" ? m.embed.acceptedLive : m.embed.inPlay;
             actions = <EmbedLink href={href} primary>{m.common.play}</EmbedLink>;
             break;
           }

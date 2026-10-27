@@ -27,7 +27,10 @@
     "./solitaire": "./src/solitaire/index.ts",
     "./solitaire/verify": "./src/solitaire/verify.ts",
     "./queens": "./src/queens/index.ts",
-    "./queens/verify": "./src/queens/verify.ts"
+    "./queens/verify": "./src/queens/verify.ts",
+    "./reversi": "./src/reversi/index.ts",
+    "./dots": "./src/dots/index.ts",
+    "./typing": "./src/typing/index.ts"
   },
   "scripts": {
     "test": "vitest run",

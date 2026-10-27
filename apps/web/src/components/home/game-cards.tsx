@@ -31,6 +31,10 @@ const PREVIEW_CHESS = ["bk", "", "", "br", "", "bp", "", "", "", "", "rn", "", "
 const PREVIEW_SOLITAIRE: (number | null)[][] = [[12, 24], [null, 32], [39]];
 /** Reinas en miniatura (5 × 5): región de cada casilla, dos reinas (q) y algunas × (x). */
 const PREVIEW_QUEENS = { regions: [0, 0, 1, 1, 1, 0, 2, 2, 1, 1, 3, 3, 2, 2, 1, 3, 4, 4, 2, 1, 3, 4, 2, 2, 2], marks: { 1: "q", 10: "q", 0: "x", 5: "x", 7: "x" } as Record<number, "q" | "x"> };
+/** Reversi en miniatura (4 × 4): fichas rojas (x), azules (o) o casilla vacía. */
+const PREVIEW_REVERSI = [".o..", "xxo.", ".xox", "..o."];
+/** Carrera de tecleo en miniatura: palabras de cada línea (su ancho) y cuántas van escritas. */
+const PREVIEW_TYPING = { lines: [[22, 14, 30, 18], [16, 26, 12, 24], [28, 18, 20]], typed: 5 };
 /** Wordle en miniatura: tres intentos hasta acertar. */
 const PREVIEW_WORDLE = ["bybbb", "gbygb", "ggggg"];
 
@@ -55,7 +59,10 @@ export type GameId =
   | "rps"
   | "pong"
   | "tron"
-  | "chess";
+  | "chess"
+  | "reversi"
+  | "dots"
+  | "typing";
 
 type Game = { id: GameId; group: "solo" | "friends"; href: string; preview: ReactNode };
 
@@ -371,6 +378,77 @@ const GAMES: Game[] = [
             )}
           </span>
         ))}
+      </div>
+    ),
+  },
+  {
+    id: "reversi",
+    group: "friends",
+    href: "/reversi",
+    preview: (
+      <div aria-hidden className="grid aspect-square grid-cols-4 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+        {PREVIEW_REVERSI.flatMap((row, r) =>
+          [...row].map((piece, i) => (
+            <span key={`${r}${i}`} className="grid aspect-square place-items-center rounded-md sm:rounded-lg" style={{ background: "var(--cell)" }}>
+              {piece !== "." && (
+                <span
+                  className={`size-[78%] rounded-full shadow-[inset_0_-2px_0_rgb(0_0_0/0.18)] ${r === 2 && i === 2 ? "transition-transform duration-500 group-hover:[transform:rotateY(180deg)]" : ""}`}
+                  style={{ background: piece === "x" ? "var(--mark-x)" : "var(--mark-o)" }}
+                />
+              )}
+            </span>
+          )),
+        )}
+      </div>
+    ),
+  },
+  {
+    id: "dots",
+    group: "friends",
+    href: "/puntos-y-cajas",
+    preview: (
+      <div aria-hidden className="relative aspect-square overflow-hidden rounded-xl sm:rounded-2xl" style={{ background: "var(--board)" }}>
+        <svg viewBox="0 0 100 100" className="absolute inset-0 size-full">
+          <rect x="16" y="16" width="34" height="34" rx="3" fill="var(--mark-x)" opacity="0.3" />
+          <rect x="50" y="50" width="34" height="34" rx="3" fill="var(--mark-o)" opacity="0.3" />
+          <g strokeWidth="5" strokeLinecap="round">
+            <path d="M16 16H50V50H16Z M50 16H84" stroke="var(--mark-x)" fill="none" />
+            <path d="M50 50H84V84H50Z M16 84V50" stroke="var(--mark-o)" fill="none" />
+            <path d="M84 16V50" stroke="var(--mark-x)" className="opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          </g>
+          <g fill="var(--ink)">
+            {[16, 50, 84].flatMap((y) => [16, 50, 84].map((x) => <circle key={`${x}-${y}`} cx={x} cy={y} r="4.5" />))}
+          </g>
+        </svg>
+      </div>
+    ),
+  },
+  {
+    id: "typing",
+    group: "friends",
+    href: "/carrera-de-tecleo",
+    preview: (
+      <div aria-hidden className="flex aspect-square flex-col justify-between gap-2 rounded-xl p-2.5 sm:rounded-2xl sm:p-4" style={{ background: "var(--board)" }}>
+        <div className="flex flex-col gap-1.5 sm:gap-2">
+          {PREVIEW_TYPING.lines.map((line, r) => (
+            <div key={r} className="flex gap-1">
+              {line.map((width, i) => {
+                const index = PREVIEW_TYPING.lines.slice(0, r).reduce((sum, l) => sum + l.length, 0) + i;
+                return (
+                  <span
+                    key={i}
+                    className="h-2 rounded-full sm:h-2.5"
+                    style={{ width: `${width}%`, background: index < PREVIEW_TYPING.typed ? "var(--ink)" : "var(--cell)" }}
+                  />
+                );
+              })}
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <span className="h-2 w-[70%] rounded-full transition-[width] duration-500 group-hover:w-[92%] sm:h-2.5" style={{ background: "var(--mark-x)" }} />
+          <span className="h-2 w-[52%] rounded-full transition-[width] duration-500 group-hover:w-[64%] sm:h-2.5" style={{ background: "var(--mark-o)" }} />
+        </div>
       </div>
     ),
   },

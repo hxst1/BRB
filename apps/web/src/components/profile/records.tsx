@@ -55,6 +55,9 @@ const MATCH_GAMES: { id: GameId; href: string; games: string[] }[] = [
   { id: "pong", href: "/pong", games: ["pong"] },
   { id: "tron", href: "/tron", games: ["tron"] },
   { id: "chess", href: "/ajedrez", games: ["chess"] },
+  { id: "reversi", href: "/reversi", games: ["reversi"] },
+  { id: "dots", href: "/puntos-y-cajas", games: ["dots"] },
+  { id: "typing", href: "/carrera-de-tecleo", games: ["typing"] },
 ];
 
 /** Tus récords: mejor marca y puesto en cada juego, Wordle y partidas contra amigos. */

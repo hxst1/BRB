@@ -9,8 +9,8 @@ navegador y sin descargar nada.
 
 - **En solitario**, con ranking global y de amigos: Solitario, Sudoku, Reinas, 2048, Buscaminas, Snake,
   Lights Out y un Wordle diario.
-- **Contra amigos**: ajedrez, 3 y 4 en raya, hundir la flota y piedra, papel o tijera por turnos, y Pong y
-  Tron en directo.
+- **Contra amigos**: ajedrez, Reversi, 3 y 4 en raya, puntos y cajas, hundir la flota y piedra, papel o
+  tijera por turnos, y Pong, Tron y una carrera de tecleo en directo.
 - **Reto diario** (la misma partida para todos, un intento al día), logros, rachas, un monster que se
   personaliza, chat y notificaciones.
 - Se instala como app (PWA) y tiene **extensión de Chrome**.

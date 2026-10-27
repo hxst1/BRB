@@ -251,4 +251,56 @@ export const GAMES_EN: Record<keyof typeof GAMES_ES, GameTexts> = {
       { q: "Do I need to download anything?", a: NO_DOWNLOAD },
     ],
   },
+  reversi: {
+    name: "Reversi",
+    title: "Online Reversi (Othello) with your friends",
+    description: "Play Reversi online with your friends, turn by turn: trap their pieces between two of yours to flip them. Whoever has the most at the end wins. Free.",
+    tagline: "Trap pieces and flip them",
+    genre: "Strategy game",
+    howTo: [
+      "Challenge a friend. One plays red, who moves first, and the other blue.",
+      "Taking turns, each of you places a piece that traps a straight line (horizontal, vertical or diagonal) of your opponent's pieces between it and another of yours.",
+      "Trapped pieces turn your colour. You can only play where you trap at least one.",
+      "If you have no move, you pass. When neither of you can play, whoever has the most pieces wins.",
+    ],
+    faq: [
+      { q: "Is it the same as Othello?", a: "Yes. Othello is the trade name of Reversi with these rules and this starting position." },
+      { q: "Do we have to be online at the same time?", a: "No. It's turn-based: each of you plays when you can and we let you know when it's your turn." },
+      { q: "Do I need to download anything?", a: NO_DOWNLOAD },
+    ],
+  },
+  dots: {
+    name: "Dots and boxes",
+    title: "Online dots and boxes with your friends",
+    description: "Play dots and boxes online with your friends: draw lines, close boxes and go again. Whoever closes the most wins. Turn by turn and free, in your browser.",
+    tagline: "Close boxes and go again",
+    genre: "Pencil-and-paper game",
+    howTo: [
+      "Challenge a friend. The board is a 5 × 5 grid of dots, with 16 boxes.",
+      "Taking turns, each of you draws a line between two neighbouring dots, across or down.",
+      "Whoever draws the fourth side of a box keeps it and goes again.",
+      "When every box is closed, whoever has the most wins. At 8 each, it's a draw.",
+    ],
+    faq: [
+      { q: "Do we have to be online at the same time?", a: "No. It's turn-based: each of you plays when you can and we let you know when it's your turn." },
+      { q: "Do I need to download anything?", a: NO_DOWNLOAD },
+    ],
+  },
+  typing: {
+    name: "Typing race",
+    title: "Online typing race with your friends",
+    description: "Race a friend at typing online: you both type the same text at the same time and whoever finishes first wins. Live, free and in your browser.",
+    tagline: "Live: type faster",
+    genre: "Typing",
+    howTo: [
+      "Challenge a friend and both join the game.",
+      "Once you're both there, a countdown starts and the text appears: about 24 words.",
+      "Type it exactly. If you make a mistake, delete the wrong letter to carry on; you can see your friend's progress.",
+      "Whoever finishes first wins. The server keeps the time, not your browser.",
+    ],
+    faq: [
+      { q: "Do we have to be online at the same time?", a: "Yes. The race is played live." },
+      { q: "What language is the text in?", a: "The challenger's: English or Spanish." },
+    ],
+  },
 };

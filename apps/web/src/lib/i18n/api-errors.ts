@@ -29,4 +29,9 @@ export const API_ERRORS_EN: Record<string, string> = {
   "No está en la lista de palabras": "Not in the word list",
   "Ha cambiado el día: recarga para jugar la palabra nueva": "It's a new day: reload to play the new word",
   "Ya has terminado la palabra de hoy": "You've already finished today's word",
+  "Raya no válida": "Invalid line",
+  "Esa raya ya está trazada": "That line is already drawn",
+  "La carrera no ha empezado": "The race hasn't started",
+  "El texto no coincide": "The text doesn't match",
+  "Demasiado rápido para ser de verdad": "Too fast to be real",
 };

@@ -1,5 +1,7 @@
 import { replay as replayChess } from "@repo/games/chess";
 import { replay as replayConnect4 } from "@repo/games/connect4";
+import { replay as replayDots } from "@repo/games/dots";
+import { replay as replayReversi } from "@repo/games/reversi";
 import { replay, type Mark } from "@repo/games/tictactoe";
 import type { Json, Match } from "@repo/db";
 import type { MatchGame } from "@/lib/games";
@@ -17,16 +19,25 @@ export function opponentOf(match: MatchWithPlayers, userId: string): Player {
   return match.player_x === userId ? match.o : match.x;
 }
 
-/** Juegos por turnos (3 y 4 en raya): el turno se deduce de los movimientos. */
-export function isTurnBased(game: string): game is "tictactoe" | "connect4" | "chess" {
-  return game === "tictactoe" || game === "connect4" || game === "chess";
+const TURN_BASED = ["tictactoe", "connect4", "chess", "reversi", "dots"] as const;
+
+/** Juegos por turnos (3 y 4 en raya, ajedrez, Reversi y puntos y cajas): el turno se deduce de los movimientos. */
+export function isTurnBased(game: string): game is (typeof TURN_BASED)[number] {
+  return (TURN_BASED as readonly string[]).includes(game);
 }
 
-/** 3 y 4 en raya y ajedrez: a quién le toca según los movimientos guardados (null si no está en juego). */
+const REPLAY: Record<(typeof TURN_BASED)[number], (moves: number[]) => { turn: Mark | null } | null> = {
+  tictactoe: replay,
+  connect4: replayConnect4,
+  chess: replayChess,
+  reversi: replayReversi,
+  dots: replayDots,
+};
+
+/** Juegos por turnos: a quién le toca según los movimientos guardados (null si no está en juego). */
 export function turnOf(match: Match): Mark | null {
-  if (match.status !== "active") return null;
-  const state = match.game === "connect4" ? replayConnect4(match.moves) : match.game === "chess" ? replayChess(match.moves) : replay(match.moves);
-  return state?.turn ?? null;
+  if (match.status !== "active" || !isTurnBased(match.game)) return null;
+  return REPLAY[match.game](match.moves)?.turn ?? null;
 }
 
 /**
@@ -36,8 +47,8 @@ export function turnOf(match: Match): Mark | null {
 export function isMyTurn(match: Match, userId: string, chosen: ReadonlySet<string>): boolean {
   if (match.status !== "active") return false;
   if (isTurnBased(match.game)) return turnOf(match) === markOf(match, userId);
-  // Pong y Tron: aceptada, se juega en directo cuando estéis los dos.
-  if (match.game === "pong" || match.game === "tron") return true;
+  // Pong, Tron y la carrera de tecleo: aceptada, se juega en directo cuando estéis los dos.
+  if (match.game === "pong" || match.game === "tron" || match.game === "typing") return true;
   return !chosen.has(match.id);
 }
 

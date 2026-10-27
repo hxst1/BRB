@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { decodeShot } from "@repo/games/battleship";
+import { PASS } from "@repo/games/reversi";
 import { replay as replayRps, type Variant } from "@repo/games/rps";
 import type { Tables } from "@repo/db";
 import { matchGame, matchGameKey, matchHref } from "@/lib/games";
@@ -27,6 +28,9 @@ type Notification = { userId: string; message: (m: Messages) => PushMessage };
 
 /** Los retos pendientes caducan a los 3 días (un poco menos, por si el trabajo se adelanta). */
 const EXPIRY_MS = 3 * 24 * 60 * 60 * 1000 - 5 * 60 * 1000;
+
+/** Juegos por turnos en los que X mueve en las posiciones pares y O en las impares. */
+const TURN_BASED = new Set(["tictactoe", "connect4", "chess", "reversi", "dots"]);
 
 
 function authorized(request: Request): boolean {
@@ -172,9 +176,13 @@ async function notificationsFor(change: Change): Promise<Notification[]> {
     ];
   }
 
-  if (match.game === "tictactoe" || match.game === "connect4" || match.game === "chess") {
+  if (TURN_BASED.has(match.game)) {
+    // Un turno perdido (PASS, el mismo en el Reversi y en puntos y cajas) deja
+    // jugando al que acaba de mover, que ya está en la partida: nadie a quien avisar.
+    if (match.status === "active" && match.moves.at(-1) === PASS) return [];
     // Quien acaba de mover no necesita aviso: se notifica al otro.
-    const lastMover = match.moves.length % 2 === 1 ? match.player_x : match.player_o;
+    const lastMove = match.moves.findLastIndex((move) => move !== PASS);
+    const lastMover = lastMove % 2 === 0 ? match.player_x : match.player_o;
     const target = match.end_reason === "resign"
       ? (match.winner === "x" ? match.player_x : match.player_o)
       : other(lastMover);
@@ -205,6 +213,14 @@ async function notificationsFor(change: Change): Promise<Notification[]> {
       return [notify(target, (m) => m.push.finished, (m) => m.push.fleetSunk(name(m, shooter)))];
     }
     return [notify(target, (m) => m.push.yourTurn, (m) => m.push.shot(name(m, shooter), m.push.shotResult[shot.result]))];
+  }
+
+  if (match.game === "typing") {
+    if (match.status !== "finished") return [];
+    if (match.end_reason === "resign") return [resigned(match.winner === "x" ? match.player_x : match.player_o)];
+    // Gana el primero en acabar: se avisa al otro, que puede no haber visto el final.
+    const loser = match.winner === "x" ? match.player_o : match.player_x;
+    return [notify(loser, (m) => m.push.finished, (m) => m.push.theyWonRematch(name(m, other(loser))))];
   }
 
   if (match.game === "pong" || match.game === "tron") {

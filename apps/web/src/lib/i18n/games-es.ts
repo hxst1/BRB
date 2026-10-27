@@ -270,4 +270,58 @@ export const GAMES_ES = {
       { q: "¿Hay que descargar algo?", a: NO_DOWNLOAD },
     ],
   },
+  reversi: {
+    name: "Reversi",
+    title: "Reversi (Othello) online contra tus amigos",
+    description: "Juega al Reversi online contra tus amigos, por turnos: encierra sus fichas entre dos tuyas para darles la vuelta. Gana quien tenga más al final. Gratis.",
+    tagline: "Encierra fichas y dales la vuelta",
+    genre: "Juego de estrategia",
+    howTo: [
+      "Reta a un amigo. Uno juega con las rojas, que empiezan, y el otro con las azules.",
+      "Por turnos, cada uno pone una ficha que encierre en línea recta (en horizontal, en vertical o en diagonal) fichas del rival entre ella y otra suya.",
+      "Las fichas encerradas se vuelven de tu color. Solo se puede jugar donde se encierra al menos una.",
+      "Si no tienes jugada, pasas el turno. Cuando ninguno puede jugar, gana quien tenga más fichas.",
+    ],
+    faq: [
+      { q: "¿Es lo mismo que el Othello?", a: "Sí. Othello es el nombre comercial del Reversi con estas reglas y esta posición de salida." },
+      { q: "¿Tenemos que estar conectados a la vez?", a: "No. Es por turnos: cada uno juega cuando puede y te avisamos cuando te toca." },
+      { q: "¿Hay que descargar algo?", a: NO_DOWNLOAD },
+    ],
+  },
+  dots: {
+    name: "Puntos y cajas",
+    title: "Puntos y cajas online contra tus amigos",
+    description: "Juega a puntos y cajas (timbiriche) online contra tus amigos: traza rayas, cierra cajas y vuelve a jugar. Gana quien cierre más. Por turnos y gratis.",
+    tagline: "Cierra cajas y vuelve a jugar",
+    genre: "Juego de lápiz y papel",
+    howTo: [
+      "Reta a un amigo. El tablero es una cuadrícula de 5 × 5 puntos, con 16 cajas.",
+      "Por turnos, cada uno traza una raya entre dos puntos vecinos, en horizontal o en vertical.",
+      "Quien cierra el cuarto lado de una caja se la queda y vuelve a jugar.",
+      "Cuando están todas cerradas, gana quien tenga más cajas. Con 8 cada uno, empate.",
+    ],
+    faq: [
+      { q: "¿Es el timbiriche?", a: "Sí. También se conoce como cuadritos o juego de los puntos." },
+      { q: "¿Tenemos que estar conectados a la vez?", a: "No. Es por turnos: cada uno juega cuando puede y te avisamos cuando te toca." },
+      { q: "¿Hay que descargar algo?", a: NO_DOWNLOAD },
+    ],
+  },
+  typing: {
+    name: "Carrera de tecleo",
+    title: "Carrera de mecanografía online contra tus amigos",
+    description: "Echa una carrera de mecanografía online contra un amigo: los dos escribís el mismo texto a la vez y gana quien lo acabe antes. En directo y gratis.",
+    tagline: "En directo: escribe más rápido",
+    genre: "Mecanografía",
+    howTo: [
+      "Reta a un amigo y entrad los dos a la partida.",
+      "Cuando estéis los dos, empieza una cuenta atrás y sale el texto: unas 24 palabras sin tildes.",
+      "Escríbelo tal cual. Si te equivocas, borra la letra mal para seguir; ves cómo avanza tu amigo.",
+      "Gana quien acabe antes. El tiempo lo mide el servidor, no tu navegador.",
+    ],
+    faq: [
+      { q: "¿Tenemos que estar conectados a la vez?", a: "Sí. La carrera se juega en directo." },
+      { q: "¿Por qué el texto no lleva tildes?", a: "Porque se escriben distinto en cada teclado, y así la carrera es justa para los dos." },
+      { q: "¿En qué idioma es el texto?", a: "En el de quien reta: español o inglés." },
+    ],
+  },
 } satisfies Record<string, GameTexts>;

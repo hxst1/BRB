@@ -12,7 +12,7 @@ import { createClient } from "@/lib/supabase/client";
 import { InlinePicto } from "@/components/picto";
 import type { Picto } from "@/lib/pictos";
 
-type GameId = "2048" | "snake" | "lightsout" | "minesweeper" | "sudoku" | "solitaire" | "queens" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron" | "chess";
+type GameId = "2048" | "snake" | "lightsout" | "minesweeper" | "sudoku" | "solitaire" | "queens" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron" | "chess" | "reversi" | "dots" | "typing";
 type Category = "level" | GameId;
 type Difficulty = "easy" | "medium" | "hard";
 type Scope = "global" | "friends";
@@ -92,6 +92,9 @@ const RANKED_GAMES: RankedGame[] = [
   { id: "pong", games: ["pong"] },
   { id: "tron", games: ["tron"] },
   { id: "chess", games: ["chess"] },
+  { id: "reversi", games: ["reversi"] },
+  { id: "dots", games: ["dots"] },
+  { id: "typing", games: ["typing"] },
 ];
 
 const MAX_ROWS = 50;

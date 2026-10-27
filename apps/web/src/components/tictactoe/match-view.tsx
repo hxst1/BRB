@@ -3,13 +3,17 @@
 import { MatchSounds, resultFor } from "@/components/match-sounds";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
-import { replay as replayConnect4 } from "@repo/games/connect4";
-import { replay, type Mark } from "@repo/games/tictactoe";
+import { useCallback, useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { play as playConnect4, replay as replayConnect4, type Connect4State } from "@repo/games/connect4";
+import { play as playDots, replay as replayDots, type DotsState } from "@repo/games/dots";
+import { play as playReversi, replay as replayReversi, type ReversiState } from "@repo/games/reversi";
+import { play, replay, type Mark, type TicTacToeState } from "@repo/games/tictactoe";
 import type { Mood } from "@repo/avatars";
 import type { Match } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { Connect4Board } from "@/components/connect4/board";
+import { DotsBoard } from "@/components/dots/board";
+import { ReversiBoard } from "@/components/reversi/board";
 import { MATCH_GAMES } from "@/lib/games";
 import { createClient } from "@/lib/supabase/client";
 import { TicTacToeBoard } from "./board";
@@ -21,7 +25,55 @@ import { MatchNotFound } from "@/components/match-not-found";
 
 export const MARK_COLOR: Record<Mark, string> = { x: "var(--mark-x)", o: "var(--mark-o)" };
 
-/** Partida por turnos contra un amigo: 3 en raya o 4 en raya (cambian el tablero y la lógica). */
+export type BoardGame = "tictactoe" | "connect4" | "reversi" | "dots";
+
+type Loaded =
+  | { game: "tictactoe"; state: TicTacToeState }
+  | { game: "connect4"; state: Connect4State }
+  | { game: "reversi"; state: ReversiState }
+  | { game: "dots"; state: DotsState };
+
+/**
+ * El estado de la partida, con la jugada enviada (`pending`) ya hecha para que
+ * se vea al momento. Se aplica con `play` y no repitiendo la lista: en el
+ * Reversi y en puntos y cajas una jugada puede añadir un turno perdido.
+ */
+function load(game: BoardGame, moves: number[], pending: number | null, me: Mark): Loaded {
+  switch (game) {
+    case "connect4": {
+      const saved = replayConnect4(moves) ?? replayConnect4([])!;
+      const next = pending === null ? null : playConnect4(saved, me, pending);
+      return { game, state: next?.ok ? next.state : saved };
+    }
+    case "reversi": {
+      const saved = replayReversi(moves) ?? replayReversi([])!;
+      const next = pending === null ? null : playReversi(saved, me, pending);
+      return { game, state: next?.ok ? next.state : saved };
+    }
+    case "dots": {
+      const saved = replayDots(moves) ?? replayDots([])!;
+      const next = pending === null ? null : playDots(saved, me, pending);
+      return { game, state: next?.ok ? next.state : saved };
+    }
+    default: {
+      const saved = replay(moves) ?? replay([])!;
+      const next = pending === null ? null : play(saved, me, pending);
+      return { game: "tictactoe", state: next?.ok ? next.state : saved };
+    }
+  }
+}
+
+/** Lo que se manda al servidor en cada jugada. */
+const MOVE_FIELD: Record<BoardGame, string> = { tictactoe: "cell", connect4: "column", reversi: "cell", dots: "edge" };
+
+const SKELETON: Record<BoardGame, string> = {
+  tictactoe: "ttt-board",
+  connect4: "c4-board aspect-[7/6]",
+  reversi: "rv-board",
+  dots: "dots-board",
+};
+
+/** Partida por turnos contra un amigo: 3 en raya, 4 en raya, Reversi o puntos y cajas (cambian el tablero y la lógica). */
 export function MatchView({
   matchId,
   viewerId,
@@ -29,12 +81,12 @@ export function MatchView({
 }: {
   matchId: string;
   viewerId: string;
-  game?: "tictactoe" | "connect4";
+  game?: BoardGame;
 }) {
   const router = useRouter();
   const m = useMessages();
   const [match, setMatch] = useState<MatchWithPlayers | null | undefined>(undefined);
-  // Jugada enviada y aún sin confirmar: casilla (3 en raya) o columna (4 en raya).
+  // Jugada enviada y aún sin confirmar: casilla, columna (4 en raya) o raya (puntos y cajas).
   const [pendingCell, setPendingCell] = useState<number | null>(null);
   const path = MATCH_GAMES[game].path;
   const [error, setError] = useState<string | null>(null);
@@ -87,17 +139,17 @@ export function MatchView({
     [matchId, m],
   );
 
-  if (match === undefined) return <div className={`${game === "connect4" ? "c4-board aspect-[7/6]" : "ttt-board"} w-full max-w-md animate-pulse`} />;
+  if (match === undefined) return <div className={`${SKELETON[game]} w-full max-w-md animate-pulse`} />;
   if (match === null || match.game !== game) {
     return <MatchNotFound path={path} />;
   }
 
   const me = markOf(match, viewerId);
   const rival: Mark = me === "x" ? "o" : "x";
-  const moves = pendingCell === null ? match.moves : [...match.moves, pendingCell];
-  const replayGame = (list: number[]) => (game === "connect4" ? replayConnect4(list) : replay(list));
-  const state = replayGame(moves) ?? replayGame(match.moves)!;
+  const loaded = load(game, match.moves, pendingCell, me);
+  const state = loaded.state;
   const myTurn = match.status === "active" && state.turn === me && pendingCell === null;
+  const passNote = extraTurn(loaded, me, match[rival].username, m);
   const invitedMe = match.status === "pending" && match.created_by !== viewerId;
   const players: Record<Mark, Player> = { x: match.x, o: match.o };
 
@@ -107,7 +159,7 @@ export function MatchView({
     const response = await fetch(`/api/matches/${matchId}/move`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify(game === "connect4" ? { column: cell } : { cell }),
+      body: JSON.stringify({ [MOVE_FIELD[game]]: cell }),
     });
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
@@ -144,7 +196,7 @@ export function MatchView({
           label={m.match.you}
           active={state.turn === me && match.status === "active"}
           mood={moodOf(me)}
-          detail={game === "connect4" ? <Disc mark={me} /> : undefined}
+          detail={badgeDetail(loaded, me, m)}
         />
         <span className="hidden shrink-0 text-sm text-muted sm:inline">{m.match.versus}</span>
         <PlayerBadge
@@ -153,28 +205,52 @@ export function MatchView({
           active={state.turn === rival && match.status === "active"}
           mood={moodOf(rival)}
           alignEnd
-          detail={game === "connect4" ? <Disc mark={rival} /> : undefined}
+          detail={badgeDetail(loaded, rival, m)}
         />
       </div>
 
-      <p aria-live="polite" className="display text-center text-3xl font-bold">
-        {statusText(m, match, me, state.turn, players[rival].username)}
-      </p>
+      <div aria-live="polite" className="text-center">
+        <p className="display text-3xl font-bold">{statusText(m, match, me, state.turn, players[rival].username)}</p>
+        {match.status === "active" && passNote && <p className="mt-1 text-sm text-muted">{passNote}</p>}
+      </div>
 
       <div className="w-full" style={{ "--win-color": winnerMark ? MARK_COLOR[winnerMark] : undefined } as CSSProperties}>
-        {"last" in state ? (
+        {loaded.game === "connect4" ? (
           <Connect4Board
-            board={state.board}
-            line={state.line}
-            last={state.last}
+            board={loaded.state.board}
+            line={loaded.state.line}
+            last={loaded.state.last}
             me={me}
             canPlay={myTurn && !busy}
             onPlay={(column) => void playCell(column)}
           />
+        ) : loaded.game === "reversi" ? (
+          <ReversiBoard
+            board={loaded.state.board}
+            last={loaded.state.last}
+            flipped={loaded.state.flipped}
+            me={me}
+            canPlay={myTurn && !busy}
+            onPlay={(cell) => void playCell(cell)}
+          />
+        ) : loaded.game === "dots" ? (
+          <DotsBoard
+            edges={loaded.state.edges}
+            boxes={loaded.state.boxes}
+            last={loaded.state.last}
+            closed={loaded.state.closed}
+            me={me}
+            canPlay={myTurn && !busy}
+            onPlay={(edge) => void playCell(edge)}
+          />
         ) : (
-          <TicTacToeBoard board={state.board} line={state.line} canPlay={myTurn && !busy} onPlay={(cell) => void playCell(cell)} />
+          <TicTacToeBoard board={loaded.state.board} line={loaded.state.line} canPlay={myTurn && !busy} onPlay={(cell) => void playCell(cell)} />
         )}
       </div>
+
+      {myTurn && (loaded.game === "reversi" || loaded.game === "dots") && match.moves.length < 2 && (
+        <p className="-mt-3 text-center text-sm text-muted">{loaded.game === "reversi" ? m.reversi.hint : m.dots.hint}</p>
+      )}
 
       {error && (
         <p role="alert" className="text-center text-sm text-danger">
@@ -227,14 +303,43 @@ export function MatchView({
   );
 }
 
+/**
+ * Bajo el nombre: la ficha de cada uno en el 4 en raya, y además cuántas
+ * fichas o cajas lleva en el Reversi y en puntos y cajas. En el 3 en raya, × u ○.
+ */
+function badgeDetail(loaded: Loaded, mark: Mark, m: Messages): ReactNode {
+  if (loaded.game === "connect4") return <span className="mt-1 flex"><Disc mark={mark} /></span>;
+  if (loaded.game === "reversi" || loaded.game === "dots") {
+    const count = loaded.state.score[mark];
+    return (
+      <span className="mt-1 flex items-center gap-1.5">
+        <Disc mark={mark} square={loaded.game === "dots"} />
+        <span className="tabular text-sm font-semibold">{loaded.game === "reversi" ? m.reversi.pieces(count) : m.dots.boxes(count)}</span>
+      </span>
+    );
+  }
+  return undefined;
+}
+
+/** Quién ha perdido el turno con la última jugada (Reversi y puntos y cajas), si alguien. */
+function extraTurn(loaded: Loaded, me: Mark, rivalName: string, m: Messages): string | null {
+  if (loaded.game === "reversi" && loaded.state.passed) {
+    return loaded.state.passed === me ? m.reversi.youPass : m.reversi.theyPass(rivalName);
+  }
+  if (loaded.game === "dots" && loaded.state.closed.length > 0 && loaded.state.turn) {
+    return loaded.state.turn === me ? m.dots.again : m.dots.theyAgain(rivalName);
+  }
+  return null;
+}
+
 /** Ficha del color de cada jugador en el 4 en raya. */
-function Disc({ mark }: { mark: Mark }) {
+function Disc({ mark, square = false }: { mark: Mark; square?: boolean }) {
   const m = useMessages();
   return (
     <span
       role="img"
       aria-label={mark === "x" ? m.match.redPieces : m.match.bluePieces}
-      className="mt-1 size-4 rounded-full"
+      className={`size-4 shrink-0 ${square ? "rounded-sm" : "rounded-full"}`}
       style={{ background: MARK_COLOR[mark] }}
     />
   );

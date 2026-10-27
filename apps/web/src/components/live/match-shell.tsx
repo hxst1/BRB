@@ -13,11 +13,12 @@ import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import type { Messages } from "@/lib/i18n";
 import { useMessages } from "@/lib/i18n/client";
 import { MatchNotFound } from "@/components/match-not-found";
+import { MatchSounds, resultFor } from "@/components/match-sounds";
 
 type Mark = "x" | "o";
 
 /**
- * Lo común de los juegos en directo (pong y Tron): aceptar o rechazar el
+ * Lo común de los juegos en directo (pong, Tron y la carrera de tecleo): aceptar o rechazar el
  * reto, rendirse, revancha y el resultado final. Mientras la partida está en
  * juego muestra `live`, que es el juego en sí.
  */
@@ -29,7 +30,7 @@ export function LiveMatchShell({
 }: {
   matchId: string;
   viewerId: string;
-  game: "pong" | "tron";
+  game: "pong" | "tron" | "typing";
   live: (props: { match: Match; me: Mark; rivalName: string; onReported: () => void }) => ReactNode;
 }) {
   const router = useRouter();
@@ -80,7 +81,9 @@ export function LiveMatchShell({
     else setError(m.match.rematchError);
   }
 
-  if (match === undefined) return <div className="aspect-[1/1.6] w-full max-w-sm animate-pulse rounded-3xl bg-line/40" />;
+  // La carrera de tecleo, más ancha: el texto se lee mejor en líneas largas.
+  const width = game === "typing" ? "max-w-xl" : "max-w-sm";
+  if (match === undefined) return <div className={`aspect-[1/1.6] w-full ${width} animate-pulse rounded-3xl bg-line/40`} />;
   if (match === null || match.game !== game) {
     return <MatchNotFound path={path} />;
   }
@@ -90,7 +93,9 @@ export function LiveMatchShell({
   const invitedMe = match.status === "pending" && match.created_by !== viewerId;
 
   return (
-    <div className="flex w-full max-w-sm flex-col gap-4">
+    <div className={`flex w-full ${width} flex-col gap-4`}>
+      {/* La carrera acaba en cuanto llega el primero: el resultado suena aquí, no en la carrera. */}
+      {game === "typing" && <MatchSounds progress={0} myTurn={false} result={resultFor(match, me)} />}
       {match.status === "active" ? (
         live({ match, me, rivalName: rival.username, onReported: reload })
       ) : (
@@ -101,7 +106,11 @@ export function LiveMatchShell({
             <Avatar seed={match.o.avatar_seed} parts={match.o.avatar_parts} size={64} mood={moodOf(match, "o")} />
           </div>
           <p className="display text-3xl font-bold text-balance">{statusText(m, match, me, rival.username)}</p>
-          {match.status === "finished" && match.end_reason === "points" && (
+          {match.status === "finished" && match.end_reason === "points" && game === "typing" && (
+            // La carrera guarda solo el tiempo del ganador, en décimas.
+            <p className="tabular text-lg text-muted">{m.typing.winnerTime(m.format.time(match.moves[0]! * 100))}</p>
+          )}
+          {match.status === "finished" && match.end_reason === "points" && game !== "typing" && (
             <p className="tabular display text-5xl font-bold">
               {match.moves[me === "x" ? 0 : 1]} – {match.moves[me === "x" ? 1 : 0]}
             </p>

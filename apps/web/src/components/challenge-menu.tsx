@@ -8,7 +8,7 @@ import { matchHref, type MatchGame } from "@/lib/games";
 import { useMessages } from "@/lib/i18n/client";
 
 /** Las etiquetas están en m.challengeMenu. */
-const OPTIONS: MatchGame[] = ["tictactoe", "connect4", "battleship", "rps", "rpsls", "pong", "tron", "chess"];
+const OPTIONS: MatchGame[] = ["tictactoe", "connect4", "battleship", "rps", "rpsls", "pong", "tron", "chess", "reversi", "dots", "typing"];
 
 /**
  * "Retar ▾": elige a qué juego retar a un amigo. Si ya tenéis una partida

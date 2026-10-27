@@ -1,6 +1,8 @@
 import { isValidFleet, shoot, type Fleet, type ShotError } from "@repo/games/battleship";
 import { play as playChess, replay as replayChess, type MoveError as ChessError } from "@repo/games/chess";
 import { play as playConnect4, replay as replayConnect4, type MoveError as Connect4Error } from "@repo/games/connect4";
+import { play as playDots, replay as replayDots, type MoveError as DotsError } from "@repo/games/dots";
+import { play as playReversi, replay as replayReversi, type MoveError as ReversiError } from "@repo/games/reversi";
 import { isValidChoice, replay as replayRps, type Variant } from "@repo/games/rps";
 import { play, replay, type MoveError } from "@repo/games/tictactoe";
 import type { Match } from "@repo/db";
@@ -13,7 +15,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** Código que lanzan apply_match_move / submit_match_choice cuando la partida cambió o no está en juego. */
 const MATCH_CHANGED = "P0002";
 
-const MOVE_ERRORS: Record<MoveError | Connect4Error | ShotError | ChessError, string> = {
+const MOVE_ERRORS: Record<MoveError | Connect4Error | ShotError | ChessError | ReversiError | DotsError, string> = {
   game_over: "La partida ya ha terminado",
   not_your_turn: "No es tu turno",
   invalid_cell: "Casilla no válida",
@@ -22,6 +24,8 @@ const MOVE_ERRORS: Record<MoveError | Connect4Error | ShotError | ChessError, st
   full: "Esa columna está llena",
   already_shot: "Ya has disparado ahí",
   illegal: "Esa jugada no está permitida",
+  invalid_edge: "Raya no válida",
+  taken: "Esa raya ya está trazada",
 };
 
 type MatchRow = Pick<Match, "id" | "game" | "status" | "moves" | "player_x" | "player_o">;
@@ -36,12 +40,13 @@ const serverError = (context: string, error: unknown) => {
  * Valida una jugada con la lógica compartida y la guarda.
  * 3 en raya: `{ cell }`. 4 en raya: `{ column }`. Hundir la flota: `{ cell }` (disparo).
  * Piedra, papel o tijera: `{ choice }` (índice de la opción). Ajedrez: `{ move }` (ver @repo/games/chess).
+ * Reversi: `{ cell }`. Puntos y cajas: `{ edge }`.
  */
 export async function POST(request: Request, { params }: RouteContext<"/api/matches/[id]/move">) {
   const { id } = await params;
   if (!UUID.test(id)) return json({ error: "Partida no encontrada" }, 404);
 
-  const body = (await request.json().catch(() => null)) as { cell?: unknown; column?: unknown; choice?: unknown; move?: unknown } | null;
+  const body = (await request.json().catch(() => null)) as { cell?: unknown; column?: unknown; choice?: unknown; move?: unknown; edge?: unknown } | null;
 
   const { supabase, userId } = await createClientForRequest(request);
   if (!userId) return json({ error: "Hay que iniciar sesión" }, 401);
@@ -60,6 +65,8 @@ export async function POST(request: Request, { params }: RouteContext<"/api/matc
   if (match.game === "tictactoe") return playTicTacToe(match, userId, body?.cell);
   if (match.game === "connect4") return playFourInARow(match, userId, body?.column);
   if (match.game === "chess") return playChessMove(match, userId, body?.move);
+  if (match.game === "reversi") return playReversiMove(match, userId, body?.cell);
+  if (match.game === "dots") return playDotsMove(match, userId, body?.edge);
   if (match.game === "battleship") return fire(match, userId, body?.cell);
   if (match.game === "rps" || match.game === "rpsls") return playRps(match, match.game, userId, body?.choice);
   return json({ error: "Partida no encontrada" }, 404);
@@ -166,6 +173,49 @@ async function playChessMove(match: MatchRow, userId: string, move: unknown) {
     previous_count: match.moves.length,
     moves: next.moves,
     end_reason: next.ending === "checkmate" ? "checkmate" : next.ending ? "draw" : undefined,
+    winner: next.winner ?? undefined,
+  });
+  if (error?.code === MATCH_CHANGED) return json({ error: "La partida ha cambiado, recarga" }, 409);
+  if (error) return serverError("error guardando la jugada", error);
+
+  return json({ moves: next.moves });
+}
+
+/** Reversi: la jugada puede añadir un turno perdido del rival (PASS), que se guarda con ella. */
+async function playReversiMove(match: MatchRow, userId: string, cell: unknown) {
+  if (typeof cell !== "number") return json({ error: MOVE_ERRORS.invalid_cell }, 400);
+
+  const state = replayReversi(match.moves);
+  if (!state) return serverError("la partida guardada no es válida", match.id);
+
+  const result = playReversi(state, match.player_x === userId ? "x" : "o", cell);
+  if (!result.ok) {
+    return json({ error: MOVE_ERRORS[result.error] }, result.error === "not_your_turn" ? 409 : 400);
+  }
+  return saveScored(match, result.state);
+}
+
+/** Puntos y cajas: si cierra una caja, la jugada añade el turno perdido del rival (PASS). */
+async function playDotsMove(match: MatchRow, userId: string, edge: unknown) {
+  if (typeof edge !== "number") return json({ error: MOVE_ERRORS.invalid_edge }, 400);
+
+  const state = replayDots(match.moves);
+  if (!state) return serverError("la partida guardada no es válida", match.id);
+
+  const result = playDots(state, match.player_x === userId ? "x" : "o", edge);
+  if (!result.ok) {
+    return json({ error: MOVE_ERRORS[result.error] }, result.error === "not_your_turn" ? 409 : 400);
+  }
+  return saveScored(match, result.state);
+}
+
+/** Guarda una jugada de un juego que se gana por puntos (fichas o cajas) al llenar el tablero. */
+async function saveScored(match: MatchRow, next: { moves: number[]; turn: "x" | "o" | null; winner: "x" | "o" | null }) {
+  const { error } = await createAdminClient().rpc("apply_match_move", {
+    match_id: match.id,
+    previous_count: match.moves.length,
+    moves: next.moves,
+    end_reason: next.turn ? undefined : next.winner ? "points" : "draw",
     winner: next.winner ?? undefined,
   });
   if (error?.code === MATCH_CHANGED) return json({ error: "La partida ha cambiado, recarga" }, 409);
