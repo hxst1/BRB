@@ -200,6 +200,7 @@ export const es = {
     terms: "términos",
     acceptMiddle: " y la ",
     privacy: "política de privacidad",
+    acceptAfter: "",
     submit: "Guardar mi cuenta",
     usernameRule: "El nombre lleva de 3 a 20 letras, números o guiones bajos.",
     passwordRule: "La contraseña tiene que tener al menos 8 caracteres.",

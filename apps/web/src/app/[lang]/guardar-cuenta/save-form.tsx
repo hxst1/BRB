@@ -69,7 +69,8 @@ export function SaveAccountForm({ username }: { username: string }) {
           <Link href="/legal/privacidad" className="underline underline-offset-4">
             {t.privacy}
           </Link>
-          .
+          {t.acceptAfter}
+          {m.common.period}
         </span>
       </label>
       {state.error && (

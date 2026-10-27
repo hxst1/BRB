@@ -195,6 +195,7 @@ export const en: Messages = {
     terms: "terms",
     acceptMiddle: " and the ",
     privacy: "privacy policy",
+    acceptAfter: "",
     submit: "Save my account",
     usernameRule: "Names are 3 to 20 letters, numbers or underscores.",
     passwordRule: "The password needs at least 8 characters.",
