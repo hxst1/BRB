@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { GameTile } from "./game-tile";
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useMessages } from "@/lib/i18n/client";
 import { guidesFor, type GameGuide } from "@/lib/seo";
@@ -163,16 +164,5 @@ export function NewGamesPopup({ viewerId }: { viewerId: string }) {
         </button>
       </div>
     </div>
-  );
-}
-
-/** Miniatura con el color del juego: un tablero de 3 × 3 con la casilla central encendida. */
-function GameTile({ accent }: { accent: string }) {
-  return (
-    <span aria-hidden className="grid size-14 shrink-0 grid-cols-3 gap-0.5 rounded-2xl bg-surface p-1.5">
-      {Array.from({ length: 9 }, (_, i) => (
-        <span key={i} className="rounded-[4px]" style={{ background: i === 4 || i === 0 || i === 8 ? accent : "var(--cell)" }} />
-      ))}
-    </span>
   );
 }

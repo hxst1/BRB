@@ -79,6 +79,7 @@ export function AccountMenu({
           </div>
           <MenuLink href="/perfil">{m.nav.profileAndMonster}</MenuLink>
           <MenuLink href="/amigos">{m.nav.friendsAndCode}</MenuLink>
+          <MenuLink href="/novedades">{m.newsPage.title}</MenuLink>
           <button
             type="button"
             role="menuitem"

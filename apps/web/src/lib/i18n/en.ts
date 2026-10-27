@@ -149,6 +149,15 @@ export const en: Messages = {
     solo: "Solo",
     withFriends: "Against your friends",
   },
+  newsPage: {
+    title: "What's new",
+    description: "The latest from the app: new games, gifts, events and improvements.",
+    intro: "New games, gifts, events and improvements, as they arrive.",
+    kinds: { news: "Announcement", reward: "Gift", event: "Event", update: "Improvements", game: "New game", games: "New games" },
+    newGame: (name: string) => `New game: ${name}`,
+    newGames: (n: number) => `${n} new games`,
+    dismiss: "Close this notice",
+  },
   productHunt: {
     title: "Hi, Product Hunt folks!",
     body: "Create a free account this week and get the exclusive launch beanie, colour and theme.",

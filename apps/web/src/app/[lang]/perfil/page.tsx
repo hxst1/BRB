@@ -130,6 +130,9 @@ async function SettingsSection({ viewer }: { viewer: Viewer }) {
           <Link href="/amigos" className="text-sm font-medium underline-offset-4 hover:underline">
             {m.nav.friendsAndCode}
           </Link>
+          <Link href="/novedades" className="text-sm font-medium underline-offset-4 hover:underline">
+            {m.newsPage.title}
+          </Link>
           <Link href="/apoyar" className="text-sm font-medium underline-offset-4 hover:underline">
             {viewer.supporter_tier ? m.profile.thanksSupport : m.profile.support}
           </Link>

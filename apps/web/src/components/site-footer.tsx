@@ -21,6 +21,9 @@ export async function SiteFooter() {
         {brand.name} · {brand.expansion}
       </span>
       <nav aria-label={m.legal.title} className="flex flex-wrap gap-4">
+        <Link href="/novedades" className="underline-offset-4 hover:text-ink hover:underline">
+          {m.newsPage.title}
+        </Link>
         {LEGAL_LINKS.map((link) => (
           <Link key={link.href} href={link.href} className="underline-offset-4 hover:text-ink hover:underline">
             {m.legal[link.label]}

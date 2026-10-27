@@ -305,6 +305,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"news_posts": {
+                  Row: {
+                    "body_en": string | null,"body_es": string,"created_at": string,"cta_label_en": string | null,"cta_label_es": string | null,"cta_url": string | null,"id": string,"kind": string,"pinned": boolean,"published_at": string,"slug": string,"title_en": string | null,"title_es": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body_en"?: string | null,"body_es": string,"created_at"?: string,"cta_label_en"?: string | null,"cta_label_es"?: string | null,"cta_url"?: string | null,"id"?: string,"kind"?: string,"pinned"?: boolean,"published_at"?: string,"slug": string,"title_en"?: string | null,"title_es": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "body_en"?: string | null,"body_es"?: string,"created_at"?: string,"cta_label_en"?: string | null,"cta_label_es"?: string | null,"cta_url"?: string | null,"id"?: string,"kind"?: string,"pinned"?: boolean,"published_at"?: string,"slug"?: string,"title_en"?: string | null,"title_es"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"pinned_games": {
                   Row: {
                     "game": string,"pinned_at": string,"user_id": string
@@ -579,6 +593,9 @@ isOneToOne: false
               "active_users": number,"day": string,"matches": number,"messages": number,"new_users": number,"solo_runs": number
             }[]
                            },
+"admin_delete_news_post":
+{ Args: { "admin_id": string,"post_id": string,"reason"?: string }; Returns: undefined
+                           },
 "admin_games_played":
 { Args: { "days"?: number }; Returns: {
               "game": string,"kind": string,"players": number,"plays": number
@@ -622,6 +639,29 @@ isOneToOne: false
               "count": number,"fingerprint": string,"first_seen": string,"last_seen": string,"last_version": string,"message": string,"paths": (string)[],"source": string,"status": string,"user_agents": (string)[],"users": number
             }[]
                            },
+"admin_list_news_posts":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "body_en": string | null,
+"body_es": string,
+"created_at": string,
+"cta_label_en": string | null,
+"cta_label_es": string | null,
+"cta_url": string | null,
+"id": string,
+"kind": string,
+"pinned": boolean,
+"published_at": string,
+"slug": string,
+"title_en": string | null,
+"title_es": string,
+"updated_at": string
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "news_posts"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "admin_list_users":
 { Args: { "max_rows"?: number,"search"?: string,"skip"?: number }; Returns: {
               "avatar_parts": Json,"avatar_seed": number,"created_at": string,"friend_code": string,"id": string,"push_devices": number,"seen_at": string,"streak_best": number,"streak_days": number,"streak_last_day": string,"supporter_tier": string,"total_count": number,"username": string,"xp": number
@@ -652,6 +692,9 @@ isOneToOne: false
 { Args: { "admin_id": string,"game"?: string,"reason": string,"user_id": string }; Returns: {
               "runs": number,"xp": number
             }[]
+                           },
+"admin_save_news_post":
+{ Args: { "admin_id": string,"body_en"?: string,"body_es": string,"cta_label_en"?: string,"cta_label_es"?: string,"cta_url"?: string,"kind": string,"pinned"?: boolean,"post_id": string,"published_at"?: string,"reason"?: string,"slug": string,"title_en"?: string,"title_es": string }; Returns: string
                            },
 "admin_set_error_status":
 { Args: { "admin_id": string,"fingerprint": string,"reason"?: string,"status": string }; Returns: undefined

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import type { Functions, Match } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { DailyCard } from "@/components/daily/daily-summary";
@@ -10,6 +11,7 @@ import type { Messages } from "@/lib/i18n";
 import { MATCH_WITH_PLAYERS, PLAYER_COLUMNS } from "@/lib/queries";
 import type { Viewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { LatestNews } from "@/components/news/latest-news";
 import { FirstSteps, type FirstStep } from "./first-steps";
 import { GameCards } from "./game-cards";
 import { NowSection, type NowItem, type WaitingItem } from "./now";
@@ -224,6 +226,12 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
           <LevelBar xp={viewer.xp} className="max-w-sm" />
         </div>
       </section>
+
+      <Suspense fallback={null}>
+        <div className="mt-6 empty:hidden">
+          <LatestNews viewerId={viewer.id} />
+        </div>
+      </Suspense>
 
       {showFirstSteps && <FirstSteps viewerId={viewer.id} steps={firstSteps} />}
 

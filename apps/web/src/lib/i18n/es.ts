@@ -153,6 +153,15 @@ export const es = {
     solo: "En solitario",
     withFriends: "Contra tus amigos",
   },
+  newsPage: {
+    title: "Novedades",
+    description: "Lo último de la app: juegos nuevos, regalos, eventos y mejoras.",
+    intro: "Juegos nuevos, regalos, eventos y mejoras, según van llegando.",
+    kinds: { news: "Anuncio", reward: "Regalo", event: "Evento", update: "Mejoras", game: "Juego nuevo", games: "Juegos nuevos" },
+    newGame: (name: string) => `Juego nuevo: ${name}`,
+    newGames: (n: number) => `${n} juegos nuevos`,
+    dismiss: "Cerrar este aviso",
+  },
   productHunt: {
     title: "¡Hola, gente de Product Hunt!",
     body: "Crea tu cuenta gratis esta semana y llévate el gorro, el color y el tema exclusivos del lanzamiento.",
