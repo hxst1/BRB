@@ -1,172 +1,181 @@
 # BRB
 
-Minijuegos rápidos para cuando necesitas desconectar un rato, solo o contra tus amigos. Gratis, en el
-navegador y sin descargar nada.
+Quick mini-games for when you need a short break, solo or against your friends. Free, in the browser,
+nothing to download.
 
-**Juega: https://afk-brb.vercel.app**
+**Play: https://afk-brb.vercel.app**
 
-*Quick mini-games for a short break, solo or with your friends. Free, right in your browser.*
+*Minijuegos rápidos para desconectar un rato, solo o contra tus amigos. Gratis y en el navegador.*
 
-- **En solitario**, con ranking global y de amigos: Solitario, Sudoku, Reinas, 2048, Buscaminas, Snake,
-  Lights Out y un Wordle diario.
-- **Contra amigos**: ajedrez, Reversi, 3 y 4 en raya, puntos y cajas, hundir la flota y piedra, papel o
-  tijera por turnos, y Pong, Tron y una carrera de tecleo en directo.
-- **Reto diario** (la misma partida para todos, un intento al día), logros, rachas, un monster que se
-  personaliza, chat y notificaciones.
-- Se instala como app (PWA) y tiene **extensión de Chrome**.
+- **Solo**, with global and friends rankings: Solitaire, Sudoku, Queens, 2048, Minesweeper, Snake,
+  Lights Out and a daily Wordle.
+- **Against friends**: chess, Reversi, tic-tac-toe, Connect Four, dots and boxes, Battleship and
+  rock-paper-scissors, turn by turn; and Pong, Tron and a typing race, live.
+- **Daily challenges**: four every day (a puzzle, an arcade game, the word and a duel with friends), the
+  same game for everyone and one try each.
+- **Streaks** with a flame that grows as you keep playing, and streak freezes. Achievements, a monster
+  you can customise, chat, notifications and a news page.
+- The app is in Spanish and English, installs as an app (PWA) and has a **Chrome extension**.
 
-## Estructura
+## Structure
 
 ```
-apps/web        Next.js (App Router) + PWA
-apps/extension  Extensión de Chrome (WXT): la web dentro de la ventanita del icono
-packages/brand  Nombre, textos y colores de la marca (única fuente de verdad)
-packages/games  Lógica pura de los juegos en TS, compartida por cliente y servidor
-packages/db     Tipos generados del esquema de Supabase
-packages/avatars Monstruos procedurales (SVG puro, sin React)
-packages/ui     Tema CSS y componentes compartidos por la web y la extensión
-supabase/       Config, migraciones, seed y tests de BD
+apps/web         Next.js (App Router) + PWA
+apps/extension   Chrome extension (WXT): the website inside the toolbar popup
+packages/brand   Brand name, copy and colours (single source of truth)
+packages/games   Pure game logic in TS, shared by client and server
+packages/db      Types generated from the Supabase schema
+packages/avatars Procedural monsters (plain SVG, no React)
+packages/ui      CSS theme and components shared by the web app and the extension
+supabase/        Config, migrations, seed and database tests
 ```
 
-## Desarrollo
+## Development
 
 ```sh
 pnpm install
-pnpm dev         # web en http://localhost:4321
-pnpm test        # tests de los juegos
+pnpm dev         # web app at http://localhost:4321
+pnpm test        # game tests
 pnpm typecheck
 pnpm lint
 ```
 
-Galería de monstruos para revisar el generador (solo en desarrollo): http://localhost:4321/dev/monstruos
+Monster gallery to review the generator (development only): http://localhost:4321/dev/monstruos
 
-Node 24 (ver `.node-version`, lo usa fnm).
+Node 24 (see `.node-version`, used by fnm).
 
-## Supabase en local
+## Local Supabase
 
-Requiere Docker. El CLI va como dependencia del monorepo.
+Requires Docker. The CLI is a dependency of the monorepo.
 
 ```sh
-pnpm db:start            # levanta Postgres, Auth, Realtime, Studio…
-pnpm db:status           # URLs y claves locales
-pnpm db:migration nombre # nueva migración en supabase/migrations
-pnpm db:reset            # recrea la BD aplicando migraciones + seed
-pnpm db:types            # regenera packages/db/src/database.types.ts tras cambiar el esquema
-pnpm test:db             # tests de BD (pgTAP): permisos, RLS, amistades, partidas
+pnpm db:start            # starts Postgres, Auth, Realtime, Studio…
+pnpm db:status           # local URLs and keys
+pnpm db:migration name   # new migration in supabase/migrations
+pnpm db:reset            # recreates the database from migrations + seed
+pnpm db:types            # regenerates packages/db/src/database.types.ts after a schema change
+pnpm test:db             # database tests (pgTAP): permissions, RLS, friendships, games
 pnpm db:stop
 ```
 
-Copia `apps/web/.env.example` a `apps/web/.env.local` y rellena las claves de `pnpm db:status`.
+Copy `apps/web/.env.example` to `apps/web/.env.local` and fill in the keys from `pnpm db:status`.
 
-Puertos (553xx para no chocar con otros proyectos Supabase locales):
-API `55321` · Postgres `55322` · Studio http://127.0.0.1:55323 · Mailpit (emails de auth) http://127.0.0.1:55324
+Ports (553xx, so they don't clash with other local Supabase projects):
+API `55321` · Postgres `55322` · Studio http://127.0.0.1:55323 · Mailpit (auth emails) http://127.0.0.1:55324
 
-Los emails de Auth (p. ej. "¿Has olvidado tu contraseña?") llegan a Mailpit. En local Supabase solo
-envía 2 emails por hora (`auth.rate_limit.email_sent` en `supabase/config.toml`).
+Auth emails (e.g. "Forgot your password?") end up in Mailpit. Locally, Supabase only sends 2 emails an
+hour (`auth.rate_limit.email_sent` in `supabase/config.toml`).
 
-Usuarios de prueba del seed (contraseña `password123`): `ana@test.local` (código `AAAAA`),
-`bob@test.local` (`BBBBB`) y `carla@test.local` (`CCCCC`). Ana y Bob son amigos y Carla le ha
-enviado una solicitud a Ana.
+Seed test users (password `password123`): `ana@test.local` (friend code `AAAAA`),
+`bob@test.local` (`BBBBB`) and `carla@test.local` (`CCCCC`). Ana and Bob are friends, and Carla has sent
+Ana a friend request.
 
-### Cómo se valida una partida
+### How a game is validated
 
-1. El cliente llama a `start_run('2048')` y recibe `{ id, seed }`.
-2. Juega en local con `@repo/games` usando esa semilla.
-3. Envía solo los movimientos a `POST /api/runs/:id/finish` (cookie de sesión o `Authorization: Bearer`).
-4. El servidor repite la partida, comprueba el ritmo de movimientos y llama a `finish_run`/`reject_run`
-   con la secret key. El cliente nunca envía la puntuación.
+1. The client calls `start_run('2048')` and gets `{ id, seed }`.
+2. It plays locally with `@repo/games` using that seed.
+3. It sends only the moves to `POST /api/runs/:id/finish` (session cookie or `Authorization: Bearer`).
+4. The server replays the game, checks the pace of the moves and calls `finish_run`/`reject_run` with the
+   secret key. The client never sends the score.
 
-En los juegos por tiempo (buscaminas, sudoku, solitario y reinas) la puntuación es el tiempo que mide el
-servidor, menos las pausas (`pause_run`/`resume_run`).
+In timed games (Minesweeper, Sudoku, Solitaire and Queens) the score is the time measured by the server,
+minus pauses (`pause_run`/`resume_run`).
 
-Para pasar a la nube: `supabase link --project-ref <ref>` y `supabase db push`.
+Games against friends work the same way: the server validates every move with `@repo/games` before
+saving it with `apply_match_move`.
 
-## Cambiar el nombre de la app
+To go to the cloud: `supabase link --project-ref <ref>` and `supabase db push`.
 
-El nombre aún no es definitivo. Para cambiarlo:
+## Changing the app's name
 
-1. Edita `packages/brand/src/index.ts` (`name`, `expansion`, `tagline`, `description`).
-2. Cuando haya dominio, define `NEXT_PUBLIC_SITE_URL` (ver `.env.example`).
-3. Opcional: renombra este README y la carpeta del repo.
+The name isn't final yet. To change it:
 
-Los paquetes internos usan el scope neutro `@repo/*`, así que no hay que tocarlos.
-Ningún otro fichero debe escribir el nombre a mano; si lo necesitas, importa `brand`.
+1. Edit `packages/brand/src/index.ts` (`name`, `expansion`, `tagline`, `description`).
+2. Once there's a domain, set `NEXT_PUBLIC_SITE_URL` (see `.env.example`).
+3. Optional: rename this README and the repo folder.
 
-## Extensión de Chrome
+Internal packages use the neutral `@repo/*` scope, so they don't need touching.
+No other file should hard-code the name; if you need it, import `brand`.
 
-La ventanita del icono muestra la web entera (en un iframe), así que tiene siempre los mismos juegos que
-la web sin publicar nada aparte. Vuelve a la última pantalla en la que se estuvo, y con el clic derecho
-en el icono se abre en una ventana propia o en una pestaña. El número del icono son tus pendientes
-(`/api/pending`, con la sesión de la web; se consulta cada 3 minutos).
+## Chrome extension
+
+The toolbar popup shows the whole website (in an iframe), so it always has the same games as the website
+without publishing anything separately. It goes back to the last screen you were on, and right-clicking
+the icon opens it in its own window or a tab. The number on the icon is your pending items
+(`/api/pending`, using the website's session; checked every 3 minutes).
 
 ```sh
-cp apps/extension/.env.example apps/extension/.env   # WXT_SITE_URL: la web que muestra
-pnpm --filter extension dev    # abre Chrome con la extensión cargada y recarga al guardar
-pnpm --filter extension build  # genera apps/extension/.output/chrome-mv3
-pnpm --filter extension zip    # zip listo para la Chrome Web Store
+cp apps/extension/.env.example apps/extension/.env   # WXT_SITE_URL: the website it shows
+pnpm --filter extension dev    # opens Chrome with the extension loaded and reloads on save
+pnpm --filter extension build  # builds apps/extension/.output/chrome-mv3
+pnpm --filter extension zip    # zip ready for the Chrome Web Store
 ```
 
-Para la de producción, `apps/extension/.env.production` con `WXT_SITE_URL` de la web publicada.
+For production, `apps/extension/.env.production` with `WXT_SITE_URL` set to the published website.
 
-Para cargarla a mano: `chrome://extensions` → modo desarrollador → *Cargar descomprimida* →
-`apps/extension/.output/chrome-mv3`. El nombre sale de `@repo/brand` como en la web.
+To load it by hand: `chrome://extensions` → developer mode → *Load unpacked* →
+`apps/extension/.output/chrome-mv3`. The name comes from `@repo/brand`, as on the website.
 
-## PWA y notificaciones
+## PWA and notifications
 
-- `app/manifest.ts` + iconos generados con la mascota (`/icons/*`, `app/icon.tsx`, `app/apple-icon.tsx`).
-- `public/sw.js`: página sin conexión (`/offline`, HTML autónomo) y notificaciones push.
-- Notificaciones: los triggers de la BD (mensajes, partidas, solicitudes) llaman con `pg_net` a
-  `POST /api/push/dispatch`, que decide a quién avisar y envía con `web-push`. La URL y el secreto
-  compartido están en Vault (`push_webhook_url`, `push_webhook_secret`); en local los crea el seed y el
-  secreto coincide con `PUSH_WEBHOOK_SECRET` de `.env.local`.
-- Cada usuario activa las notificaciones en **Tú → La app**. En iPhone solo funcionan con la app
-  añadida a la pantalla de inicio.
+- `app/manifest.ts` + icons generated from the mascot (`/icons/*`, `app/icon.tsx`, `app/apple-icon.tsx`).
+- `public/sw.js`: offline page (`/offline`, self-contained HTML) and push notifications.
+- Notifications: database triggers (messages, games, friend requests) call
+  `POST /api/push/dispatch` through `pg_net`, which decides who to notify and sends with `web-push`. The
+  URL and the shared secret live in Vault (`push_webhook_url`, `push_webhook_secret`); locally the seed
+  creates them and the secret matches `PUSH_WEBHOOK_SECRET` in `.env.local`.
+- Each user turns notifications on in **You → The app**. On iPhone they only work with the app added to
+  the home screen.
 
-## Si algo no cuadra en desarrollo
+## If something looks off in development
 
-Si `pnpm dev` sirve estilos o componentes viejos (p. ej. un cambio en `globals.css` que no se
-aplica), la caché de Turbopack se ha quedado colgada: para el servidor, borra `apps/web/.next/dev`
-y vuelve a arrancarlo.
+If `pnpm dev` serves old styles or components (e.g. a change in `globals.css` that doesn't apply),
+Turbopack's cache is stuck: stop the server, delete `apps/web/.next/dev` and start it again.
 
-## Colaborar
+## Contributing
 
-¿Has encontrado un fallo o tienes una idea? Abre una issue. ¿Quieres arreglarlo tú? Haz un pull request.
+Found a bug or have an idea? Open an issue. Want to fix it yourself? Send a pull request.
 
-Si escribes tu **código de amigo** (lo tienes en la app, en Amigos) en el título o la descripción, al abrir
-la issue o al aceptarse tu pull request ganas el logro «Colaborador» y un color exclusivo para tu monster.
+If you write your **friend code** (you'll find it in the app, under Friends) in the title or description,
+you earn the "Contributor" achievement and an exclusive colour for your monster when you open the issue
+or when your pull request is merged.
 
-Lo gestiona el webhook `/api/webhooks/github` (eventos "Issues" y "Pull requests", firmado con
+This is handled by the `/api/webhooks/github` webhook ("Issues" and "Pull requests" events, signed with
 `GITHUB_WEBHOOK_SECRET`).
 
-## SEO y asistentes de IA
+Code comments and commit messages are written in Spanish.
 
-Todo sale de `apps/web/src/lib/seo.ts`: título, descripción, "Cómo se juega" y preguntas frecuentes
-de cada juego. De ahí se generan la sección visible de cada página, los datos estructurados (JSON-LD:
-`VideoGame`, `FAQPage`, `BreadcrumbList`), `sitemap.xml`, `/llms.txt` y las imágenes al compartir
-(`opengraph-image.tsx` de cada juego, con `lib/og.tsx`). Al añadir un juego, añade también su guía.
+## SEO and AI assistants
 
-- `robots.txt` deja pasar a todos (también a GPTBot, ClaudeBot, PerplexityBot…) salvo `/api/` y `/dev/`.
-- Las páginas privadas (perfil, amigos, chat, entrar, partidas concretas) llevan `noindex` con
-  `PRIVATE_PAGE`. No se bloquean en `robots.txt`: si no, el buscador no llegaría a leer el `noindex`.
-- Todas las URL absolutas salen de `NEXT_PUBLIC_SITE_URL`.
+Everything comes from `apps/web/src/lib/seo.ts` (the game texts are in `lib/i18n/games-*.ts`): title,
+description, "How to play" and FAQ for each game. From there we generate the visible section of each page,
+the structured data (JSON-LD: `VideoGame`, `FAQPage`, `BreadcrumbList`), `sitemap.xml`, `/llms.txt` and the
+share images (each game's `opengraph-image.tsx`, with `lib/og.tsx`). When you add a game, add its guide too.
 
-Cuando haya dominio:
+- `robots.txt` lets every crawler in (including GPTBot, ClaudeBot, PerplexityBot…) except `/api/` and
+  `/dev/`.
+- Private pages (profile, friends, chat, sign-in, individual games) are marked `noindex` with
+  `PRIVATE_PAGE`. They aren't blocked in `robots.txt`: otherwise search engines couldn't read the
+  `noindex`.
+- Every absolute URL comes from `NEXT_PUBLIC_SITE_URL`.
 
-- [ ] `NEXT_PUBLIC_SITE_URL` con el dominio en Vercel, y redirección 301 de `*.vercel.app` al dominio
-      (Vercel → Settings → Domains).
-- [ ] Alta en Google Search Console y Bing Webmaster Tools; sus códigos en
-      `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` y `NEXT_PUBLIC_BING_SITE_VERIFICATION`, y enviar el sitemap.
-- [ ] Revisar los datos estructurados con la prueba de resultados enriquecidos de Google.
-- [ ] Actualizar en Supabase (Auth → URL) el `site_url` y las URL de redirección.
+Once there's a domain:
 
-## Pendiente
+- [ ] `NEXT_PUBLIC_SITE_URL` set to the domain on Vercel, and a 301 redirect from `*.vercel.app` to the
+      domain (Vercel → Settings → Domains).
+- [ ] Sign up for Google Search Console and Bing Webmaster Tools; put their codes in
+      `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` and `NEXT_PUBLIC_BING_SITE_VERIFICATION`, and submit the sitemap.
+- [ ] Check the structured data with Google's Rich Results Test.
+- [ ] Update `site_url` and the redirect URLs in Supabase (Auth → URL).
 
-- [ ] Volver a pedir la confirmación del email, con dominio propio y un servicio de emails (#2).
-- [ ] Traducir la app al japonés (#1).
-- [ ] Captcha (Cloudflare Turnstile) en el registro: cada cuenta nueva tiene su propio cupo de intentos de
-      código de amigo.
-- [ ] Revisar los límites de Auth por IP en el dashboard.
-- [ ] Apoyos: en Ko-fi (Ajustes → API), webhook a `https://<dominio>/api/webhooks/kofi` y su token de
-      verificación en `KOFI_VERIFICATION_TOKEN`. GitHub Sponsors: cuando GitHub apruebe la cuenta, poner su
-      enlace en `SUPPORT_LINKS.githubSponsors` (`apps/web/src/lib/support.ts`).
-- [ ] Tarea periódica para limpiar `private.friend_request_attempts` y partidas abandonadas antiguas.
+## To do
+
+- [ ] Ask for email confirmation again, with our own domain and an email service (#2).
+- [ ] Translate the app into Japanese (#1).
+- [ ] Captcha (Cloudflare Turnstile) on sign-up: every new account gets its own quota of friend-code
+      attempts.
+- [ ] Review the per-IP Auth limits in the dashboard.
+- [ ] Support: in Ko-fi (Settings → API), a webhook to `https://<domain>/api/webhooks/kofi` and its
+      verification token in `KOFI_VERIFICATION_TOKEN`. GitHub Sponsors: once GitHub approves the account,
+      put its link in `SUPPORT_LINKS.githubSponsors` (`apps/web/src/lib/support.ts`).
+- [ ] A periodic job to clean up `private.friend_request_attempts` and old abandoned games.

@@ -1,31 +1,31 @@
-# Proyecto
+# Project
 
-App de minijuegos para procrastinar (web/PWA + extensión de Chrome más adelante). Ver README.md.
+Mini-games app for taking a short break (web/PWA + Chrome extension). See README.md.
 
-## Reglas
+## Rules
 
-- **El nombre de la app es provisional.** Nunca lo escribas a mano: importa `brand` de `@repo/brand`.
-  Los paquetes internos usan el scope neutro `@repo/*`.
-- pnpm siempre. Node 24 (`.node-version`).
-- Next.js 16: lee `apps/web/node_modules/next/dist/docs/` antes de usar APIs que no conozcas
-  (p. ej. `proxy.ts` sustituye a `middleware.ts`).
-- Web en el puerto 4321; Supabase local en 553xx.
+- **The app's name is provisional.** Never hard-code it: import `brand` from `@repo/brand`.
+  Internal packages use the neutral `@repo/*` scope.
+- Always pnpm. Node 24 (`.node-version`).
+- Next.js 16: read `apps/web/node_modules/next/dist/docs/` before using APIs you don't know
+  (e.g. `proxy.ts` replaces `middleware.ts`).
+- Web app on port 4321; local Supabase on 553xx.
 
-## Juegos
+## Games
 
-- La lógica va en `packages/games`, pura y determinista (toda la aleatoriedad por `rng.ts`).
-  Así el servidor puede repetir y validar partidas. Con tests en vitest.
-- El cliente nunca envía puntuaciones: solo movimientos; el servidor las recalcula.
+- The logic lives in `packages/games`, pure and deterministic (all randomness through `rng.ts`).
+  That way the server can replay and validate games. With vitest tests.
+- The client never sends scores: only moves; the server recalculates them.
 
-## Base de datos
+## Database
 
-- Cambios de esquema siempre con migración nueva (`pnpm db:migration <nombre>`), luego
-  `pnpm db:reset`, `pnpm db:types` y `pnpm test:db`.
-- El cliente solo lee (RLS). Las escrituras sensibles van por funciones `security definer`
-  con `set search_path = ''` y nombres totalmente cualificados.
-- **Supabase concede EXECUTE a `anon`/`authenticated` en cada función nueva de `public`.**
-  En cada migración: `revoke execute ... from public, anon, authenticated` y conceder solo lo necesario.
-- Lo interno (no expuesto por la API) va en el esquema `private`. Los clientes no tienen acceso a él:
-  cualquier trigger o función que lo use y se ejecute con el rol del usuario debe ser `security definer`.
-  Ojo: en pgTAP los planes en caché pueden ocultar este error; usa `discard plans` antes de probarlo.
-- Toda política o función nueva lleva su test pgTAP en `supabase/tests/database/`.
+- Schema changes always go in a new migration (`pnpm db:migration <name>`), then
+  `pnpm db:reset`, `pnpm db:types` and `pnpm test:db`.
+- The client only reads (RLS). Sensitive writes go through `security definer` functions
+  with `set search_path = ''` and fully qualified names.
+- **Supabase grants EXECUTE to `anon`/`authenticated` on every new function in `public`.**
+  In every migration: `revoke execute ... from public, anon, authenticated` and grant only what's needed.
+- Internal things (not exposed through the API) go in the `private` schema. Clients have no access to it:
+  any trigger or function that uses it and runs with the user's role must be `security definer`.
+  Watch out: in pgTAP, cached plans can hide this error; use `discard plans` before testing it.
+- Every new policy or function gets its pgTAP test in `supabase/tests/database/`.
