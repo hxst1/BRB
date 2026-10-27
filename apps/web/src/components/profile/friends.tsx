@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { FriendRequestResult, Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { ChallengeMenu } from "@/components/challenge-menu";
+import { ConfirmButton } from "@/components/confirm-button";
 import { createClient } from "@/lib/supabase/client";
 import { useMessages } from "@/lib/i18n/client";
 import { FriendRowsSkeleton } from "./friends-skeleton";
@@ -185,28 +186,5 @@ function PersonRow({ person, children }: { person: Person; children: React.React
       <span className="min-w-0 flex-1 truncate font-medium">{person.username}</span>
       <span className="flex items-center gap-3">{children}</span>
     </li>
-  );
-}
-
-/** Confirmación en línea en vez de un diálogo del navegador. */
-function ConfirmButton({ label, confirmLabel, onConfirm }: { label: string; confirmLabel: string; onConfirm: () => void }) {
-  const [asking, setAsking] = useState(false);
-  const m = useMessages();
-  if (!asking) {
-    return (
-      <button type="button" onClick={() => setAsking(true)} className="text-sm text-muted hover:text-ink">
-        {label}
-      </button>
-    );
-  }
-  return (
-    <>
-      <button type="button" onClick={onConfirm} className="text-sm font-medium text-danger">
-        {confirmLabel}
-      </button>
-      <button type="button" onClick={() => setAsking(false)} className="text-sm text-muted hover:text-ink">
-        {m.run.no}
-      </button>
-    </>
   );
 }

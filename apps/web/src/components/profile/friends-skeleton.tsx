@@ -7,7 +7,7 @@ import { useMessages } from "@/lib/i18n/client";
 export function FriendsPageSkeleton() {
   const m = useMessages();
   return (
-    <div aria-hidden inert className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:gap-16">
+    <div aria-hidden inert className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:gap-x-16">
       <div>
         <div className="flex flex-col gap-4 rounded-3xl bg-surface p-5 shadow-soft">
           <div>
@@ -21,7 +21,7 @@ export function FriendsPageSkeleton() {
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
         <div className="flex flex-col gap-2">
           <p className="text-sm font-medium">{m.friends.addWithCode}</p>
           <div className="flex gap-2">
@@ -31,6 +31,20 @@ export function FriendsPageSkeleton() {
           <p className="min-h-5" />
         </div>
         <FriendRowsSkeleton />
+      </div>
+      <div className="flex flex-col gap-4">
+        <div>
+          <p className="font-semibold">{m.groups.title}</p>
+          <p className="text-sm text-muted">{m.groups.hint}</p>
+        </div>
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium">{m.groups.name}</p>
+          <div className="flex gap-2">
+            <span className="min-w-0 flex-1 rounded-xl border border-line bg-surface px-3.5 py-2.5 text-muted/50">{m.groups.namePlaceholder}</span>
+            <span className="grid place-items-center rounded-xl bg-ink px-4 font-semibold text-bg opacity-40">{m.groups.create}</span>
+          </div>
+          <p className="min-h-5" />
+        </div>
       </div>
     </div>
   );

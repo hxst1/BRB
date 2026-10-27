@@ -187,6 +187,52 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"group_members": {
+                  Row: {
+                    "group_id": string,"joined_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "group_id": string,"joined_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "group_id"?: string,"joined_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "group_members_group_id_fkey"
+      columns: ["group_id"]
+isOneToOne: false
+      referencedRelation: "groups"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "group_members_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"groups": {
+                  Row: {
+                    "code": string,"created_at": string,"id": string,"name": string,"owner_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "code": string,"created_at"?: string,"id"?: string,"name": string,"owner_id": string
+                  }
+                  Update: {
+                    "code"?: string,"created_at"?: string,"id"?: string,"name"?: string,"owner_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "groups_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"legal_documents": {
                   Row: {
                     "body": string,"slug": string,"title": string,"updated_at": string,"version": number
@@ -770,6 +816,9 @@ isOneToOne: false
 "create_challenge":
 { Args: { "friend": string,"run_id": string }; Returns: string
                            },
+"create_group":
+{ Args: { "name": string }; Returns: string
+                           },
 "create_match":
 { Args: { "game": string,"opponent": string }; Returns: string
                            },
@@ -778,6 +827,9 @@ isOneToOne: false
                            },
 "delete_account":
 { Args: { "target": string }; Returns: undefined
+                           },
+"delete_group":
+{ Args: { "group_id": string }; Returns: undefined
                            },
 "delete_push_subscription":
 { Args: { "endpoint": string }; Returns: undefined
@@ -813,23 +865,28 @@ isOneToOne: false
               "achieved_at": string,"avatar_parts": Json,"avatar_seed": number,"rank": number,"score": number,"supporter_tier": string,"user_id": string,"username": string
             }[]
                            },
+"get_group_invite":
+{ Args: { "code": string }; Returns: {
+              "id": string,"joined": boolean,"members": number,"name": string
+            }[]
+                           },
 "get_invite":
 { Args: { "code": string }; Returns: {
               "avatar_parts": Json,"avatar_seed": number,"username": string
             }[]
                            },
 "get_leaderboard":
-{ Args: { "game": string,"max_rows"?: number,"period"?: string,"scope"?: string }; Returns: {
+{ Args: { "game": string,"group_id"?: string,"max_rows"?: number,"period"?: string,"scope"?: string }; Returns: {
               "achieved_at": string,"avatar_parts": Json,"avatar_seed": number,"rank": number,"score": number,"supporter_tier": string,"user_id": string,"username": string
             }[]
                            },
 "get_level_leaderboard":
-{ Args: { "max_rows"?: number,"scope"?: string }; Returns: {
+{ Args: { "group_id"?: string,"max_rows"?: number,"scope"?: string }; Returns: {
               "avatar_parts": Json,"avatar_seed": number,"rank": number,"supporter_tier": string,"user_id": string,"username": string,"xp": number
             }[]
                            },
 "get_match_leaderboard":
-{ Args: { "games": (string)[],"max_rows"?: number,"period"?: string,"scope"?: string }; Returns: {
+{ Args: { "games": (string)[],"group_id"?: string,"max_rows"?: number,"period"?: string,"scope"?: string }; Returns: {
               "avatar_parts": Json,"avatar_seed": number,"played": number,"rank": number,"supporter_tier": string,"user_id": string,"username": string,"wins": number
             }[]
                            },
@@ -886,6 +943,12 @@ isOneToOne: false
               "attempts": number,"avatar_parts": Json,"avatar_seed": number,"patterns": (string)[],"solved": boolean,"user_id": string,"username": string
             }[]
                            },
+"join_group":
+{ Args: { "code": string }; Returns: string
+                           },
+"leave_group":
+{ Args: { "group_id": string }; Returns: undefined
+                           },
 "like_message":
 { Args: { "liked"?: boolean,"message_id": string }; Returns: (string)[]
                            },
@@ -909,6 +972,12 @@ isOneToOne: false
                            },
 "remove_friend":
 { Args: { "friend_id": string }; Returns: undefined
+                           },
+"remove_group_member":
+{ Args: { "group_id": string,"user_id": string }; Returns: undefined
+                           },
+"rename_group":
+{ Args: { "group_id": string,"name": string }; Returns: undefined
                            },
 "report_app_error":
 { Args: { "app_version"?: string,"message": string,"path"?: string,"source"?: string,"stack"?: string,"user_agent"?: string,"user_id"?: string }; Returns: string

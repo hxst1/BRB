@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import type { Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
@@ -16,7 +17,8 @@ import type { Picto } from "@/lib/pictos";
 type GameId = "2048" | "snake" | "lightsout" | "minesweeper" | "sudoku" | "solitaire" | "queens" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron" | "chess" | "reversi" | "dots" | "typing";
 type Category = "level" | GameId;
 type Difficulty = "easy" | "medium" | "hard";
-type Scope = "global" | "friends";
+type Scope = "global" | "friends" | "group";
+type Group = { id: string; name: string };
 type Period = "all" | "week";
 
 type Row = {
@@ -100,12 +102,20 @@ const RANKED_GAMES: RankedGame[] = [
 
 const MAX_ROWS = 50;
 
-async function loadRows(m: Messages, category: Category, difficulty: Difficulty, scope: Scope, period: Period): Promise<Row[]> {
+async function loadRows(
+  m: Messages,
+  category: Category,
+  difficulty: Difficulty,
+  scope: Scope,
+  groupId: string | null,
+  period: Period,
+): Promise<Row[]> {
   const { number, time } = m.format;
   const supabase = createClient();
+  const group_id = scope === "group" && groupId ? groupId : undefined;
 
   if (category === "level") {
-    const { data } = await supabase.rpc("get_level_leaderboard", { scope, max_rows: MAX_ROWS });
+    const { data } = await supabase.rpc("get_level_leaderboard", { scope, group_id, max_rows: MAX_ROWS });
     return (data ?? []).map((r) => ({
       rank: r.rank,
       userId: r.user_id,
@@ -121,7 +131,7 @@ async function loadRows(m: Messages, category: Category, difficulty: Difficulty,
   const ranked = RANKED_GAMES.find((g) => g.id === category);
   if (ranked && !ranked.games) {
     const game = ranked.levels ? ranked.levels[difficulty] : category;
-    const { data } = await supabase.rpc("get_leaderboard", { game, scope, period, max_rows: MAX_ROWS });
+    const { data } = await supabase.rpc("get_leaderboard", { game, scope, group_id, period, max_rows: MAX_ROWS });
     return (data ?? []).map((r) => ({
       rank: r.rank,
       userId: r.user_id,
@@ -135,7 +145,7 @@ async function loadRows(m: Messages, category: Category, difficulty: Difficulty,
   }
 
   const games = ranked?.games ?? [category];
-  const { data } = await supabase.rpc("get_match_leaderboard", { games, scope, period, max_rows: MAX_ROWS });
+  const { data } = await supabase.rpc("get_match_leaderboard", { games, scope, group_id, period, max_rows: MAX_ROWS });
   return (data ?? []).map((r) => ({
     rank: r.rank,
     userId: r.user_id,
@@ -148,13 +158,24 @@ async function loadRows(m: Messages, category: Category, difficulty: Difficulty,
   }));
 }
 
-export function RankingBoard({ viewerId }: { viewerId: string | null }) {
+export function RankingBoard({
+  viewerId,
+  groups = [],
+  initialGroup = null,
+}: {
+  viewerId: string | null;
+  /** Los grupos de quien mira: con alguno, el ranking puede ser solo de un grupo. */
+  groups?: Group[];
+  /** El grupo con el que se abre (?grupo=). */
+  initialGroup?: string | null;
+}) {
   const m = useMessages();
   const t = m.rankingBoard;
   const [category, setCategory] = useState<Category>("level");
   // Al volver a "Juegos" se recupera el último juego elegido.
   const [lastGame, setLastGame] = useState<GameId>("2048");
-  const [scope, setScope] = useState<Scope>("global");
+  const [scope, setScope] = useState<Scope>(initialGroup ? "group" : "global");
+  const [groupId, setGroupId] = useState<string | null>(initialGroup ?? groups[0]?.id ?? null);
   const [period, setPeriod] = useState<Period>("all");
   // Compartida por los juegos con dificultades (buscaminas y sudoku).
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
@@ -163,17 +184,17 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
   const hasPeriod = category !== "level";
   const effectivePeriod = hasPeriod ? period : "all";
   const hasLevels = RANKED_GAMES.some((game) => game.id === category && game.levels);
-  const key = `${category}:${hasLevels ? difficulty : ""}:${scope}:${effectivePeriod}`;
+  const key = `${category}:${hasLevels ? difficulty : ""}:${scope}:${scope === "group" ? groupId : ""}:${effectivePeriod}`;
 
   useEffect(() => {
     let cancelled = false;
-    loadRows(m, category, difficulty, scope, effectivePeriod).then((rows) => {
+    loadRows(m, category, difficulty, scope, groupId, effectivePeriod).then((rows) => {
       if (!cancelled) setResult({ key, rows });
     });
     return () => {
       cancelled = true;
     };
-  }, [m, category, difficulty, scope, effectivePeriod, key]);
+  }, [m, category, difficulty, scope, groupId, effectivePeriod, key]);
 
   const rows = result?.key === key ? result.rows : null;
   // El usuario puede venir al final aunque no esté en el top.
@@ -221,6 +242,7 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
               options={[
                 { value: "global", label: t.global },
                 { value: "friends", label: m.ranking.friends },
+                ...(groups.length > 0 ? [{ value: "group" as const, label: m.groups.scope }] : []),
               ]}
             />
           ) : (
@@ -240,15 +262,19 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
         </div>
       )}
 
+      {scope === "group" && groupId && <GroupPicker groups={groups} value={groupId} onChange={setGroupId} />}
+
       {rows === null ? (
         <RankingRowsSkeleton />
       ) : top.length === 0 ? (
         <p className="reveal-in py-10 text-center text-muted">
-          {scope === "friends"
-            ? t.emptyFriends
-            : effectivePeriod === "week"
-              ? t.emptyWeek
-              : t.empty}
+          {scope === "group"
+            ? m.groups.emptyRanking
+            : scope === "friends"
+              ? t.emptyFriends
+              : effectivePeriod === "week"
+                ? t.emptyWeek
+                : t.empty}
         </p>
       ) : (
         <div className="reveal contents">
@@ -366,6 +392,35 @@ function GamePicker({ value, onChange }: { value: GameId; onChange: (id: GameId)
       <button type="button" aria-label={m.rankingBoard.next} disabled={index === last} onClick={() => select(index + 1, false)} className={arrow}>
         <Chevron direction="right" />
       </button>
+    </div>
+  );
+}
+
+/** Qué grupo (con un desplegable si hay varios) y un enlace a su página. */
+function GroupPicker({ groups, value, onChange }: { groups: Group[]; value: string; onChange: (id: string) => void }) {
+  const m = useMessages();
+  const current = groups.find((group) => group.id === value);
+  return (
+    <div className="-mt-2 flex items-center justify-between gap-3">
+      {groups.length > 1 ? (
+        <select
+          aria-label={m.groups.pick}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className="min-w-0 truncate rounded-full bg-surface px-3 py-1.5 text-sm font-medium shadow-soft outline-none focus-visible:ring-2 focus-visible:ring-focus"
+        >
+          {groups.map((group) => (
+            <option key={group.id} value={group.id}>
+              {group.name}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <span className="min-w-0 truncate text-sm font-medium">{current?.name}</span>
+      )}
+      <Link href={`/grupos/${value}`} className="shrink-0 text-sm text-muted hover:text-ink">
+        {m.groups.manage}
+      </Link>
     </div>
   );
 }

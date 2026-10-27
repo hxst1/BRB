@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { FriendCode } from "@/components/profile/friend-code";
 import { Friends } from "@/components/profile/friends";
 import { FriendsPageSkeleton } from "@/components/profile/friends-skeleton";
+import { MyGroups } from "@/components/groups/my-groups";
 import { getViewerId } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { PRIVATE_PAGE } from "@/lib/seo";
@@ -37,12 +38,19 @@ async function FriendsForViewer({ searchParams }: { searchParams: PageProps<"/[l
   }
 
   const supabase = await createClient();
-  const { data: friendCode } = await supabase.from("friend_codes").select("code").eq("user_id", viewerId).single();
+  const [{ data: friendCode }, { data: groups }] = await Promise.all([
+    supabase.from("friend_codes").select("code").eq("user_id", viewerId).single(),
+    supabase.from("groups").select("id, name, group_members(count)").order("created_at"),
+  ]);
 
   return (
-    <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:gap-16">
+    // En el móvil, los grupos van después de la lista de amigos; en escritorio, bajo tu código.
+    <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:gap-x-16">
       <div>{friendCode && <FriendCode code={friendCode.code} />}</div>
-      <Friends viewerId={viewerId} initialCode={invite === friendCode?.code ? "" : invite} />
+      <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1">
+        <Friends viewerId={viewerId} initialCode={invite === friendCode?.code ? "" : invite} />
+      </div>
+      <MyGroups groups={(groups ?? []).map((group) => ({ id: group.id, name: group.name, members: group.group_members[0]?.count ?? 0 }))} />
     </div>
   );
 }
