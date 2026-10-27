@@ -9,6 +9,7 @@
 
 import { createRng, nextInt, seedFromString } from "../rng";
 
+/** Idioma del texto. No hay textos en japonés: quien juega en japonés escribe el inglés. */
 export type Language = "es" | "en";
 
 /** Palabras de cada texto. */

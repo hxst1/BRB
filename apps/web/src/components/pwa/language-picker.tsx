@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocale, useMessages } from "@/lib/i18n/client";
+import { useLocale, useMessages, withoutLocale } from "@/lib/i18n/client";
 import { LOCALE_COOKIE, LOCALES, type Locale } from "@/lib/i18n/locales";
 
 /** Idioma de la app. Se guarda en una cookie (un año) y la página se recarga ya traducida. */
@@ -11,7 +11,11 @@ export function LanguagePicker() {
   function choose(next: Locale) {
     if (next === locale) return;
     saveLocale(next);
-    // Recarga completa: las páginas ya generadas en el otro idioma las sirve el servidor.
+    // Recarga completa: las páginas ya generadas en el otro idioma las sirve el
+    // servidor. Sin el prefijo (/en/…, /ja/…), que volvería a elegir ese idioma.
+    const { pathname, search, hash } = window.location;
+    const path = withoutLocale(pathname);
+    if (path !== pathname) window.history.replaceState(window.history.state, "", `${path}${search}${hash}`);
     window.location.reload();
   }
 

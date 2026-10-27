@@ -7,36 +7,40 @@ import type { Locale } from "@/lib/i18n/locales";
  */
 export function makeFormat(locale: Locale) {
   const es = locale === "es";
+  const ja = locale === "ja";
   return {
     /** 12.840 / 12,840 (en español las cifras de 4 dígitos no se agrupan por defecto). */
     number: (value: number) => value.toLocaleString(locale, { useGrouping: "always" }),
-    /** Tiempo de una partida: "45,2 s" o "1:05,3" (en inglés con punto). */
+    /** Tiempo de una partida: "45,2 s" o "1:05,3" (en inglés con punto; en japonés "45.2秒"). */
     time: (ms: number) => {
       const tenths = Math.floor(ms / 100);
       const minutes = Math.floor(tenths / 600);
       const seconds = Math.floor((tenths % 600) / 10);
       const decimal = tenths % 10;
       const sep = es ? "," : ".";
-      return minutes > 0 ? `${minutes}:${String(seconds).padStart(2, "0")}${sep}${decimal}` : `${seconds}${sep}${decimal} s`;
+      if (minutes > 0) return `${minutes}:${String(seconds).padStart(2, "0")}${sep}${decimal}`;
+      return ja ? `${seconds}${sep}${decimal}秒` : `${seconds}${sep}${decimal} s`;
     },
-    /** "hace 5 min" / "5 min ago". */
+    /** "hace 5 min" / "5 min ago" / "5分前". */
     ago: (date: string | Date, now = Date.now()) => {
       const minutes = Math.floor((now - new Date(date).getTime()) / 60_000);
+      const hours = Math.floor(minutes / 60);
+      const days = Math.floor(hours / 24);
+      if (ja) return minutes < 1 ? "たった今" : minutes < 60 ? `${minutes}分前` : hours < 24 ? `${hours}時間前` : `${days}日前`;
       if (minutes < 1) return es ? "hace un momento" : "just now";
       if (minutes < 60) return es ? `hace ${minutes} min` : `${minutes} min ago`;
-      const hours = Math.floor(minutes / 60);
       if (hours < 24) return es ? `hace ${hours} h` : `${hours} h ago`;
-      const days = Math.floor(hours / 24);
       if (es) return days === 1 ? "hace 1 día" : `hace ${days} días`;
       return days === 1 ? "1 day ago" : `${days} days ago`;
     },
-    /** Lo que queda hasta una fecha: "5 min", "3 h", "2 días" / "2 days". */
+    /** Lo que queda hasta una fecha: "5 min", "3 h", "2 días" / "2 days" / "2日". */
     timeLeft: (until: string | Date, now = Date.now()) => {
       const minutes = Math.max(0, Math.ceil((new Date(until).getTime() - now) / 60_000));
-      if (minutes < 60) return `${minutes} min`;
       const hours = Math.round(minutes / 60);
-      if (hours < 24) return `${hours} h`;
       const days = Math.round(hours / 24);
+      if (ja) return minutes < 60 ? `${minutes}分` : hours < 24 ? `${hours}時間` : `${days}日`;
+      if (minutes < 60) return `${minutes} min`;
+      if (hours < 24) return `${hours} h`;
       if (es) return days === 1 ? "1 día" : `${days} días`;
       return days === 1 ? "1 day" : `${days} days`;
     },

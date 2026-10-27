@@ -1,5 +1,5 @@
 import type { Tables } from "@repo/db";
-import type { Locale } from "./i18n/locales";
+import { contentLanguage, type Locale } from "./i18n/locales";
 import { guidesFor, type GameGuide } from "./seo";
 
 /**
@@ -34,9 +34,11 @@ export function latestNewsAt(latestPost: string | null | undefined, now = Date.n
 }
 
 export function newsItems(posts: NewsPost[], locale: Locale, now = Date.now()): NewsItem[] {
+  // Los anuncios solo se escriben en español e inglés: en japonés, el inglés si lo hay.
+  const english = contentLanguage(locale) === "en";
   const items: NewsItem[] = posts.map((post) => {
-    const en = locale === "en" && post.title_en && post.body_en;
-    const label = (locale === "en" && post.cta_label_en) || post.cta_label_es;
+    const en = english && post.title_en && post.body_en;
+    const label = (english && post.cta_label_en) || post.cta_label_es;
     return {
       type: "post",
       key: post.slug,

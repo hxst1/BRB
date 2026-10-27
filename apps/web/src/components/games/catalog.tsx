@@ -3,6 +3,7 @@ import { GameCards, type GameId } from "@/components/home/game-cards";
 import { gameDay } from "@/lib/daily";
 import type { Messages } from "@/lib/i18n";
 import { getLocale, getMessages } from "@/lib/i18n/server";
+import { contentLanguage } from "@/lib/i18n/locales";
 import { myTurnIn, waitingOnRival } from "@/lib/match-turns";
 import { MATCH_WITH_PLAYERS } from "@/lib/queries";
 import type { Viewer } from "@/lib/session";
@@ -46,7 +47,7 @@ export async function GamesCatalog({ viewer }: { viewer: Viewer | null }) {
       .from("wordle_games")
       .select("day, guesses, solved, finished_at")
       .eq("user_id", viewer.id)
-      .eq("lang", locale)
+      .eq("lang", contentLanguage(locale))
       .order("day", { ascending: false })
       .limit(1)
       .maybeSingle(),

@@ -134,15 +134,16 @@ export function AuthForm({
         <label className="flex items-start gap-3 text-sm">
           <input type="checkbox" name="accept" required defaultChecked={fields?.accept} className="mt-0.5 size-4 shrink-0 accent-ink" />
           <span>
-            {t.acceptBefore}{" "}
+            {/* Los espacios y el final van en los textos: en japonés el verbo va al final. */}
+            {t.acceptBefore}
             <Link href="/legal/terminos" target="_blank" className="font-medium underline underline-offset-4">
               {t.terms}
-            </Link>{" "}
-            {t.acceptAnd}{" "}
+            </Link>
+            {t.acceptAnd}
             <Link href="/legal/privacidad" target="_blank" className="font-medium underline underline-offset-4">
               {t.privacy}
             </Link>
-            .
+            {t.acceptAfter}
           </span>
         </label>
       )}

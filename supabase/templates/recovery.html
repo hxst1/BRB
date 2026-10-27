@@ -1,18 +1,18 @@
-{{ $en := eq (printf "%v" .Data.locale) "en" }}<!doctype html>
-<html lang="{{ if $en }}en{{ else }}es{{ end }}">
+{{ $locale := printf "%v" .Data.locale }}<!doctype html>
+<html lang="{{ if eq $locale "en" }}en{{ else if eq $locale "ja" }}ja{{ else }}es{{ end }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <meta name="supported-color-schemes" content="dark">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,800&display=swap" rel="stylesheet">
-<title>{{ if $en }}New password{{ else }}Nueva contraseña{{ end }}</title>
+<title>{{ if eq $locale "en" }}New password{{ else if eq $locale "ja" }}新しいパスワード{{ else }}Nueva contraseña{{ end }}</title>
 </head>
 <body style="margin:0;padding:0;background:#111318">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#111318">{{ if $en }}The link expires in 24 hours.{{ else }}El enlace caduca en 24 horas.{{ end }}</div>
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#111318">{{ if eq $locale "en" }}The link expires in 24 hours.{{ else if eq $locale "ja" }}リンクの有効期限は24時間です。{{ else }}El enlace caduca en 24 horas.{{ end }}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#111318" style="background:#111318">
 <tr><td align="center" style="padding:40px 16px">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;font-family:'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;font-family:'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, sans-serif">
 
 <tr><td style="padding:0 8px 20px">
 <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
@@ -23,20 +23,20 @@
 
 <tr><td bgcolor="#1b1e25" style="background:#1b1e25;border-radius:28px;padding:32px 28px 30px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 28px"><tr><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#ffd8b0;font-size:0;line-height:0">&nbsp;</div></td><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#ffb98a;font-size:0;line-height:0">&nbsp;</div></td><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#ff9473;font-size:0;line-height:0">&nbsp;</div></td><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#ff6b6b;font-size:0;line-height:0">&nbsp;</div></td><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#ffd43b;font-size:0;line-height:0">&nbsp;</div></td><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#fab005;font-size:0;line-height:0">&nbsp;</div></td><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#8ce99a;font-size:0;line-height:0">&nbsp;</div></td><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#3bc9db;font-size:0;line-height:0">&nbsp;</div></td><td width="11%" style="padding:0 3px"><div style="height:14px;border-radius:5px;background:#845ef7;font-size:0;line-height:0">&nbsp;</div></td></tr></table>
-<h1 style="margin:0 0 14px;font-size:34px;line-height:1.05;font-weight:800;letter-spacing:-1px;color:#f1f2f5">{{ if $en }}New password{{ else }}Nueva contraseña{{ end }}</h1>
-<p style="margin:0 0 28px;font-size:16px;line-height:1.55;color:#c3c7d1">{{ if $en }}Someone (hopefully you) asked to change the password for <strong style="color:#f1f2f5">{{ .Email }}</strong>. Tap the button to choose a new one. The link expires in 24 hours and only works once.{{ else }}Alguien (esperamos que tú) ha pedido cambiar la contraseña de <strong style="color:#f1f2f5">{{ .Email }}</strong>. Pulsa el botón para elegir una nueva. El enlace caduca en 24 horas y solo sirve una vez.{{ end }}</p>
+<h1 style="margin:0 0 14px;font-size:34px;line-height:1.05;font-weight:800;letter-spacing:-1px;color:#f1f2f5">{{ if eq $locale "en" }}New password{{ else if eq $locale "ja" }}新しいパスワード{{ else }}Nueva contraseña{{ end }}</h1>
+<p style="margin:0 0 28px;font-size:16px;line-height:1.55;color:#c3c7d1">{{ if eq $locale "en" }}Someone (hopefully you) asked to change the password for <strong style="color:#f1f2f5">{{ .Email }}</strong>. Tap the button to choose a new one. The link expires in 24 hours and only works once.{{ else if eq $locale "ja" }}<strong style="color:#f1f2f5">{{ .Email }}</strong> のパスワード変更のリクエストがありました（あなたからだといいのですが）。ボタンをタップして新しいパスワードを設定してください。リンクの有効期限は24時間で、使えるのは1回だけです。{{ else }}Alguien (esperamos que tú) ha pedido cambiar la contraseña de <strong style="color:#f1f2f5">{{ .Email }}</strong>. Pulsa el botón para elegir una nueva. El enlace caduca en 24 horas y solo sirve una vez.{{ end }}</p>
 <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
 <td bgcolor="#f1f2f5" style="background:#f1f2f5;border-radius:999px">
-<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=%2Fentrar%2Fnueva-contrasena" style="display:inline-block;padding:15px 30px;font-size:16px;font-weight:800;color:#111318;text-decoration:none;border-radius:999px">{{ if $en }}Choose a password{{ else }}Elegir contraseña{{ end }}</a>
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=%2Fentrar%2Fnueva-contrasena" style="display:inline-block;padding:15px 30px;font-size:16px;font-weight:800;color:#111318;text-decoration:none;border-radius:999px">{{ if eq $locale "en" }}Choose a password{{ else if eq $locale "ja" }}パスワードを設定{{ else }}Elegir contraseña{{ end }}</a>
 </td></tr></table>
-<p style="margin:28px 0 0;font-size:13px;line-height:1.5;color:#959bab">{{ if $en }}Button not working? Copy this link into your browser:{{ else }}¿El botón no funciona? Copia este enlace en el navegador:{{ end }}<br>
+<p style="margin:28px 0 0;font-size:13px;line-height:1.5;color:#959bab">{{ if eq $locale "en" }}Button not working? Copy this link into your browser:{{ else if eq $locale "ja" }}ボタンが動かないときは、このリンクをブラウザに貼り付けてください：{{ else }}¿El botón no funciona? Copia este enlace en el navegador:{{ end }}<br>
 <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=%2Fentrar%2Fnueva-contrasena" style="color:#959bab;word-break:break-all">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=%2Fentrar%2Fnueva-contrasena</a></p>
 <div style="height:1px;background:#2a2e38;margin:24px 0 18px;font-size:0;line-height:0">&nbsp;</div>
-<p style="margin:0;font-size:13px;line-height:1.5;color:#959bab">{{ if $en }}If you didn't ask for this, ignore this email: your password stays the same.{{ else }}Si no lo has pedido tú, ignora este email: tu contraseña sigue siendo la misma.{{ end }}</p>
+<p style="margin:0;font-size:13px;line-height:1.5;color:#959bab">{{ if eq $locale "en" }}If you didn't ask for this, ignore this email: your password stays the same.{{ else if eq $locale "ja" }}心当たりがなければ、このメールは無視してください。パスワードは変わりません。{{ else }}Si no lo has pedido tú, ignora este email: tu contraseña sigue siendo la misma.{{ end }}</p>
 </td></tr>
 
 <tr><td align="center" style="padding:22px 8px 0;font-size:12px;line-height:1.5;color:#959bab">
-BRB · {{ if $en }}Mini-games to switch off{{ else }}Minijuegos para desconectar{{ end }}
+BRB · {{ if eq $locale "en" }}Mini-games to switch off{{ else if eq $locale "ja" }}息抜きのミニゲーム{{ else }}Minijuegos para desconectar{{ end }}
 </td></tr>
 
 </table>

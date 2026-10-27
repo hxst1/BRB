@@ -38,12 +38,18 @@ describe("novedades", () => {
     for (let i = 2; i < items.length; i++) expect(items[i - 1]!.date.getTime()).toBeGreaterThanOrEqual(items[i]!.date.getTime());
   });
 
-  it("en inglés, el texto en inglés si lo hay; si no, el español", () => {
+  it.each(["en", "ja"] as const)("en %s, el texto en inglés si lo hay; si no, el español", (locale) => {
     const [translated, plain] = newsItems(
       [post("en", "2026-10-26T10:00:00Z", { title_en: "Title", body_en: "Body", cta_url: "/2048", cta_label_es: "Jugar", pinned: true }), post("es", "2026-10-26T09:00:00Z", { pinned: true })],
-      "en",
+      locale,
     );
     expect(translated?.type === "post" && [translated.title, translated.cta?.label]).toEqual(["Title", "Jugar"]);
     expect(plain?.type === "post" && plain.title).toBe("Título es");
+  });
+
+  it("los juegos nuevos salen con su nombre en el idioma de la app", () => {
+    const items = newsItems([], "ja", new Date("2026-10-27T12:00:00+01:00").getTime());
+    const names = items.flatMap((item) => (item.type === "games" ? item.games.map((game) => game.name) : []));
+    expect(names).toContain("リバーシ");
   });
 });

@@ -1,6 +1,6 @@
 // Genera las plantillas de email de Supabase (supabase/templates/*.html) con
 // la estética de la app. El nombre sale de packages/brand: no se escribe a mano.
-// Son plantillas de Go: `.Data.locale` elige español o inglés (español si no hay).
+// Son plantillas de Go: `.Data.locale` elige español, inglés o japonés (español si no hay).
 import { readFileSync, writeFileSync } from "node:fs";
 
 const brandSource = readFileSync("packages/brand/src/index.ts", "utf8");
@@ -17,10 +17,11 @@ const C = {
   line: "#2a2e38",
   tiles: ["#ffd8b0", "#ffb98a", "#ff9473", "#ff6b6b", "#ffd43b", "#fab005", "#8ce99a", "#3bc9db", "#845ef7"],
 };
-const FONT = "'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+const FONT =
+  "'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, sans-serif";
 
-/** Texto en los dos idiomas (`$en` se define al principio de la plantilla). */
-const t = (es, en) => `{{ if $en }}${en}{{ else }}${es}{{ end }}`;
+/** Texto en cada idioma (`$locale` se define al principio de la plantilla). */
+const t = (es, en, ja) => `{{ if eq $locale "en" }}${en}{{ else if eq $locale "ja" }}${ja}{{ else }}${es}{{ end }}`;
 
 /** Franja con los colores de las fichas del 2048, como un tablero en una fila. */
 function tileStrip() {
@@ -39,8 +40,8 @@ function tileStrip() {
 const link = (type, next) => `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=${type}&next=${encodeURIComponent(next)}`;
 
 function layout({ preheader, title, intro, button, note, url }) {
-  return `{{ $en := eq (printf "%v" .Data.locale) "en" }}<!doctype html>
-<html lang="${t("es", "en")}">
+  return `{{ $locale := printf "%v" .Data.locale }}<!doctype html>
+<html lang="${t("es", "en", "ja")}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -70,14 +71,14 @@ ${tileStrip()}
 <td bgcolor="${C.ink}" style="background:${C.ink};border-radius:999px">
 <a href="${url}" style="display:inline-block;padding:15px 30px;font-size:16px;font-weight:800;color:${C.bg};text-decoration:none;border-radius:999px">${button}</a>
 </td></tr></table>
-<p style="margin:28px 0 0;font-size:13px;line-height:1.5;color:${C.muted}">${t("¿El botón no funciona? Copia este enlace en el navegador:", "Button not working? Copy this link into your browser:")}<br>
+<p style="margin:28px 0 0;font-size:13px;line-height:1.5;color:${C.muted}">${t("¿El botón no funciona? Copia este enlace en el navegador:", "Button not working? Copy this link into your browser:", "ボタンが動かないときは、このリンクをブラウザに貼り付けてください：")}<br>
 <a href="${url}" style="color:${C.muted};word-break:break-all">${url}</a></p>
 <div style="height:1px;background:${C.line};margin:24px 0 18px;font-size:0;line-height:0">&nbsp;</div>
 <p style="margin:0;font-size:13px;line-height:1.5;color:${C.muted}">${note}</p>
 </td></tr>
 
 <tr><td align="center" style="padding:22px 8px 0;font-size:12px;line-height:1.5;color:${C.muted}">
-${BRAND} · ${t("Minijuegos para desconectar", "Mini-games to switch off")}
+${BRAND} · ${t("Minijuegos para desconectar", "Mini-games to switch off", "息抜きのミニゲーム")}
 </td></tr>
 
 </table>
@@ -90,26 +91,36 @@ ${BRAND} · ${t("Minijuegos para desconectar", "Mini-games to switch off")}
 
 const TEMPLATES = {
   confirmation: layout({
-    preheader: t("Un clic y empiezas a jugar.", "One click and you're in."),
-    title: t("¡Ya casi estás!", "You're almost in!"),
+    preheader: t("Un clic y empiezas a jugar.", "One click and you're in.", "ワンクリックで遊べます。"),
+    title: t("¡Ya casi estás!", "You're almost in!", "あと少しです！"),
     intro: t(
       "Hola, <strong style=\"color:#f1f2f5\">{{ .Data.username }}</strong>. Confirma tu email y tu monster te estará esperando: rankings, reto diario y partidas contra tus amigos.",
       "Hi, <strong style=\"color:#f1f2f5\">{{ .Data.username }}</strong>. Confirm your email and your monster will be waiting: rankings, the daily challenge and games against your friends.",
+      "こんにちは、<strong style=\"color:#f1f2f5\">{{ .Data.username }}</strong>さん。メールアドレスを確認すると、モンスターが待っています。ランキング、デイリーチャレンジ、フレンドとの対戦も。",
     ),
-    button: t("Confirmar mi email", "Confirm my email"),
+    button: t("Confirmar mi email", "Confirm my email", "メールアドレスを確認"),
     url: link("email", "/"),
-    note: t("Si no has creado ninguna cuenta, ignora este email: no pasará nada.", "If you didn't create an account, ignore this email: nothing will happen."),
+    note: t(
+      "Si no has creado ninguna cuenta, ignora este email: no pasará nada.",
+      "If you didn't create an account, ignore this email: nothing will happen.",
+      "アカウントを作った覚えがなければ、このメールは無視してください。何も起きません。",
+    ),
   }),
   recovery: layout({
-    preheader: t("El enlace caduca en 24 horas.", "The link expires in 24 hours."),
-    title: t("Nueva contraseña", "New password"),
+    preheader: t("El enlace caduca en 24 horas.", "The link expires in 24 hours.", "リンクの有効期限は24時間です。"),
+    title: t("Nueva contraseña", "New password", "新しいパスワード"),
     intro: t(
       "Alguien (esperamos que tú) ha pedido cambiar la contraseña de <strong style=\"color:#f1f2f5\">{{ .Email }}</strong>. Pulsa el botón para elegir una nueva. El enlace caduca en 24 horas y solo sirve una vez.",
       "Someone (hopefully you) asked to change the password for <strong style=\"color:#f1f2f5\">{{ .Email }}</strong>. Tap the button to choose a new one. The link expires in 24 hours and only works once.",
+      "<strong style=\"color:#f1f2f5\">{{ .Email }}</strong> のパスワード変更のリクエストがありました（あなたからだといいのですが）。ボタンをタップして新しいパスワードを設定してください。リンクの有効期限は24時間で、使えるのは1回だけです。",
     ),
-    button: t("Elegir contraseña", "Choose a password"),
+    button: t("Elegir contraseña", "Choose a password", "パスワードを設定"),
     url: link("recovery", "/entrar/nueva-contrasena"),
-    note: t("Si no lo has pedido tú, ignora este email: tu contraseña sigue siendo la misma.", "If you didn't ask for this, ignore this email: your password stays the same."),
+    note: t(
+      "Si no lo has pedido tú, ignora este email: tu contraseña sigue siendo la misma.",
+      "If you didn't ask for this, ignore this email: your password stays the same.",
+      "心当たりがなければ、このメールは無視してください。パスワードは変わりません。",
+    ),
   }),
 };
 

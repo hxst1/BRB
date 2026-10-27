@@ -3,12 +3,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClientForRequest } from "@/lib/supabase/server";
 import { parseGuess, wordleToday } from "@/lib/wordle/server";
 import { apiJson } from "@/lib/i18n/api";
-import { isLocale } from "@/lib/i18n/locales";
+import { isContentLanguage } from "@/lib/i18n/locales";
 
 /**
  * Puntúa un intento del Wordle. La palabra se queda en el servidor: solo se
  * devuelven los colores (y la palabra, al fallar los 6 intentos). `lang` elige
- * la palabra del día en español o en inglés.
+ * la palabra del día en español o en inglés (la app en japonés usa el inglés).
  */
 export async function POST(request: Request) {
   const { userId } = await createClientForRequest(request);
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     return apiJson({ error: "Intento no válido" }, { status: 400 });
   }
 
-  const lang = isLocale(body.lang) ? body.lang : "es";
+  const lang = isContentLanguage(body.lang) ? body.lang : "es";
   const guess = parseGuess(body.guess, lang);
   if (!guess) return apiJson({ error: "No está en la lista de palabras" }, { status: 422 });
 

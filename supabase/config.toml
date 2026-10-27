@@ -245,18 +245,18 @@ otp_expiry = 86400
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Emails en el idioma de la cuenta (metadato `locale`; español si no hay).
+# Emails en el idioma de la cuenta (metadato `locale`: es, en o ja; español si no hay).
 # Las genera `pnpm emails:build` (scripts/emails/build.mjs); en producción se
 # suben con `pnpm db:email-templates`.
 [auth.email.template.confirmation]
 # Cada asunto lleva 4 caracteres del token (sin el prefijo pkce_): así cada email es
 # distinto y Gmail no los agrupa en una conversación, donde se acababa abriendo uno
 # viejo ya gastado. No sirven para entrar (el código de 6 cifras sí: no va aquí).
-subject = "{{ if eq (printf \"%v\" .Data.locale) \"en\" }}Confirm your email (link {{ slice .TokenHash 5 9 }}){{ else }}Confirma tu email (enlace {{ slice .TokenHash 5 9 }}){{ end }}"
+subject = "{{ if eq (printf \"%v\" .Data.locale) \"en\" }}Confirm your email (link {{ slice .TokenHash 5 9 }}){{ else if eq (printf \"%v\" .Data.locale) \"ja\" }}メールアドレスの確認（リンク {{ slice .TokenHash 5 9 }}）{{ else }}Confirma tu email (enlace {{ slice .TokenHash 5 9 }}){{ end }}"
 content_path = "./supabase/templates/confirmation.html"
 
 [auth.email.template.recovery]
-subject = "{{ if eq (printf \"%v\" .Data.locale) \"en\" }}Choose a new password (link {{ slice .TokenHash 5 9 }}){{ else }}Elige una contraseña nueva (enlace {{ slice .TokenHash 5 9 }}){{ end }}"
+subject = "{{ if eq (printf \"%v\" .Data.locale) \"en\" }}Choose a new password (link {{ slice .TokenHash 5 9 }}){{ else if eq (printf \"%v\" .Data.locale) \"ja\" }}新しいパスワードの設定（リンク {{ slice .TokenHash 5 9 }}）{{ else }}Elige una contraseña nueva (enlace {{ slice .TokenHash 5 9 }}){{ end }}"
 content_path = "./supabase/templates/recovery.html"
 
 # Uncomment to customize email template

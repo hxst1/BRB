@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { partAchievement, PART_OPTIONS } from "@repo/avatars";
 import { ACHIEVEMENTS, achievementsFor } from "./achievements";
+import { LOCALES } from "./i18n/locales";
 import { TINTS } from "./theme";
 
 const dir = new URL("../../../../supabase/migrations/", import.meta.url);
@@ -14,8 +15,18 @@ function latest(fn: string): string {
 }
 
 describe("logros", () => {
-  it("todos tienen sus textos en inglés", () => {
-    for (const achievement of achievementsFor("en")) expect(achievement.name && achievement.description && achievement.reward.label).toBeTruthy();
+  it("todos tienen sus textos en cada idioma, también los premios de más", () => {
+    for (const locale of LOCALES.filter((locale) => locale !== "es")) {
+      const spanish = new Map(ACHIEVEMENTS.map((achievement) => [achievement.id, achievement]));
+      for (const achievement of achievementsFor(locale)) {
+        const original = spanish.get(achievement.id)!;
+        expect(achievement.name && achievement.description && achievement.reward.label, `${locale}: ${achievement.id}`).toBeTruthy();
+        expect(achievement.description, `${locale}: ${achievement.id} sin traducir`).not.toBe(original.description);
+        for (const [i, extra] of (achievement.extras ?? []).entries()) {
+          expect(extra.label, `${locale}: ${achievement.id}, premio ${i + 1} sin traducir`).not.toBe(original.extras![i]!.label);
+        }
+      }
+    }
   });
 
   it("son los mismos que comprueba la base de datos", () => {

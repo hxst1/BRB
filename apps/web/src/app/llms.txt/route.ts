@@ -4,7 +4,7 @@ import { absoluteUrl, GAME_GUIDES, guidesFor, HOME_FAQ, localizedPath } from "@/
 
 /**
  * /llms.txt: resumen en Markdown para asistentes de IA (propuesta llmstxt.org).
- * Se genera de los mismos textos que las páginas, con un resumen en inglés al final.
+ * Se genera de los mismos textos que las páginas, con un resumen en inglés y otro en japonés al final.
  */
 
 export function GET() {
@@ -13,13 +13,14 @@ export function GET() {
       .map((game) => `- [${game.name}](${absoluteUrl(game.path)}): ${game.description}`)
       .join("\n");
 
-  const english = guidesFor("en")
-    .map((game) => `- [${game.name}](${absoluteUrl(localizedPath(game.path, "en"))}): ${game.description}`)
-    .join("\n");
+  const translated = (locale: "en" | "ja") =>
+    guidesFor(locale)
+      .map((game) => `- [${game.name}](${absoluteUrl(localizedPath(game.path, locale))}): ${game.description}`)
+      .join("\n");
 
   const body = `# ${brand.name}
 
-> ${brand.description} Gratis, sin anuncios y sin descargar nada: se juega en el navegador del móvil o del ordenador, y se puede instalar como app (PWA). En español y en inglés.
+> ${brand.description} Gratis, sin anuncios y sin descargar nada: se juega en el navegador del móvil o del ordenador, y se puede instalar como app (PWA). En español, en inglés y en japonés.
 
 ## Juegos en solitario
 
@@ -42,7 +43,13 @@ ${HOME_FAQ.map(({ q, a }) => `### ${q}\n\n${a}`).join("\n\n")}
 
 ${messagesFor("en").landing.description} The whole app is also available in English at ${absoluteUrl("/en")}.
 
-${english}
+${translated("en")}
+
+## 日本語
+
+${messagesFor("ja").landing.description} アプリ全体を日本語でも遊べます：${absoluteUrl("/ja")}
+
+${translated("ja")}
 `;
   return new Response(body, { headers: { "content-type": "text/markdown; charset=utf-8" } });
 }

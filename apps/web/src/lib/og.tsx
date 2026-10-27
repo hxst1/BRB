@@ -12,15 +12,13 @@ export const OG_SIZE = { width: 1200, height: 630 };
 const TILES = ["#ffd8b0", "#ffb98a", "#ff9473", "#ff6b6b", "#ffd43b", "#fab005", "#8ce99a", "#3bc9db"];
 
 /**
- * Bricolage Grotesque desde Google Fonts, solo con las letras necesarias. Sin
- * User-Agent, Google la sirve en TTF, que es lo que entiende ImageResponse. Si
- * falla, se usa la letra por defecto.
+ * Una fuente de Google Fonts, solo con las letras necesarias. Sin User-Agent,
+ * Google la sirve en TTF, que es lo que entiende ImageResponse. Si falla, se
+ * usa la letra por defecto.
  */
-async function loadFont(text: string, weight: 500 | 800): Promise<ArrayBuffer | null> {
+async function loadFont(family: string, text: string): Promise<ArrayBuffer | null> {
   try {
-    const css = await (
-      await fetch(`https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@${weight === 800 ? 96 : 14},${weight}&text=${encodeURIComponent(text)}`)
-    ).text();
+    const css = await (await fetch(`https://fonts.googleapis.com/css2?family=${family}&text=${encodeURIComponent(text)}`)).text();
     const url = css.match(/src: url\((.+?)\) format\('(opentype|truetype)'\)/)?.[1];
     return url ? await (await fetch(url)).arrayBuffer() : null;
   } catch {
@@ -28,8 +26,44 @@ async function loadFont(text: string, weight: 500 | 800): Promise<ArrayBuffer | 
   }
 }
 
+/** Letras japonesas (kana, kanji y signos de ancho completo), que Bricolage no tiene. */
+const JAPANESE = /[\u3000-\u30ff\u3400-\u9fff\uff00-\uffef]/;
+
+/**
+ * Bricolage Grotesque para los titulares (`bold`) y el resto (`regular`). Si
+ * hay japonés, también Noto Sans JP: ImageResponse busca en ella las letras
+ * que no tiene Bricolage.
+ */
+async function loadFonts(bold: string, regular: string) {
+  const japanese = JAPANESE.test(bold + regular);
+  const fonts = await Promise.all([
+    loadFont("Bricolage+Grotesque:opsz,wght@96,800", bold),
+    loadFont("Bricolage+Grotesque:opsz,wght@14,500", regular),
+    japanese ? loadFont("Noto+Sans+JP:wght@800", bold) : null,
+    japanese ? loadFont("Noto+Sans+JP:wght@500", regular) : null,
+  ]);
+  return (["Bricolage Grotesque", "Bricolage Grotesque", "Noto Sans JP", "Noto Sans JP"] as const).flatMap((name, i) => {
+    const data = fonts[i];
+    return data ? [{ name, data, weight: i % 2 === 0 ? (800 as const) : (500 as const), style: "normal" as const }] : [];
+  });
+}
+
+/**
+ * Tamaño de un titular que tiene que caber en `width` px. En japonés no se
+ * parte por espacios: se encoge para que quepa en una línea (hasta `min`). En
+ * letras latinas, el tamaño grande y, si es largo, el pequeño.
+ */
+function headlineSize(text: string, { big, small, longer, width, min }: { big: number; small: number; longer: number; width: number; min: number }) {
+  if (!JAPANESE.test(text)) return text.length > longer ? small : big;
+  const ems = [...text].reduce((total, char) => total + (JAPANESE.test(char) ? 1 : 0.6), 0);
+  return Math.max(min, Math.min(big, Math.floor(width / ems)));
+}
+
+/** El japonés con las letras apretadas se pisa: sin espacio negativo entre letras. */
+const tracking = (text: string, value: number) => (JAPANESE.test(text) ? 0 : value);
+
 export async function ogImage({ title, subtitle, accent = "#845ef7" }: { title: string; subtitle: string; accent?: string }) {
-  const [bold, regular] = await Promise.all([loadFont(`${brand.name}${title}`, 800), loadFont(subtitle, 500)]);
+  const fonts = await loadFonts(`${brand.name}${title}`, subtitle);
   const tiles = [TILES[1], null, TILES[6], null, accent, null, TILES[4], null, TILES[0]];
   return new ImageResponse(
     (
@@ -45,7 +79,16 @@ export async function ogImage({ title, subtitle, accent = "#845ef7" }: { title: 
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: 640 }}>
           <div style={{ fontSize: 44, fontWeight: 800, letterSpacing: -1 }}>{brand.name}</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            <div style={{ fontSize: title.length > 18 ? 76 : 104, fontWeight: 800, lineHeight: 0.95, letterSpacing: -3 }}>{title}</div>
+            <div
+              style={{
+                fontSize: headlineSize(title, { big: 104, small: 76, longer: 18, width: 640, min: 64 }),
+                fontWeight: 800,
+                lineHeight: JAPANESE.test(title) ? 1.15 : 0.95,
+                letterSpacing: tracking(title, -3),
+              }}
+            >
+              {title}
+            </div>
             <div style={{ fontSize: 36, fontWeight: 500, color: "#959bab", lineHeight: 1.2 }}>{subtitle}</div>
           </div>
         </div>
@@ -53,10 +96,7 @@ export async function ogImage({ title, subtitle, accent = "#845ef7" }: { title: 
     ),
     {
       ...OG_SIZE,
-      fonts: [
-        ...(bold ? [{ name: "Bricolage Grotesque", data: bold, weight: 800 as const, style: "normal" as const }] : []),
-        ...(regular ? [{ name: "Bricolage Grotesque", data: regular, weight: 500 as const, style: "normal" as const }] : []),
-      ],
+      fonts,
     },
   );
 }
@@ -113,7 +153,7 @@ const svgData = (svg: string) => `data:image/svg+xml;base64,${Buffer.from(svg).t
 export async function storyImage(data: StoryData) {
   const words = `${brand.name}${data.game}${data.score}${data.username}${data.challenge}${data.record?.label ?? ""}`;
   const small = `${data.detail ?? ""}${data.record?.rank ?? ""}${data.join}${data.urlLabel}`;
-  const [bold, regular] = await Promise.all([loadFont(words, 800), loadFont(small, 500)]);
+  const fonts = await loadFonts(words, small);
   const qr = renderSVG(data.url, { border: 0, whiteColor: "#ffffff", blackColor: "#111318" });
   const scoreSize = data.score.length <= 7 ? 240 : data.score.length <= 11 ? 170 : 128;
   return new ImageResponse(
@@ -158,7 +198,16 @@ export async function storyImage(data: StoryData) {
               <img alt="" width={150} height={150} src={svgData(data.icon)} />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <div style={{ fontSize: data.game.length > 12 ? 84 : 112, fontWeight: 800, letterSpacing: -3, lineHeight: 1 }}>{data.game}</div>
+              <div
+                style={{
+                  fontSize: headlineSize(data.game, { big: 112, small: 84, longer: 12, width: 640, min: 64 }),
+                  fontWeight: 800,
+                  letterSpacing: tracking(data.game, -3),
+                  lineHeight: JAPANESE.test(data.game) ? 1.15 : 1,
+                }}
+              >
+                {data.game}
+              </div>
               {data.detail && <div style={{ fontSize: 44, fontWeight: 500, color: "#959bab" }}>{data.detail}</div>}
             </div>
           </div>
@@ -184,7 +233,7 @@ export async function storyImage(data: StoryData) {
             <img alt="" width={236} height={236} src={svgData(qr)} />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
-            <div style={{ fontSize: 76, fontWeight: 800, letterSpacing: -2, lineHeight: 1, color: data.accent }}>{data.challenge}</div>
+            <div style={{ fontSize: 76, fontWeight: 800, letterSpacing: tracking(data.challenge, -2), lineHeight: JAPANESE.test(data.challenge) ? 1.15 : 1, color: data.accent }}>{data.challenge}</div>
             <div style={{ fontSize: 40, fontWeight: 500, color: "#959bab" }}>{data.join}</div>
             <div style={{ fontSize: 40, fontWeight: 500 }}>{data.urlLabel}</div>
           </div>
@@ -193,10 +242,7 @@ export async function storyImage(data: StoryData) {
     ),
     {
       ...STORY_SIZE,
-      fonts: [
-        ...(bold ? [{ name: "Bricolage Grotesque", data: bold, weight: 800 as const, style: "normal" as const }] : []),
-        ...(regular ? [{ name: "Bricolage Grotesque", data: regular, weight: 500 as const, style: "normal" as const }] : []),
-      ],
+      fonts,
       headers: { "cache-control": "private, max-age=600" },
     },
   );
