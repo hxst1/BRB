@@ -44,13 +44,12 @@ async function FriendsForViewer({ searchParams }: { searchParams: PageProps<"/[l
   ]);
 
   return (
-    // En el móvil, los grupos van después de la lista de amigos; en escritorio, bajo tu código.
-    <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:gap-x-16">
-      <div>{friendCode && <FriendCode code={friendCode.code} />}</div>
-      <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1">
-        <Friends viewerId={viewerId} initialCode={invite === friendCode?.code ? "" : invite} />
+    <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:gap-16">
+      <div className="flex flex-col gap-10">
+        {friendCode && <FriendCode code={friendCode.code} />}
+        <MyGroups groups={(groups ?? []).map((group) => ({ id: group.id, name: group.name, members: group.group_members[0]?.count ?? 0 }))} />
       </div>
-      <MyGroups groups={(groups ?? []).map((group) => ({ id: group.id, name: group.name, members: group.group_members[0]?.count ?? 0 }))} />
+      <Friends viewerId={viewerId} initialCode={invite === friendCode?.code ? "" : invite} />
     </div>
   );
 }
