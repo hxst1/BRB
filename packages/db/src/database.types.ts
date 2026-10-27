@@ -761,6 +761,9 @@ isOneToOne: false
 "cancel_match":
 { Args: { "match_id": string }; Returns: undefined
                            },
+"challenge_inviter":
+{ Args: { "code": string,"game": string }; Returns: string
+                           },
 "claim_launch_reward":
 { Args: { "source": string }; Returns: boolean
                            },
@@ -808,6 +811,11 @@ isOneToOne: false
 "get_daily_leaderboard":
 { Args: { "game"?: string,"max_rows"?: number,"scope"?: string }; Returns: {
               "achieved_at": string,"avatar_parts": Json,"avatar_seed": number,"rank": number,"score": number,"supporter_tier": string,"user_id": string,"username": string
+            }[]
+                           },
+"get_invite":
+{ Args: { "code": string }; Returns: {
+              "avatar_parts": Json,"avatar_seed": number,"username": string
             }[]
                            },
 "get_leaderboard":

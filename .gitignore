@@ -12,3 +12,6 @@ next-env.d.ts
 .wxt
 .output
 .vercel
+
+# Copias de trabajo de los subagentes de Claude Code
+.claude/worktrees/

@@ -12,6 +12,7 @@ import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { ServiceWorker } from "@/components/pwa/service-worker";
 import { ExtensionBridge } from "@/components/extension-bridge";
 import { SiteHeader } from "@/components/site-header";
+import { GuestSaveNotice } from "@/components/guest/guest-save-notice";
 import { I18nProvider } from "@/lib/i18n/client";
 import { LOCALES } from "@/lib/i18n/locales";
 import { getLocale, getMessages } from "@/lib/i18n/server";
@@ -100,6 +101,9 @@ export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
           <ExtensionBridge />
         </Suspense>
         <SiteHeader />
+        <Suspense fallback={null}>
+          <GuestSaveNotice />
+        </Suspense>
         {children}
         <Suspense fallback={null}>
           <SiteFooter />

@@ -9,6 +9,8 @@ import { matchHref, type MatchGame } from "@/lib/games";
 import { createClient } from "@/lib/supabase/client";
 import { challenge, fetchChosen, fetchMyMatches, isMyTurn, markOf, opponentOf, type MatchWithPlayers } from "./data";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
+import { brand } from "@repo/brand";
+import { INVITE_GAMES, inviteUrl } from "@/lib/guest";
 import { useMessages } from "@/lib/i18n/client";
 import type { Messages } from "@/lib/i18n";
 
@@ -115,6 +117,7 @@ export function MatchList({ viewerId, games }: { viewerId: string; games: readon
                 .
               </p>
             )}
+            {INVITE_GAMES.includes(game) && <InviteByLink viewerId={viewerId} game={game} />}
             <ul className="flex flex-col">
               {friends?.map((friend) => (
                 <li key={friend.id}>
@@ -213,5 +216,48 @@ function Group({
         })}
       </ul>
     </section>
+  );
+}
+
+/**
+ * Para quien aún no tiene cuenta: un enlace con el que juega contra ti al
+ * momento, como invitado (ver /unete). En el móvil abre el menú de compartir.
+ */
+function InviteByLink({ viewerId, game }: { viewerId: string; game: MatchGame }) {
+  const m = useMessages();
+  const [copied, setCopied] = useState(false);
+
+  async function share() {
+    const { data } = await createClient().from("friend_codes").select("code").eq("user_id", viewerId).maybeSingle();
+    if (!data) return;
+    const url = inviteUrl(window.location.origin, data.code, game);
+    const text = m.invite.shareText(m.matchGames[game], brand.name);
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: brand.name, text, url });
+      } catch {
+        // Cancelado: nada que hacer.
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(`${text} ${url}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Sin portapapeles: no hay mucho más que hacer.
+    }
+  }
+
+  return (
+    <button type="button" onClick={() => void share()} className="mb-1 flex w-full items-center gap-3 rounded-2xl p-2 text-left hover:bg-bg">
+      <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-full bg-ink text-lg font-bold text-bg">
+        +
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="font-medium">{copied ? m.invite.linkCopied : m.invite.inviteByLink}</span>
+        <span className="text-xs text-muted">{m.invite.inviteByLinkHint}</span>
+      </span>
+    </button>
   );
 }
