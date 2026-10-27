@@ -775,6 +775,110 @@ html[data-splash="out"] #splash {
   }
 }
 
+/* Barra de pestañas: el indicador se desliza con un pequeño rebote. */
+.tab-indicator {
+  transition:
+    translate 420ms cubic-bezier(0.34, 1.35, 0.5, 1),
+    opacity 200ms;
+}
+
+/* ---------------------------------------------------------------------------
+ * Transiciones entre páginas (app/[lang]/template.tsx): al cambiar de sección,
+ * la página entra por el lado de su pestaña; si no, un fundido corto.
+ * ------------------------------------------------------------------------- */
+
+/* La página entera no hace el fundido de serie: solo se mueve el contenido. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+/* Que los toques durante la animación lleguen a la página. */
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-old(.nav-forward) {
+  --slide-offset: -48px;
+  animation:
+    160ms ease-in both page-fade-in reverse,
+    360ms cubic-bezier(0.4, 0, 0.2, 1) both page-slide reverse;
+}
+
+::view-transition-new(.nav-forward) {
+  --slide-offset: 48px;
+  animation:
+    220ms ease-out 120ms both page-fade-in,
+    360ms cubic-bezier(0.2, 0.8, 0.2, 1) both page-slide;
+}
+
+::view-transition-old(.nav-back) {
+  --slide-offset: 48px;
+  animation:
+    160ms ease-in both page-fade-in reverse,
+    360ms cubic-bezier(0.4, 0, 0.2, 1) both page-slide reverse;
+}
+
+::view-transition-new(.nav-back) {
+  --slide-offset: -48px;
+  animation:
+    220ms ease-out 120ms both page-fade-in,
+    360ms cubic-bezier(0.2, 0.8, 0.2, 1) both page-slide;
+}
+
+::view-transition-old(.page-fade) {
+  animation: 120ms ease-in both page-fade-in reverse;
+}
+
+::view-transition-new(.page-fade) {
+  animation: 200ms ease-out 60ms both page-fade-in;
+}
+
+/* La cabecera y la barra de pestañas se quedan quietas encima. */
+::view-transition-group(site-header),
+::view-transition-group(tab-bar) {
+  animation: none;
+  z-index: 100;
+}
+
+::view-transition-old(site-header),
+::view-transition-old(tab-bar) {
+  display: none;
+}
+
+::view-transition-new(site-header),
+::view-transition-new(tab-bar) {
+  animation: none;
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes page-slide {
+  from {
+    translate: var(--slide-offset) 0;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-indicator {
+    transition: opacity 200ms;
+  }
+
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
 /* Hundir la flota: casillas, barcos y disparos en capas sobre la misma cuadrícula. */
 .sea-board {
   --sea-gap: clamp(2px, 0.7vw, 4px);
