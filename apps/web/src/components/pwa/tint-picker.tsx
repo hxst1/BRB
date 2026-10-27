@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useSyncExternalStore } from "react";
 import { InlinePicto } from "@/components/picto";
-import { achievementById } from "@/lib/achievements";
+import { achievementById, achievementVisible } from "@/lib/achievements";
 import { applyTint, TINT_KEY, TINTS } from "@/lib/theme";
 import { useLocale, useMessages } from "@/lib/i18n/client";
 
@@ -47,14 +47,19 @@ export function TintPicker({ isSupporter, unlocked }: { isSupporter: boolean; un
     () => null,
   );
   const locked = (tint: (typeof TINTS)[number]) => (tint.achievement ? !unlocked.includes(tint.achievement) : !isSupporter);
-  const anyAchievementLocked = TINTS.some((tint) => tint.achievement && locked(tint));
+  // Los de un logro que ya no se puede conseguir solo salen a quien lo tiene.
+  const tints = TINTS.filter((tint) => {
+    const achievement = tint.achievement ? achievementById(tint.achievement, locale) : undefined;
+    return !achievement || achievementVisible(achievement, !locked(tint));
+  });
+  const anyAchievementLocked = tints.some((tint) => tint.achievement && locked(tint));
 
   return (
     <div className="flex flex-col gap-2">
       <p className="text-sm font-medium">{m.settings.tint}</p>
       <div role="radiogroup" aria-label={m.settings.tint} className="flex flex-wrap gap-2">
         <Swatch label={m.settings.classic} color="var(--line)" selected={!current} onClick={() => save(null)} />
-        {TINTS.map((tint) => (
+        {tints.map((tint) => (
           <Swatch
             key={tint.value}
             label={m.settings.tints[tint.value]}

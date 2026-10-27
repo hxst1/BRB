@@ -106,7 +106,7 @@ describe("stickers", () => {
 
 describe("degradados del cuerpo", () => {
   it("con prefijo, cada SVG usa sus propios ids (si no, uno oculto en la página deja sin color a los demás)", () => {
-    for (const palette of ["rainbow", "galaxy", "terminal", "neon"] as const) {
+    for (const palette of ["rainbow", "galaxy", "terminal", "neon", "launch"] as const) {
       const svg = renderMonsterSvg(resolveMonster(1, { palette }), "neutral", "m42");
       expect(svg).not.toContain("brb-");
       const refs = [...svg.matchAll(/url\(#([^)]+)\)/g)].map((match) => match[1]);

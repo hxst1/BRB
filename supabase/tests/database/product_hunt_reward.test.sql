@@ -1,5 +1,5 @@
 begin;
-select plan(8);
+select plan(9);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-9a000000000a', 'a@ph.local', '{"username": "ph_ana"}');
@@ -24,6 +24,7 @@ select pg_temp.logout();
 select ok(exists (select 1 from public.user_achievements where user_id = '00000000-0000-0000-0000-9a000000000a' and achievement = 'product-hunt'),
   'y con él, el logro');
 select is(private.part_achievement('top', 'launch'), 'product-hunt', 'que desbloquea el gorro');
+select is(private.part_achievement('palette', 'launch'), 'product-hunt', 'y el color');
 
 select ok(not private.launch_reward_open(timestamptz '2026-11-05 00:00 Europe/Madrid'), 'pasada la semana del lanzamiento, ya no se puede');
 

@@ -155,7 +155,7 @@ export const es = {
   },
   productHunt: {
     title: "¡Hola, gente de Product Hunt!",
-    body: "Crea tu cuenta gratis esta semana y tu monster se lleva el gorro exclusivo del lanzamiento.",
+    body: "Crea tu cuenta gratis esta semana y llévate el gorro, el color y el tema exclusivos del lanzamiento.",
     later: "Ahora no",
   },
   ratingPrompt: {
@@ -971,7 +971,7 @@ export const es = {
     themes: { system: "Automático", light: "Claro", dark: "Oscuro" },
     tint: "Color de la app",
     classic: "Clásico",
-    tints: { grape: "Uva", sea: "Mar", forest: "Bosque", sunset: "Atardecer", mint: "Menta", tangerine: "Mandarina", sky: "Cielo" },
+    tints: { grape: "Uva", sea: "Mar", forest: "Bosque", sunset: "Atardecer", mint: "Menta", tangerine: "Mandarina", sky: "Cielo", launch: "Lanzamiento" },
     tintLocked: "Los marcados con ✦ son para quien apoya el proyecto.",
     tintFromAchievement: (name: string) => `Se consigue con el logro «${name}»`,
     tintAchievementsLocked: "Los del candado se consiguen con logros.",

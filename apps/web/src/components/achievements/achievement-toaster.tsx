@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { sanitizeParts } from "@repo/avatars";
 import type { Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
-import { achievementById, wearing, type Achievement } from "@/lib/achievements";
+import { achievementById, rewardSummary, wearing, type Achievement } from "@/lib/achievements";
 import { useLocale, useMessages } from "@/lib/i18n/client";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import { createClient } from "@/lib/supabase/client";
@@ -108,7 +108,7 @@ export function AchievementToaster({ viewerId, avatarSeed, avatarParts }: { view
             {current.name}
           </span>
           <span className="text-xs">
-            {isTint ? m.achievements.newTint : m.achievements.yourMonsterWears} <strong>{current.reward.label}</strong>
+            {isTint ? m.achievements.newTint : m.achievements.yourMonsterWears} <strong>{rewardSummary(current, locale)}</strong>
           </span>
           <span className="mt-1 flex items-center gap-3">
             {state === "worn" ? (

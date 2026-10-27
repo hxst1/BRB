@@ -1,7 +1,7 @@
 import type { Json } from "@repo/db";
 import { sanitizeParts } from "@repo/avatars";
 import { Avatar } from "@repo/ui/avatar";
-import { achievementVisible, achievementsFor, wearing } from "@/lib/achievements";
+import { achievementVisible, achievementsFor, rewardSummary, wearing } from "@/lib/achievements";
 import { rewardBackground } from "@/lib/theme";
 import { getLocale, getMessages } from "@/lib/i18n/server";
 import { InlinePicto } from "@/components/picto";
@@ -60,7 +60,7 @@ export async function Achievements({ statuses, avatarSeed, avatarParts }: { stat
                 <span className="text-xs text-muted">{achievement.description}</span>
                 {done ? (
                   <span className="text-xs">
-                    <strong>{achievement.reward.label}</strong>
+                    <strong>{rewardSummary(achievement, locale)}</strong>
                     <span className="text-muted">{m.achievements.since(dateFormat.format(new Date(status.unlocked_at!)))}</span>
                   </span>
                 ) : (
@@ -83,7 +83,7 @@ export async function Achievements({ statuses, avatarSeed, avatarParts }: { stat
                         </span>
                       </>
                     )}
-                    {status.goal === 1 && <span>{m.achievements.reward(achievement.reward.label)}</span>}
+                    {status.goal === 1 && <span>{m.achievements.reward(rewardSummary(achievement, locale))}</span>}
                   </span>
                 )}
               </span>

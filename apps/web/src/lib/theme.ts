@@ -6,7 +6,7 @@ export type ThemeChoice = "system" | "light" | "dark";
 export const THEME_KEY = "theme";
 export const TINT_KEY = "tint";
 
-export type TintId = "grape" | "sea" | "forest" | "sunset" | "mint" | "tangerine" | "sky";
+export type TintId = "grape" | "sea" | "forest" | "sunset" | "mint" | "tangerine" | "sky" | "launch";
 
 /**
  * Tintes de la app (theme.css: data-tint). Los que llevan `achievement` se
@@ -17,6 +17,7 @@ export const TINTS: readonly { value: TintId; label: string; color: string; achi
   { value: "mint", label: "Menta", color: "#20c997", achievement: "first-steps" },
   { value: "tangerine", label: "Mandarina", color: "#ff922b", achievement: "explorer" },
   { value: "sky", label: "Cielo", color: "#4c6ef5", achievement: "matches-10" },
+  { value: "launch", label: "Lanzamiento", color: "#da552f", achievement: "product-hunt" },
   { value: "grape", label: "Uva", color: "#845ef7" },
   { value: "sea", label: "Mar", color: "#22b8cf" },
   { value: "forest", label: "Bosque", color: "#40c057" },
@@ -35,7 +36,7 @@ export function rewardBackground(reward: { slot: string; id: string }): string {
 /** Aplica un tinte (o lo quita con null). Como applyTheme, sin dependencias: va en el script del <head>. */
 export function applyTint(tint: string | null) {
   const root = document.documentElement;
-  if (tint && ["grape", "sea", "forest", "sunset", "mint", "tangerine", "sky"].includes(tint)) root.dataset.tint = tint;
+  if (tint && ["grape", "sea", "forest", "sunset", "mint", "tangerine", "sky", "launch"].includes(tint)) root.dataset.tint = tint;
   else delete root.dataset.tint;
 }
 

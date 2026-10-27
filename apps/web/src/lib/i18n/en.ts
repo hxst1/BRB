@@ -151,7 +151,7 @@ export const en: Messages = {
   },
   productHunt: {
     title: "Hi, Product Hunt folks!",
-    body: "Create a free account this week and your monster gets the exclusive launch beanie.",
+    body: "Create a free account this week and get the exclusive launch beanie, colour and theme.",
     later: "Not now",
   },
   ratingPrompt: {
@@ -967,7 +967,7 @@ export const en: Messages = {
     themes: { system: "Automatic", light: "Light", dark: "Dark" },
     tint: "App colour",
     classic: "Classic",
-    tints: { grape: "Grape", sea: "Sea", forest: "Forest", sunset: "Sunset", mint: "Mint", tangerine: "Tangerine", sky: "Sky" },
+    tints: { grape: "Grape", sea: "Sea", forest: "Forest", sunset: "Sunset", mint: "Mint", tangerine: "Tangerine", sky: "Sky", launch: "Launch" },
     tintLocked: "The ones marked ✦ are for supporters of the project.",
     tintFromAchievement: (name: string) => `Unlocked with the “${name}” achievement`,
     tintAchievementsLocked: "The ones with a lock are unlocked with achievements.",

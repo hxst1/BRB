@@ -6,13 +6,17 @@
 import type { Locale } from "./i18n/locales";
 import type { Picto } from "./pictos";
 
+type Reward = { slot: "palette" | "top" | "tint"; id: string; label: string };
+
 export type Achievement = {
   id: string;
   name: string;
   description: string;
   icon: Picto;
   /** Ropa del monster (`palette`, `top`) o un color para toda la app (`tint`, ver lib/theme.ts). */
-  reward: { slot: "palette" | "top" | "tint"; id: string; label: string };
+  reward: Reward;
+  /** Más premios del mismo logro (los enseña la lista de logros; "Estrenar" pone solo `reward`). */
+  extras?: Reward[];
   /**
    * Los de tiempo limitado: hasta cuándo se pueden conseguir (lo mismo que dice
    * la base de datos). Pasada la fecha, solo los ve quien los tiene.
@@ -139,18 +143,28 @@ export const ACHIEVEMENTS: Achievement[] = [
     description: "Llega desde Product Hunt durante su lanzamiento, con tu cuenta (solo hasta el 4 de noviembre).",
     icon: "rocket",
     reward: { slot: "top", id: "launch", label: "Gorro de Product Hunt" },
+    extras: [
+      { slot: "palette", id: "launch", label: "color lanzamiento" },
+      { slot: "tint", id: "launch", label: "tema lanzamiento" },
+    ],
     // Igual que private.launch_reward_open.
     until: "2026-11-05T00:00:00+01:00",
   },
 ];
+
+/** Todo lo que da un logro, en una frase: "Gorro de Product Hunt, color lanzamiento y tema lanzamiento". */
+export function rewardSummary(achievement: Pick<Achievement, "reward" | "extras">, locale: Locale): string {
+  const labels = [achievement.reward, ...(achievement.extras ?? [])].map((reward) => reward.label);
+  return new Intl.ListFormat(locale, { type: "conjunction" }).format(labels);
+}
 
 /** ¿Se puede ver este logro? Los de tiempo limitado, pasada su fecha, solo si ya lo tienes. */
 export function achievementVisible(achievement: Pick<Achievement, "until">, unlocked: boolean, now = Date.now()): boolean {
   return unlocked || !achievement.until || now < new Date(achievement.until).getTime();
 }
 
-/** En inglés: nombre, descripción y nombre del premio de cada logro. */
-const EN: Record<string, { name: string; description: string; reward: string }> = {
+/** En inglés: nombre, descripción y nombre del premio de cada logro (y de los de más, en orden). */
+const EN: Record<string, { name: string; description: string; reward: string; extras?: string[] }> = {
   "first-run": { name: "First game", description: "Finish a solo game.", reward: "Cap" },
   "friends-3": { name: "In good company", description: "Have 3 friends.", reward: "Headphones" },
   "streak-7": { name: "Steady", description: "Play 7 days in a row.", reward: "Flower" },
@@ -171,6 +185,7 @@ const EN: Record<string, { name: string; description: string; reward: string }> 
     name: "From Product Hunt",
     description: "Come over from Product Hunt during its launch, signed in (only until 4 November).",
     reward: "Product Hunt beanie",
+    extras: ["launch colour", "launch theme"],
   },
 };
 
@@ -179,7 +194,13 @@ export function achievementsFor(locale: Locale): Achievement[] {
   if (locale === "es") return ACHIEVEMENTS;
   return ACHIEVEMENTS.map((achievement) => {
     const texts = EN[achievement.id];
-    return { ...achievement, name: texts.name, description: texts.description, reward: { ...achievement.reward, label: texts.reward } };
+    return {
+      ...achievement,
+      name: texts.name,
+      description: texts.description,
+      reward: { ...achievement.reward, label: texts.reward },
+      extras: achievement.extras?.map((extra, i) => ({ ...extra, label: texts.extras?.[i] ?? extra.label })),
+    };
   });
 }
 

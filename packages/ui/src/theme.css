@@ -105,6 +105,7 @@
 :root[data-tint="mint"] { --tint: #20c997; }
 :root[data-tint="tangerine"] { --tint: #ff922b; }
 :root[data-tint="sky"] { --tint: #4c6ef5; }
+:root[data-tint="launch"] { --tint: #da552f; }
 
 :root[data-tint] {
   --bg: color-mix(in oklab, #f3f4f7 86%, var(--tint));

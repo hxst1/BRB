@@ -147,6 +147,14 @@ export const PALETTES = {
     achievement: "referrals-5",
     defs: `<linearGradient id="brb-neon" gradientUnits="userSpaceOnUse" x1="20" y1="20" x2="80" y2="90"><stop offset="0" stop-color="#ff4fd8"/><stop offset=".5" stop-color="#a26bff"/><stop offset="1" stop-color="#22e1ff"/></linearGradient>`,
   },
+  // Naranja de Product Hunt, de claro a tostado: va con el gorro del lanzamiento.
+  launch: {
+    body: "url(#brb-launch)",
+    shade: "#b8401f",
+    accent: "#ffffff",
+    achievement: "product-hunt",
+    defs: `<linearGradient id="brb-launch" gradientUnits="userSpaceOnUse" x1="25" y1="15" x2="75" y2="95"><stop offset="0" stop-color="#ff9a6b"/><stop offset=".5" stop-color="#ff6154"/><stop offset="1" stop-color="#da552f"/></linearGradient>`,
+  },
 } satisfies Record<string, Palette>;
 
 type EyeDrawer = (at: Point) => string;

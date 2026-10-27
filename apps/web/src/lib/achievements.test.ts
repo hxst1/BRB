@@ -36,14 +36,14 @@ describe("logros", () => {
         return achievement ? [{ slot, id, achievement }] : [];
       }),
     );
-    const inCatalog = ACHIEVEMENTS.filter((a) => a.reward.slot !== "tint").map((a) => ({ slot: a.reward.slot, id: a.reward.id, achievement: a.id }));
+    const inCatalog = ACHIEVEMENTS.flatMap((a) => [a.reward, ...(a.extras ?? [])].filter((r) => r.slot !== "tint").map((r) => ({ slot: r.slot, id: r.id, achievement: a.id })));
     const sort = (list: { slot: string; id: string }[]) => [...list].sort((a, b) => `${a.slot}${a.id}`.localeCompare(`${b.slot}${b.id}`));
     expect(sort(inAvatars)).toEqual(sort(inDb));
     expect(sort(inCatalog)).toEqual(sort(inDb));
   });
 
   it("los que dan un color de la app son los mismos que dice el catálogo de tintes", () => {
-    const fromAchievements = ACHIEVEMENTS.filter((a) => a.reward.slot === "tint").map((a) => `${a.reward.id}:${a.id}`);
+    const fromAchievements = ACHIEVEMENTS.flatMap((a) => [a.reward, ...(a.extras ?? [])].filter((r) => r.slot === "tint").map((r) => `${r.id}:${a.id}`));
     const fromTints = TINTS.filter((tint) => tint.achievement).map((tint) => `${tint.value}:${tint.achievement}`);
     expect(fromAchievements.sort()).toEqual(fromTints.sort());
   });
