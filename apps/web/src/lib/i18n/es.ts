@@ -760,6 +760,7 @@ export const es = {
     countdown: (n: number) => `Empieza en ${n}…`,
     go: "¡Escribe!",
     label: "Escribe aquí el texto",
+    getReady: "Toca aquí para tener el teclado listo",
     fix: "Hay una letra mal: bórrala para seguir.",
     checking: "Comprobando…",
     tooFast: "Eso ha sido demasiado rápido para ser de verdad.",

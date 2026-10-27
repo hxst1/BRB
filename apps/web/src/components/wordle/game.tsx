@@ -232,7 +232,7 @@ export function WordleGame({
 function Keyboard({ rows, hints, onKey, disabled }: { rows: string[]; hints: Map<string, Mark>; onKey: (key: string) => void; disabled: boolean }) {
   const m = useMessages();
   return (
-    <div aria-label={m.wordle.keyboard} className="flex flex-col gap-1.5 select-none">
+    <div aria-label={m.wordle.keyboard} className="wordle-keyboard flex flex-col gap-1.5 select-none">
       {rows.map((row, r) => (
         <div key={row} className="flex justify-center gap-1">
           {r === 2 && (

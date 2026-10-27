@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { correctPrefix, wordsPerMinute } from "@repo/games/typing";
 import type { Match } from "@repo/db";
@@ -165,9 +165,18 @@ function LiveRace({ match, me, rivalName, onReported }: { match: Match; me: Mark
     else if (secondsLeft <= 3) playSound("beep");
   }, [phase, started, secondsLeft]);
 
+  // El foco, en cuanto hay salida y otra vez al empezar. En el móvil el teclado
+  // solo se abre si el foco llega de un toque: por eso se puede tocar la caja
+  // (o cualquier sitio de la carrera, ver focusInput) durante la cuenta atrás.
+  const canFocus = phase === "lobby" || phase === "starting" || phase === "ready";
   useEffect(() => {
-    if (racing) input.current?.focus();
-  }, [racing]);
+    if (phase === "ready") input.current?.focus({ preventScroll: true });
+  }, [phase, racing]);
+
+  function focusInput(event: ReactMouseEvent) {
+    if (!canFocus || (event.target as HTMLElement).closest("button, a")) return;
+    input.current?.focus({ preventScroll: true });
+  }
 
   const text = race?.text ?? "";
   const correct = correctPrefix(typed, text);
@@ -233,7 +242,7 @@ function LiveRace({ match, me, rivalName, onReported }: { match: Match; me: Mark
             : null;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4" onClick={focusInput}>
       <div className="flex flex-col gap-2.5">
         <Lane label={m.match.you} mark={me} chars={correct} total={text.length} extra={elapsed > 1000 ? m.typing.wpm(wordsPerMinute(correct, elapsed)) : null} />
         <Lane label={rivalName} mark={rival} chars={rivalChars} total={text.length} />
@@ -273,9 +282,11 @@ function LiveRace({ match, me, rivalName, onReported }: { match: Match; me: Mark
           setNotice(m.typing.noPaste);
         }}
         onDrop={(event) => event.preventDefault()}
-        disabled={!racing}
+        /* Antes de la salida no está desactivada: así se puede tocar y tener el teclado
+           listo (lo que se escriba antes de tiempo no cuenta, ver onChange). */
+        disabled={!canFocus}
         rows={2}
-        placeholder={racing ? m.typing.go : m.typing.label}
+        placeholder={racing ? m.typing.go : m.typing.getReady}
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"

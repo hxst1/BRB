@@ -756,6 +756,7 @@ export const en: Messages = {
     countdown: (n: number) => `Starting in ${n}…`,
     go: "Type!",
     label: "Type the text here",
+    getReady: "Tap here to get your keyboard ready",
     fix: "There's a wrong letter: delete it to carry on.",
     checking: "Checking…",
     tooFast: "That was too fast to be real.",

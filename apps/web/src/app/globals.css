@@ -14,6 +14,20 @@ body {
   }
 }
 
+/* El teclado del Wordle, en el móvil, se queda encima de la barra de pestañas
+ * en vez de quedar debajo: así se ve entero sin tener que desplazar. */
+@media (width < 40rem) {
+  body:has(.tab-bar) .wordle-keyboard {
+    position: sticky;
+    bottom: calc(5.25rem + env(safe-area-inset-bottom));
+    z-index: 10;
+    margin-inline: -6px;
+    padding: 6px;
+    border-radius: 18px;
+    background: var(--bg);
+  }
+}
+
 /* ---------------------------------------------------------------------------
  * 3 en raya
  * ------------------------------------------------------------------------- */
