@@ -130,7 +130,7 @@ export function NewGamesPopup({ viewerId }: { viewerId: string }) {
         <ul className="flex flex-col gap-3">
           {games.map((game) => (
             <li key={game.id} className="flex items-center gap-3 rounded-3xl p-3" style={{ background: "var(--cell)" }}>
-              <GameTile accent={game.accent} />
+              <GameTile game={game.id} accent={game.accent} />
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="display text-2xl leading-tight font-bold">{game.name}</span>
                 <span className="text-sm text-muted">{game.tagline}</span>

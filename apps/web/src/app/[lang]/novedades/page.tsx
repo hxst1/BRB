@@ -99,7 +99,7 @@ function Games({ item, m }: { item: Extract<NewsItem, { type: "games" }>; m: Mes
         {item.games.map((game) => (
           <li key={game.id}>
             <Link href={game.path} className="flex items-center gap-3 rounded-2xl p-2 transition-colors hover:bg-bg">
-              <GameTile accent={game.accent} className="bg-bg" />
+              <GameTile game={game.id} accent={game.accent} />
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="font-semibold">{game.name}</span>
                 <span className="text-sm text-muted">{game.tagline}</span>
