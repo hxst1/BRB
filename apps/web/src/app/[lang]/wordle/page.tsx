@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { WordleGame, type FriendResult } from "@/components/wordle/game";
+import { WordleGame, WordleSkeleton, type FriendResult } from "@/components/wordle/game";
 import { getViewerId } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { wordleToday } from "@/lib/wordle/server";
@@ -25,7 +25,7 @@ export default async function WordlePage({ searchParams }: PageProps<"/[lang]/wo
           <HowToPlayButton game="wordle" name={m.gameCards["wordle"].title} />
         </div>
         <p className="mb-8 text-muted">{m.gamePages["wordle"]}</p>
-        <Suspense fallback={<div className="mx-auto aspect-[5/6] max-w-[22rem] animate-pulse rounded-3xl bg-line/40" />}>
+        <Suspense fallback={<WordleSkeleton />}>
           <WordleForViewer searchParams={searchParams} />
         </Suspense>
       </div>

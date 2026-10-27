@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { MatchSkeleton } from "@/components/tictactoe/match-skeleton";
 import { MatchView } from "@/components/tictactoe/match-view";
 import { getViewer } from "@/lib/session";
 import { PRIVATE_PAGE } from "@/lib/seo";
@@ -14,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function MatchPage({ params }: PageProps<"/[lang]/4-en-raya/[id]">) {
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col items-center px-4 pt-4 pb-16 sm:px-6">
-      <Suspense fallback={<div className="c4-board aspect-[7/6] w-full max-w-md animate-pulse" />}>
+      <Suspense fallback={<MatchSkeleton game="connect4" />}>
         <MatchForViewer params={params} />
       </Suspense>
     </main>

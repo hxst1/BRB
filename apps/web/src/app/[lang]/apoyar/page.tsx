@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { brand } from "@repo/brand";
 import { Avatar } from "@repo/ui/avatar";
+import { Bone } from "@/components/skeleton";
 import { SupportOptions } from "@/components/support/support-options";
 import { WhereItGoes } from "@/components/support/where-it-goes";
 import { getViewer } from "@/lib/session";
@@ -26,10 +27,37 @@ export default async function SupportPage() {
       <p className="mb-10 max-w-lg text-lg text-muted">
         {m.support.pageIntro}
       </p>
-      <Suspense fallback={<div className="h-64 animate-pulse rounded-3xl bg-line/40" />}>
+      <Suspense fallback={<SupportSkeleton />}>
         <SupportForViewer />
       </Suspense>
     </main>
+  );
+}
+
+/**
+ * Mientras se sabe quién mira: lo mismo que llega (casi todo es fijo), con
+ * los tres monstruos en gris; los tuyos llegan con tu sesión.
+ */
+async function SupportSkeleton() {
+  const m = await getMessages();
+  return (
+    <div aria-hidden inert className="flex flex-col gap-10">
+      <div className="flex items-end justify-center gap-4 rounded-3xl bg-surface p-6 shadow-soft">
+        <Bone className="size-[88px] rounded-full" />
+        <Bone className="size-[120px] rounded-full" />
+        <Bone className="size-[88px] rounded-full" />
+      </div>
+      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {m.support.perks.map((perk) => (
+          <li key={perk.title} className="rounded-2xl border border-line p-4">
+            <p className="font-semibold">{perk.title}</p>
+            <p className="text-sm text-muted">{perk.detail}</p>
+          </li>
+        ))}
+      </ul>
+      <WhereItGoes />
+      <SupportOptions />
+    </div>
   );
 }
 

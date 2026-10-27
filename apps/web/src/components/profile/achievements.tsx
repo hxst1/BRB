@@ -5,8 +5,42 @@ import { achievementVisible, achievementsFor, rewardSummary, wearing } from "@/l
 import { rewardBackground } from "@/lib/theme";
 import { getLocale, getMessages } from "@/lib/i18n/server";
 import { InlinePicto } from "@/components/picto";
+import { Bone, TextLine } from "@/components/skeleton";
 
-export type AchievementStatus = { achievement: string; progress: number; goal: number; unlocked_at: string | null };
+/**
+ * Los logros mientras llegan: el título y una tarjeta en gris por logro (el
+ * orden depende de los tuyos, así que sin nombres). Los de temporada, que
+ * salen o no según la fecha, no cuentan.
+ */
+export async function AchievementsSkeleton() {
+  const [m, locale] = await Promise.all([getMessages(), getLocale()]);
+  const count = achievementsFor(locale).filter((achievement) => !achievement.until).length;
+  return (
+    <div aria-hidden className="flex flex-col gap-4">
+      <div>
+        <p className="text-xl font-semibold">{m.achievements.title}</p>
+        <TextLine className="w-40 text-sm" />
+      </div>
+      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: count }, (_, i) => (
+          <li key={i} className="flex items-center gap-3 rounded-3xl bg-surface p-3 shadow-soft">
+            <Bone className="size-16 shrink-0 rounded-2xl" />
+            <span className="flex min-w-0 flex-1 flex-col gap-1">
+              <TextLine className="w-32" />
+              <span className="flex flex-col text-xs">
+                <TextLine className="w-full" />
+                <TextLine className="w-1/2" />
+              </span>
+              <TextLine className="w-24 text-xs" />
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export type AchievementStatus ={ achievement: string; progress: number; goal: number; unlocked_at: string | null };
 
 /**
  * Logros del perfil: los conseguidos primero y luego los más avanzados. Cada

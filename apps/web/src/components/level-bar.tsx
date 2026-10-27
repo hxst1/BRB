@@ -1,7 +1,21 @@
 "use client";
 
 import { levelFromXp } from "@repo/games/level";
+import { TextLine } from "@/components/skeleton";
 import { useMessages } from "@/lib/i18n/client";
+
+/** La barra de nivel mientras carga: los textos en gris y la barra vacía. */
+export function LevelBarSkeleton({ className = "" }: { className?: string }) {
+  return (
+    <div aria-hidden className={`flex flex-col gap-1.5 ${className}`}>
+      <div className="flex items-baseline justify-between gap-4 text-sm">
+        <TextLine className="w-14" />
+        <TextLine className="w-32" />
+      </div>
+      <div className="h-2 rounded-full bg-line" />
+    </div>
+  );
+}
 
 export function LevelBar({ xp, className = "", compact = false }: { xp: number; className?: string; compact?: boolean }) {
   const { level, xpIntoLevel, xpForNext, progress } = levelFromXp(xp);

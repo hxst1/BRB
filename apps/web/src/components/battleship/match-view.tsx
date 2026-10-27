@@ -16,6 +16,7 @@ import { SeaBoard } from "./board";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import { useMessages } from "@/lib/i18n/client";
 import { MatchNotFound } from "@/components/match-not-found";
+import { MatchSkeleton } from "@/components/tictactoe/match-skeleton";
 
 const PATH = MATCH_GAMES.battleship.path;
 
@@ -121,7 +122,7 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
   }
 
   if (match === undefined || (match && fleets === null && match.status !== "pending")) {
-    return <div className="sea-board aspect-square w-full max-w-md animate-pulse" />;
+    return <MatchSkeleton game="battleship" />;
   }
   if (match === null || match.game !== "battleship") {
     return <MatchNotFound path={PATH} />;
@@ -169,7 +170,7 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
   }
 
   return (
-    <div className="flex w-full max-w-md flex-col gap-6">
+    <div className="reveal-in flex w-full max-w-md flex-col gap-6">
       <MatchSounds progress={match.moves.length} myTurn={myTurn} result={resultFor(match, me)} />
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         <PlayerBadge

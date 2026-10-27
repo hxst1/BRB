@@ -8,6 +8,7 @@ import { GuestNotice } from "@/components/guest-notice";
 import { LightsBoard } from "./board";
 import { LightsOutTutorial, useTutorialDone } from "./tutorial";
 import { ShareStory } from "@/components/share-story";
+import { LightsOutSkeleton } from "@/components/games/skeletons";
 import { useMessages } from "@/lib/i18n/client";
 import { playSound } from "@/lib/sound";
 
@@ -63,7 +64,7 @@ type GameProps = {
 export function LightsOutGame(props: GameProps) {
   const done = useTutorialDone();
   const [reviewing, setReviewing] = useState(false);
-  if (done === null) return <div className="aspect-square w-full max-w-[30rem] animate-pulse rounded-[22px]" style={{ background: "var(--board)" }} />;
+  if (done === null) return <LightsOutSkeleton signedIn={props.viewerId !== null} />;
   if (!done || reviewing) return <LightsOutTutorial onDone={() => setReviewing(false)} />;
   return <Game {...props} onReviewTutorial={() => setReviewing(true)} />;
 }
@@ -209,7 +210,7 @@ function Game({ viewerId, onSaved, daily = null, onReviewTutorial }: GameProps &
           )}
         </div>
       ) : (
-        <div className="aspect-square w-full animate-pulse rounded-[22px]" style={{ background: "var(--board)" }} />
+        <div className="aspect-square w-full rounded-[22px]" style={{ background: "var(--board)" }} />
       )}
 
       {state && ended && (

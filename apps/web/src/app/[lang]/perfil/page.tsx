@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 import { signOut } from "@/app/[lang]/entrar/actions";
 import { FeedbackSection } from "@/components/feedback/feedback-section";
 import { LevelBar } from "@/components/level-bar";
 import { AccountSettings } from "@/components/profile/account-settings";
 import { DeleteAccount } from "@/components/profile/delete-account";
-import { Achievements } from "@/components/profile/achievements";
+import { Achievements, AchievementsSkeleton } from "@/components/profile/achievements";
 import { AvatarEditor } from "@/components/profile/avatar-editor";
-import { Records } from "@/components/profile/records";
+import { Records, RecordsSkeleton } from "@/components/profile/records";
+import { MonsterSkeleton, ProfileSkeleton, SettingsSkeleton } from "@/components/profile/profile-skeleton";
+import { Loading } from "@/components/skeleton";
 import { AppSettings } from "@/components/pwa/app-settings";
 import { LEGAL_LINKS } from "@/components/site-footer";
 import { getViewer, type Viewer } from "@/lib/session";
@@ -29,7 +31,7 @@ type Section = (typeof SECTIONS)[number];
 export default function ProfilePage({ searchParams }: PageProps<"/[lang]/perfil">) {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pt-4 pb-16 sm:px-6">
-      <Suspense fallback={<div className="h-96 animate-pulse rounded-3xl bg-surface" />}>
+      <Suspense fallback={<ProfileSkeleton sections={SECTION_SKELETONS} />}>
         <Profile searchParams={searchParams} />
       </Suspense>
     </main>
@@ -76,15 +78,23 @@ async function Profile({ searchParams }: { searchParams: PageProps<"/[lang]/perf
       </nav>
 
       {/* Cada pestaña carga solo lo suyo. */}
-      <Suspense key={section} fallback={<div className="h-72 animate-pulse rounded-3xl bg-surface" />}>
+      <Loading key={section} skeleton={SECTION_SKELETONS[section]}>
         {section === "monster" && <MonsterSection viewer={viewer} />}
         {section === "logros" && <AchievementsSection viewer={viewer} />}
         {section === "records" && <Records viewerId={viewer.id} />}
         {section === "ajustes" && <SettingsSection viewer={viewer} />}
-      </Suspense>
+      </Loading>
     </div>
   );
 }
+
+/** Lo que se ve mientras carga cada pestaña: su forma, con lo que no depende de los datos. */
+const SECTION_SKELETONS: Record<Section, ReactNode> = {
+  monster: <MonsterSkeleton />,
+  logros: <AchievementsSkeleton />,
+  records: <RecordsSkeleton />,
+  ajustes: <SettingsSkeleton />,
+};
 
 async function MonsterSection({ viewer }: { viewer: Viewer }) {
   const { data: achievements } = await (await createClient()).rpc("get_my_achievements");

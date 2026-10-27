@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { SudokuSkeleton, SoloScreenSkeleton } from "@/components/games/skeletons";
 import { SudokuScreen } from "@/components/sudoku/screen";
 import { getViewerId } from "@/lib/session";
 import { GameGuideSection } from "@/components/seo/game-guide";
@@ -22,7 +23,13 @@ export default async function SudokuPage() {
         </div>
         <p className="mb-8 text-muted">{m.gamePages["sudoku"]}</p>
       </div>
-      <Suspense fallback={<div className="mx-auto aspect-square max-w-[30rem] animate-pulse rounded-[18px] bg-line/40 lg:mx-0" />}>
+      <Suspense
+        fallback={
+          <SoloScreenSkeleton picker="levels">
+            <SudokuSkeleton />
+          </SoloScreenSkeleton>
+        }
+      >
         <SudokuForViewer />
       </Suspense>
       <GameGuideSection id="sudoku" />

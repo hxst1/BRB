@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Dashboard } from "@/components/home/dashboard";
-import { DashboardSkeleton } from "@/components/home/dashboard-skeleton";
+import { DashboardSkeleton, HomeSkeleton } from "@/components/home/dashboard-skeleton";
+import { Loading } from "@/components/skeleton";
 import { Landing } from "@/components/home/landing";
 import { getViewer } from "@/lib/session";
 import { getLocale } from "@/lib/i18n/server";
@@ -14,7 +15,8 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function Home() {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pt-6 pb-16 sm:px-6">
-      <Suspense fallback={<div className="h-28 max-w-xl animate-pulse rounded-[1.75rem] bg-line/40" />}>
+      {/* Sin fundido: lo que llega primero suele ser el esqueleto del panel, igual que este. */}
+      <Suspense fallback={<HomeSkeleton />}>
         <HomeForViewer />
       </Suspense>
     </main>
@@ -24,11 +26,17 @@ export default function Home() {
 /** Con sesión, la portada es tu panel; sin ella, la presentación. */
 async function HomeForViewer() {
   const viewer = await getViewer();
-  if (!viewer) return <Landing />;
+  if (!viewer) {
+    return (
+      <div className="reveal contents">
+        <Landing />
+      </div>
+    );
+  }
   // El panel hace muchas consultas: mientras, su esqueleto (el de fuera es solo para saber si hay sesión).
   return (
-    <Suspense fallback={<DashboardSkeleton />}>
+    <Loading skeleton={<DashboardSkeleton />}>
       <Dashboard viewer={viewer} />
-    </Suspense>
+    </Loading>
   );
 }

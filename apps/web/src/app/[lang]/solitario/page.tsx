@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { SolitaireSkeleton, SoloScreenSkeleton } from "@/components/games/skeletons";
 import { SolitaireScreen } from "@/components/solitaire/screen";
 import { getViewerId } from "@/lib/session";
 import { GameGuideSection } from "@/components/seo/game-guide";
@@ -22,7 +23,13 @@ export default async function SolitairePage() {
         </div>
         <p className="mb-8 text-muted">{m.gamePages["solitaire"]}</p>
       </div>
-      <Suspense fallback={<div className="mx-auto aspect-[4/5] max-w-[30rem] animate-pulse rounded-[18px] bg-line/40 lg:mx-0" />}>
+      <Suspense
+        fallback={
+          <SoloScreenSkeleton picker={null}>
+            <SolitaireSkeleton />
+          </SoloScreenSkeleton>
+        }
+      >
         <SolitaireForViewer />
       </Suspense>
       <GameGuideSection id="solitaire" />

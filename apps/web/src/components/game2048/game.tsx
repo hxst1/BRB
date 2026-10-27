@@ -14,6 +14,7 @@ import { Board } from "@repo/ui/board-2048";
 import { ChallengeFriends } from "./challenge-friends";
 import type { ActiveChallenge } from "./screen";
 import { GuestNotice } from "@/components/guest-notice";
+import { EmptyBoard2048 } from "@/components/games/skeletons";
 
 const KEYS: Record<string, Direction> = {
   ArrowUp: "up",
@@ -351,7 +352,7 @@ export function Game2048({
         )}
       </div>
 
-      {state ? <Board state={state} onPointerDown={onPointerDown} /> : <div className="board animate-pulse" />}
+      {state ? <Board state={state} onPointerDown={onPointerDown} /> : <EmptyBoard2048 />}
       </div>
 
       {state?.over && (

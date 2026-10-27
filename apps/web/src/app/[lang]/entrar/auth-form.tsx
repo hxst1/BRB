@@ -9,6 +9,34 @@ import { authenticate, resendConfirmation, type AuthState } from "./actions";
 const inputClass =
   "w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-base outline-none transition-colors focus:border-focus";
 
+/**
+ * El formulario de entrar mientras se lee la petición (a dónde volver, si te
+ * han invitado…): el mismo, con sus textos, sin poder usarse todavía.
+ */
+export function AuthFormSkeleton() {
+  const m = useMessages();
+  const t = m.auth;
+  const field = `${inputClass} h-[2.875rem]`;
+  return (
+    <div aria-hidden inert className="flex flex-col gap-4">
+      <p className="display mb-2 text-4xl font-bold text-balance">{t.signin.title}</p>
+      <p className="flex flex-col gap-1.5 text-sm font-medium">
+        Email
+        <span className={field} />
+      </p>
+      <p className="flex flex-col gap-1.5 text-sm font-medium">
+        {m.account.password}
+        <span className={field} />
+      </p>
+      <p className="-mt-2 self-end text-sm text-muted">{t.forgot}</p>
+      <p className="mt-2 rounded-xl bg-ink py-3 text-center font-semibold text-bg">{t.signin.submit}</p>
+      <p className="text-center text-sm text-muted">
+        {t.signin.switchText} <span className="font-medium text-ink underline underline-offset-4">{t.signin.switchAction}</span>
+      </p>
+    </div>
+  );
+}
+
 export function AuthForm({
   next,
   initialMode = "signin",

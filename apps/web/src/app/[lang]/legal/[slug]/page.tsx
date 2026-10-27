@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { LegalSkeleton } from "@/components/legal-skeleton";
 import { renderMarkdown } from "@/lib/markdown";
 import { createClient } from "@/lib/supabase/server";
 import { getLocale, getMessages } from "@/lib/i18n/server";
@@ -27,7 +28,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/legal/[slu
 export default function LegalPage({ params, searchParams }: PageProps<"/[lang]/legal/[slug]">) {
   return (
     <main className="mx-auto w-full max-w-2xl px-4 pt-4 pb-24 sm:px-6">
-      <Suspense fallback={<div className="h-96 animate-pulse rounded-3xl bg-surface" />}>
+      <Suspense fallback={<LegalSkeleton documents={DOCUMENTS} />}>
         <LegalDocument params={params} searchParams={searchParams} />
       </Suspense>
     </main>

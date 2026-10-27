@@ -3,11 +3,12 @@
 import { startRun, type RunNotice } from "@/lib/start-run";
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { randomSeed } from "@repo/games";
-import { GAME_IDS, conflicts, encodeQueens, generate, isSolved, type Difficulty } from "@repo/games/queens";
+import { GAME_IDS, SIZES, conflicts, encodeQueens, generate, isSolved, type Difficulty } from "@repo/games/queens";
 import { createClient } from "@/lib/supabase/client";
 import { GuestNotice } from "@/components/guest-notice";
 import { NO_PAUSE, PauseButton, PauseCover, endPause, pauseFromRun, playedMs, reportPause, startPause, useAutoPause, type Pause } from "@/components/pause";
 import { ShareStory } from "@/components/share-story";
+import { QueensSkeleton } from "@/components/games/skeletons";
 import { useMessages } from "@/lib/i18n/client";
 import { playSound } from "@/lib/sound";
 import { Crown } from "./crown";
@@ -301,7 +302,7 @@ export function QueensGame({
     else cycle(gesture.start);
   }
 
-  if (!game || !puzzle) return <div className="aspect-square w-full max-w-[30rem] animate-pulse rounded-[18px] bg-line/40" />;
+  if (!game || !puzzle) return <QueensSkeleton signedIn={signedIn} size={SIZES[difficulty]} />;
 
   const { size, regions } = puzzle;
   const elapsed = playedMs(game.startedAt, paused ? game.pause!.since! : now, game.pause ?? NO_PAUSE);
@@ -310,7 +311,7 @@ export function QueensGame({
   const edge = (cell: number, other: number) => (regions[cell] === regions[other] ? "1px solid var(--queens-thin)" : "3px solid var(--queens-line)");
 
   return (
-    <section className="flex w-full max-w-[30rem] flex-col gap-4">
+    <section className="reveal-in flex w-full max-w-[30rem] flex-col gap-4">
       <div className="flex items-end justify-between gap-4">
         <div className="flex flex-col">
           <span className="text-xs text-muted">{m.minesweeper.time}</span>

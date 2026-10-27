@@ -7,8 +7,9 @@ import { MAX_GUESSES, WORD_LENGTH, letterHints, shareGrid, type Mark } from "@re
 import { Avatar } from "@repo/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
 import { playSound } from "@/lib/sound";
-import { useMessages } from "@/lib/i18n/client";
-import type { Locale } from "@/lib/i18n/locales";
+import { SessionHint, ToggleSkeleton } from "@/components/skeleton";
+import { useLocale, useMessages } from "@/lib/i18n/client";
+import { LOCALES, type Locale } from "@/lib/i18n/locales";
 
 export type WordleState = {
   guesses: string[];
@@ -226,6 +227,39 @@ export function WordleGame({
 
       {game.finished && <Friends friends={friends} />}
     </section>
+  );
+}
+
+/**
+ * La página del Wordle mientras carga: el selector de idioma de las palabras,
+ * el tablero vacío y el teclado (los mismos, sin poder usarse todavía). Sin
+ * sesión, el aviso de entrar.
+ */
+export function WordleSkeleton() {
+  const m = useMessages();
+  const locale = useLocale();
+  return (
+    <div aria-hidden inert>
+      <SessionHint />
+      <div className="flex flex-col gap-5 signed-out:hidden">
+        <ToggleSkeleton options={LOCALES.map((option) => m.wordle.words[option])} active={LOCALES.indexOf(locale)} />
+        <div className="flex w-full max-w-[30rem] flex-col gap-5">
+          <div className="mx-auto grid w-full max-w-[22rem] gap-1.5">
+            {Array.from({ length: MAX_GUESSES }, (_, r) => (
+              <div key={r} className="grid grid-cols-5 gap-1.5">
+                {Array.from({ length: WORD_LENGTH }, (_, i) => (
+                  <div key={i} className="aspect-square rounded-xl border-2" style={{ borderColor: "var(--line)" }} />
+                ))}
+              </div>
+            ))}
+          </div>
+          <Keyboard rows={ROWS[locale]} hints={new Map()} onKey={() => {}} disabled={false} />
+        </div>
+      </div>
+      <p className="signed-in:hidden">
+        <span className="font-medium underline underline-offset-4">{m.daily.signIn}</span> {m.gamePages.wordleSignIn}
+      </p>
+    </div>
   );
 }
 

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
 import type { DailyStatus } from "@repo/db";
 import { DailyCards, type DailyCardData } from "@/components/daily/daily-cards";
 import { DailyGame, DailyLeaderboard } from "@/components/daily/daily-game";
+import { DailyPageSkeleton } from "@/components/daily/daily-page-skeleton";
+import { Loading } from "@/components/skeleton";
 import { Game2048Screen } from "@/components/game2048/screen";
 import { HowToPlayButton } from "@/components/how-to-play";
 import { StreakHero } from "@/components/streak/streak-hero";
@@ -39,9 +40,9 @@ const toCard = (row: Pick<DailyStatus, "slot" | "game"> & Partial<DailyStatus>):
 export default function DailyPage({ searchParams }: PageProps<"/[lang]/reto-diario">) {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pt-4 pb-16 sm:px-6">
-      <Suspense fallback={<div className="h-96 animate-pulse rounded-3xl bg-line/40" />}>
+      <Loading skeleton={<DailyPageSkeleton />}>
         <DailyForViewer searchParams={searchParams} />
-      </Suspense>
+      </Loading>
     </main>
   );
 }

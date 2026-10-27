@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { Game2048Skeleton, SoloScreenSkeleton } from "@/components/games/skeletons";
 import { Game2048Screen, type ActiveChallenge } from "@/components/game2048/screen";
 import { PLAYER_COLUMNS } from "@/lib/queries";
 import { getViewer } from "@/lib/session";
@@ -32,7 +33,13 @@ export default async function Game2048Page({ searchParams }: PageProps<"/[lang]/
           .
         </p>
       </div>
-      <Suspense fallback={<div className="board mx-auto max-w-[30rem] animate-pulse lg:mx-0" />}>
+      <Suspense
+        fallback={
+          <SoloScreenSkeleton picker="modes">
+            <Game2048Skeleton />
+          </SoloScreenSkeleton>
+        }
+      >
         <GameForViewer searchParams={searchParams} />
       </Suspense>
       <GameGuideSection id="2048" />

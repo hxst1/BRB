@@ -15,6 +15,7 @@ import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import { createClient } from "@/lib/supabase/client";
 import { ChessBoard, pieceSrc } from "./board";
 import { MatchNotFound } from "@/components/match-not-found";
+import { MatchSkeleton } from "@/components/tictactoe/match-skeleton";
 import { PIECE_MARK_COLORS } from "@/lib/piece-colors";
 
 const PATH = "/ajedrez";
@@ -68,7 +69,7 @@ export function ChessMatchView({ matchId, viewerId }: { matchId: string; viewerI
     [matchId, m],
   );
 
-  if (match === undefined) return <div className="aspect-square w-full max-w-lg animate-pulse rounded-[18px] bg-line/40" />;
+  if (match === undefined) return <MatchSkeleton game="chess" />;
   if (match === null || match.game !== "chess") {
     return <MatchNotFound path={PATH} />;
   }
@@ -117,7 +118,7 @@ export function ChessMatchView({ matchId, viewerId }: { matchId: string; viewerI
   );
 
   return (
-    <div className="flex w-full max-w-lg flex-col gap-5" style={PIECE_MARK_COLORS}>
+    <div className="reveal-in flex w-full max-w-lg flex-col gap-5" style={PIECE_MARK_COLORS}>
       <MatchSounds progress={match.moves.length} myTurn={myTurn} result={resultFor(match, me)} />
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         <PlayerBadge player={players[me]} mark={me} label={m.match.you} active={myTurn} mood={moodOf(me)} detail={side(me)} />

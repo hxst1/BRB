@@ -17,6 +17,7 @@ import { ReversiBoard } from "@/components/reversi/board";
 import { MATCH_GAMES } from "@/lib/games";
 import { createClient } from "@/lib/supabase/client";
 import { TicTacToeBoard } from "./board";
+import { MatchSkeleton } from "./match-skeleton";
 import { challenge, fetchMatch, markOf, type MatchWithPlayers, type Player } from "./data";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import type { Messages } from "@/lib/i18n";
@@ -65,13 +66,6 @@ function load(game: BoardGame, moves: number[], pending: number | null, me: Mark
 
 /** Lo que se manda al servidor en cada jugada. */
 const MOVE_FIELD: Record<BoardGame, string> = { tictactoe: "cell", connect4: "column", reversi: "cell", dots: "edge" };
-
-const SKELETON: Record<BoardGame, string> = {
-  tictactoe: "ttt-board",
-  connect4: "c4-board aspect-[7/6]",
-  reversi: "rv-board",
-  dots: "dots-board",
-};
 
 /** Partida por turnos contra un amigo: 3 en raya, 4 en raya, Reversi o puntos y cajas (cambian el tablero y la lógica). */
 export function MatchView({
@@ -139,7 +133,7 @@ export function MatchView({
     [matchId, m],
   );
 
-  if (match === undefined) return <div className={`${SKELETON[game]} w-full max-w-md animate-pulse`} />;
+  if (match === undefined) return <MatchSkeleton game={game} />;
   if (match === null || match.game !== game) {
     return <MatchNotFound path={path} />;
   }
@@ -187,7 +181,7 @@ export function MatchView({
     match.status !== "finished" || !winnerMark ? "neutral" : winnerMark === mark ? "happy" : "sad";
 
   return (
-    <div className="flex w-full max-w-md flex-col gap-6">
+    <div className="reveal-in flex w-full max-w-md flex-col gap-6">
       <MatchSounds progress={match.moves.length} myTurn={myTurn} result={resultFor(match, me)} />
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         <PlayerBadge

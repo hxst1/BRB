@@ -14,6 +14,7 @@ import type { Messages } from "@/lib/i18n";
 import { useMessages } from "@/lib/i18n/client";
 import { MatchNotFound } from "@/components/match-not-found";
 import { MatchSounds, resultFor } from "@/components/match-sounds";
+import { LiveMatchSkeleton } from "@/components/tictactoe/match-skeleton";
 
 type Mark = "x" | "o";
 
@@ -83,7 +84,7 @@ export function LiveMatchShell({
 
   // La carrera de tecleo, más ancha: el texto se lee mejor en líneas largas.
   const width = game === "typing" ? "max-w-xl" : "max-w-sm";
-  if (match === undefined) return <div className={`aspect-[1/1.6] w-full ${width} animate-pulse rounded-3xl bg-line/40`} />;
+  if (match === undefined) return <LiveMatchSkeleton game={game} />;
   if (match === null || match.game !== game) {
     return <MatchNotFound path={path} />;
   }
@@ -93,7 +94,7 @@ export function LiveMatchShell({
   const invitedMe = match.status === "pending" && match.created_by !== viewerId;
 
   return (
-    <div className={`flex w-full ${width} flex-col gap-4`}>
+    <div className={`reveal-in flex w-full ${width} flex-col gap-4`}>
       {/* La carrera acaba en cuanto llega el primero: el resultado suena aquí, no en la carrera. */}
       {game === "typing" && <MatchSounds progress={0} myTurn={false} result={resultFor(match, me)} />}
       {match.status === "active" ? (

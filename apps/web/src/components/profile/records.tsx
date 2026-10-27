@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Functions } from "@repo/db";
 import type { GameId } from "@/components/home/game-cards";
+import { TextLine } from "@/components/skeleton";
 import { getLocale, getMessages } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -171,6 +172,54 @@ export async function Records({ viewerId }: { viewerId: string }) {
           })}
         </ul>
       </section>
+    </div>
+  );
+}
+
+/**
+ * Los récords mientras llegan: los juegos y sus etiquetas (no dependen de
+ * nada) y, en lugar de cada marca, una línea en gris.
+ */
+export async function RecordsSkeleton() {
+  const m = await getMessages();
+  const t = m.records;
+  return (
+    <div aria-hidden className="grid grid-cols-1 items-start gap-10 lg:grid-cols-2 lg:gap-12">
+      <div className="flex flex-col gap-3">
+        <p className="text-xl font-semibold">{m.gameCards.soloTitle}</p>
+        <ul className="flex flex-col">
+          {SOLO.map((game) => (
+            <li key={game.id} className="flex flex-col gap-1 border-b border-line py-3">
+              <span className="font-semibold">{m.gameCards[game.id].title}</span>
+              {game.boards.map((board) => (
+                <div key={board.game} className="flex items-baseline justify-between gap-3 text-sm">
+                  <span className="text-muted">{board.level ? m.levels[board.level] : m.run.yourRecord}</span>
+                  <TextLine className="w-20" />
+                </div>
+              ))}
+            </li>
+          ))}
+          <li className="flex flex-col gap-1 py-3">
+            <span className="font-semibold">Wordle</span>
+            <div className="flex items-baseline justify-between gap-3 text-sm">
+              <span className="text-muted">{t.wordsGuessed}</span>
+              <TextLine className="w-20" />
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <p className="text-xl font-semibold">{m.gameCards.friendsTitle}</p>
+        <ul className="flex flex-col">
+          {MATCH_GAMES.map((game) => (
+            <li key={game.id} className="flex items-center justify-between gap-3 border-b border-line py-3 last:border-b-0">
+              <span className="font-semibold">{m.gameCards[game.id].title}</span>
+              <TextLine className="w-24 text-sm" />
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

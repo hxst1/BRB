@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { Suspense } from "react";
 import { GameTile } from "@/components/news/game-tile";
 import { MarkNewsSeen } from "@/components/news/news-banner";
+import { Bone, Loading, TextLine } from "@/components/skeleton";
 import type { Messages } from "@/lib/i18n";
 import { getLocale, getMessages } from "@/lib/i18n/server";
 import { renderMarkdown } from "@/lib/markdown";
@@ -24,9 +24,9 @@ export default async function NewsPage() {
     <main className="mx-auto w-full max-w-2xl px-4 pt-4 pb-24 sm:px-6">
       <h1 className="display text-6xl font-bold sm:text-7xl">{m.newsPage.title}</h1>
       <p className="mb-8 text-muted">{m.newsPage.intro}</p>
-      <Suspense fallback={<div className="h-96 animate-pulse rounded-3xl bg-line/40" />}>
+      <Loading skeleton={<NewsSkeleton />}>
         <NewsList />
-      </Suspense>
+      </Loading>
     </main>
   );
 }
@@ -60,6 +60,29 @@ async function NewsList() {
         ))}
       </ol>
     </>
+  );
+}
+
+/** La lista mientras llega: unas tarjetas con la etiqueta, la fecha, el título, el texto y el botón en gris. */
+function NewsSkeleton() {
+  return (
+    <ol aria-hidden className="flex flex-col gap-4">
+      {[0, 1, 2].map((i) => (
+        <li key={i} className="flex flex-col gap-3 rounded-3xl bg-surface p-5 shadow-soft">
+          <p className="flex items-center gap-2 text-xs">
+            <Bone className="h-5 w-20 rounded-full" />
+            <TextLine className="w-28" />
+          </p>
+          <TextLine className="display w-3/4 text-3xl" />
+          <div className="flex flex-col leading-[1.6]">
+            <TextLine className="w-full" />
+            <TextLine className="w-full" />
+            <TextLine className="w-2/3" />
+          </div>
+          {i === 0 && <Bone className="h-11 w-40 rounded-full" />}
+        </li>
+      ))}
+    </ol>
   );
 }
 

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
 import { GamesCatalog } from "@/components/games/catalog";
+import { GameCardsSkeleton } from "@/components/home/game-cards-skeleton";
+import { Loading } from "@/components/skeleton";
 import { getLocale, getMessages } from "@/lib/i18n/server";
 import { alternatesFor } from "@/lib/seo";
 import { getViewer } from "@/lib/session";
@@ -23,9 +24,9 @@ export default async function GamesPage() {
         </Link>
       </div>
       <p className="mb-8 max-w-2xl text-muted">{m.gamesPage.intro}</p>
-      <Suspense fallback={<div className="h-96 animate-pulse rounded-3xl bg-line/40" />}>
+      <Loading skeleton={<GameCardsSkeleton stats />}>
         <Catalog />
-      </Suspense>
+      </Loading>
     </main>
   );
 }
