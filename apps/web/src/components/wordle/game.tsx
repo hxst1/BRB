@@ -8,7 +8,7 @@ import { Avatar } from "@repo/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
 import { playSound } from "@/lib/sound";
 import { useMessages } from "@/lib/i18n/client";
-import type { Locale } from "@/lib/i18n/locales";
+import type { ContentLanguage } from "@/lib/i18n/locales";
 
 export type WordleState = {
   guesses: string[];
@@ -29,8 +29,8 @@ export type FriendResult = {
   patterns: string[];
 };
 
-/** Teclado de cada idioma (el inglés, sin ñ). */
-const ROWS: Record<Locale, string[]> = { es: ["qwertyuiop", "asdfghjklñ", "zxcvbnm"], en: ["qwertyuiop", "asdfghjkl", "zxcvbnm"] };
+/** Teclado de cada idioma de palabras (el inglés, sin ñ; en japonés se juega con el inglés). */
+const ROWS: Record<ContentLanguage, string[]> = { es: ["qwertyuiop", "asdfghjklñ", "zxcvbnm"], en: ["qwertyuiop", "asdfghjkl", "zxcvbnm"] };
 /** Cuánto se ve un aviso ("No está en la lista"…). */
 const TOAST_MS = 1800;
 
@@ -50,8 +50,8 @@ export function WordleGame({
   initial,
   initialFriends,
 }: {
-  /** Idioma de las palabras (puede no ser el de la app). */
-  lang: Locale;
+  /** Idioma de las palabras (puede no ser el de la app: en japonés, el inglés). */
+  lang: ContentLanguage;
   day: string;
   dayLabel: string;
   initial: WordleState;

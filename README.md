@@ -15,7 +15,7 @@ nothing to download.
   same game for everyone and one try each.
 - **Streaks** with a flame that grows as you keep playing, and streak freezes. Achievements, a monster
   you can customise, chat, notifications and a news page.
-- The app is in Spanish and English, installs as an app (PWA) and has a **Chrome extension**.
+- The app is in Spanish, English and Japanese, installs as an app (PWA) and has a **Chrome extension**.
 
 ## Structure
 

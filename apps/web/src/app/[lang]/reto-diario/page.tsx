@@ -143,7 +143,8 @@ async function Challenge({ row, day, viewerId, m, start }: { row: DailyStatus; d
                 <>
                   {DAILY_GAMES[game]?.time ? m.daily.todayTook : m.daily.todayScored}
                   <span className="tabular">{formatDailyScore(game, row.score, m)}</span>
-                  {row.rank && row.players ? <>: {m.daily.rank(row.rank, row.players)}</> : null}.
+                  {row.rank && row.players ? <>: {m.daily.rank(row.rank, row.players)}</> : null}
+                  {m.common.period}
                 </>
               ) : (
                 m.daily.used

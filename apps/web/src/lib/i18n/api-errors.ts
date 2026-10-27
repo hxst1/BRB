@@ -1,6 +1,8 @@
+import type { Locale } from "./locales";
+
 /**
- * Errores que las rutas de /api devuelven al usuario, en inglés. Las rutas los
- * escriben en español; apiJson los traduce si la petición viene en inglés.
+ * Errores que las rutas de /api devuelven al usuario, en inglés y japonés. Las
+ * rutas los escriben en español; apiJson los traduce al idioma de la petición.
  */
 export const API_ERRORS_EN: Record<string, string> = {
   "Hay que iniciar sesión": "You need to sign in",
@@ -35,3 +37,40 @@ export const API_ERRORS_EN: Record<string, string> = {
   "El texto no coincide": "The text doesn't match",
   "Demasiado rápido para ser de verdad": "Too fast to be real",
 };
+
+export const API_ERRORS_JA: Record<string, string> = {
+  "Hay que iniciar sesión": "ログインが必要です",
+  "Error interno": "内部エラー",
+  "Partida no encontrada": "対戦が見つかりません",
+  "Partida no encontrada o no está en juego": "対戦が見つからないか、進行中ではありません",
+  "La partida ya ha terminado": "対戦はもう終わっています",
+  "No es tu turno": "あなたの番ではありません",
+  "Casilla no válida": "無効なマスです",
+  "Esa casilla ya está ocupada": "そのマスはもう埋まっています",
+  "Columna no válida": "無効な列です",
+  "Esa columna está llena": "その列はいっぱいです",
+  "Ya has disparado ahí": "そこはもう撃ちました",
+  "Esa jugada no está permitida": "その手は打てません",
+  "La partida ha cambiado, recarga": "対戦の状況が変わりました。再読み込みしてください",
+  "Aún falta que los dos coloquéis la flota": "まだふたりとも艦隊を配置していません",
+  "Elección no válida": "無効な選択です",
+  "Ya has elegido en esta ronda": "このラウンドはもう選びました",
+  "Flota no válida": "無効な艦隊です",
+  "Ya has colocado tu flota": "艦隊はもう配置しました",
+  "La partida ya ha empezado": "対戦はもう始まっています",
+  "La partida ya está cerrada": "対戦はもう締め切られています",
+  "Movimientos no válidos": "無効な操作です",
+  "Juego desconocido": "不明なゲームです",
+  "Intento no válido": "無効な入力です",
+  "No está en la lista de palabras": "単語リストにありません",
+  "Ha cambiado el día: recarga para jugar la palabra nueva": "日付が変わりました。再読み込みして新しい単語で遊んでください",
+  "Ya has terminado la palabra de hoy": "今日の単語はもう終わりました",
+  "Raya no válida": "無効な線です",
+  "Esa raya ya está trazada": "その線はもう引かれています",
+  "La carrera no ha empezado": "レースはまだ始まっていません",
+  "El texto no coincide": "文章が一致しません",
+  "Demasiado rápido para ser de verdad": "速すぎて本物とは思えません",
+};
+
+/** Los errores de cada idioma que no es el español. */
+export const API_ERRORS: Record<Exclude<Locale, "es">, Record<string, string>> = { en: API_ERRORS_EN, ja: API_ERRORS_JA };

@@ -14,6 +14,26 @@ body {
   }
 }
 
+/* Japonés. Bricolage no tiene sus letras: las del sistema (Hiragino, Noto, Yu Gothic). */
+html:lang(ja) body {
+  font-family: var(--font-bricolage), "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", Meiryo, system-ui, sans-serif;
+}
+
+/* Cada letra japonesa es un cuadrado entero: los titulares grandes, más pequeños
+ * (si no, "マインスイーパー" no cabe en un móvil), sin apretar las letras, con
+ * más interlineado y cortando por frases, no a mitad de palabra. Los números
+ * (.tabular) se quedan como están. */
+:lang(ja) .display:not(.tabular) {
+  --text-5xl: 2.25rem;
+  --text-6xl: 2.25rem;
+  --text-7xl: 3rem;
+  --text-8xl: 3.75rem;
+  letter-spacing: 0;
+  line-height: 1.2;
+  word-break: auto-phrase;
+  overflow-wrap: anywhere;
+}
+
 /* El teclado del Wordle, en el móvil, se queda encima de la barra de pestañas
  * en vez de quedar debajo: así se ve entero sin tener que desplazar. */
 @media (width < 40rem) {

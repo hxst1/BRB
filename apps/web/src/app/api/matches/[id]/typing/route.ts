@@ -2,6 +2,7 @@ import { COUNTDOWN_MS, MIN_MS_PER_CHAR, raceText, type Language } from "@repo/ga
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClientForRequest } from "@/lib/supabase/server";
 import { apiJson } from "@/lib/i18n/api";
+import { contentLanguage, isLocale } from "@/lib/i18n/locales";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -50,13 +51,14 @@ export async function POST(request: Request, { params }: RouteContext<"/api/matc
   }
 
   if (body?.action === "start") {
-    // El texto va en el idioma de quien retó.
+    // El texto va en el idioma de quien retó (si juega en japonés, en inglés:
+    // aún no hay textos en japonés).
     const { data: creator } = await admin.from("profiles").select("locale").eq("id", match.created_by).maybeSingle();
     const { data, error } = await admin
       .rpc("start_typing_race", {
         match_id: id,
         player_id: userId,
-        language: creator?.locale === "en" ? "en" : "es",
+        language: contentLanguage(isLocale(creator?.locale) ? creator.locale : "es"),
         countdown_ms: COUNTDOWN_MS,
       })
       .maybeSingle();

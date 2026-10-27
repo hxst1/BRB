@@ -8,17 +8,17 @@ const NOT_PAGES = /^\/(?:api|auth|icons|sounds|invita|llms\.txt|me\.webmanifest|
 
 /**
  * Las páginas viven en app/[lang]. Sin idioma en la URL, se elige (el de
- * Ajustes o el del navegador) y se reescribe por dentro a /es/… o /en/…, sin
- * cambiar la URL. /en/… es la dirección pública en inglés (la que ven los
- * buscadores): se sirve tal cual y deja el inglés elegido. /es/… vuelve a la
- * URL sin prefijo, que es la española.
+ * Ajustes o el del navegador) y se reescribe por dentro a /es/…, /en/… o
+ * /ja/…, sin cambiar la URL. /en/… y /ja/… son las direcciones públicas en
+ * inglés y japonés (las que ven los buscadores): se sirven tal cual y dejan
+ * ese idioma elegido. /es/… vuelve a la URL sin prefijo, que es la española.
  */
 function localize(request: NextRequest): { rewrite?: URL; redirect?: URL; locale?: string } {
   const { pathname } = request.nextUrl;
   if (NOT_PAGES.test(pathname)) return {};
   const first = pathname.split("/")[1];
-  if (first === "en") return { locale: "en" };
-  if (isLocale(first)) {
+  if (isLocale(first) && first !== "es") return { locale: first };
+  if (first === "es") {
     const url = request.nextUrl.clone();
     url.pathname = pathname.slice(first.length + 1) || "/";
     return { redirect: url, locale: first };
@@ -44,7 +44,7 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-  // Entrar por /en/… deja elegido el inglés para seguir navegando por la app.
+  // Entrar por /en/… o /ja/… deja elegido ese idioma para seguir navegando por la app.
   const remember = (res: NextResponse) => {
     if (locale && request.cookies.get(LOCALE_COOKIE)?.value !== locale) res.cookies.set(LOCALE_COOKIE, locale, LOCALE_COOKIE_OPTIONS);
     return res;

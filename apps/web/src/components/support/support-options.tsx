@@ -94,18 +94,19 @@ export function SupportOptions() {
           {t.codeTitle}
         </p>
         <p className="text-muted">
-          {t.codeBefore}{" "}
+          {/* Los espacios van en los textos: en japonés no hay. */}
+          {t.codeBefore}
           <a href={SUPPORT_LINKS.githubRepo} target="_blank" rel="noopener noreferrer" className="font-medium text-ink underline underline-offset-4">
             GitHub
           </a>
           {code ? (
             <>
-              {" "}
-              {t.withYourCode} <strong className="tabular tracking-wider text-ink">{code}</strong>
+              {t.withYourCode}
+              <strong className="tabular tracking-wider text-ink">{code}</strong>
             </>
           ) : (
             t.withFriendCode
-          )}{" "}
+          )}
           {t.codeAfter}
         </p>
       </div>

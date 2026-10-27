@@ -9,11 +9,13 @@ import { fetchTotal, updateBadge } from "@/lib/pending";
  * consulta), y el clic derecho en el icono abre la app en una ventana propia
  * (no se cierra al pulsar fuera, como la ventanita) o en una pestaña.
  */
-const es = navigator.language.toLowerCase().startsWith("es");
-const MENU = {
-  window: es ? "Abrir en una ventana" : "Open in a window",
-  tab: es ? "Abrir en una pestaña" : "Open in a tab",
-};
+const lang = navigator.language.toLowerCase().slice(0, 2);
+const MENU =
+  lang === "es"
+    ? { window: "Abrir en una ventana", tab: "Abrir en una pestaña" }
+    : lang === "ja"
+      ? { window: "ウィンドウで開く", tab: "タブで開く" }
+      : { window: "Open in a window", tab: "Open in a tab" };
 
 /** Tamaño de la ventana propia: como un móvil, para que la web se vea con su barra de abajo. */
 const WINDOW = { width: 430, height: 820 };

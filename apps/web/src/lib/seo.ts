@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { brand, siteUrl } from "@repo/brand";
 import { GAMES_EN } from "./i18n/games-en";
 import { GAMES_ES, type GameTexts } from "./i18n/games-es";
-import type { Locale } from "./i18n/locales";
+import { GAMES_JA } from "./i18n/games-ja";
+import { LOCALES, type Locale } from "./i18n/locales";
 
 /**
  * Textos para buscadores y asistentes (Google, Bing, ChatGPT, Perplexity…):
@@ -49,7 +50,7 @@ const GAMES: GameMeta[] = [
   { id: "typing", path: "/carrera-de-tecleo", mode: "friends", accent: "#4c6ef5", addedAt: "2026-10-27T10:39:00+01:00" },
 ];
 
-const TEXTS: Record<Locale, Record<GameMeta["id"], GameTexts>> = { es: GAMES_ES, en: GAMES_EN };
+const TEXTS: Record<Locale, Record<GameMeta["id"], GameTexts>> = { es: GAMES_ES, en: GAMES_EN, ja: GAMES_JA };
 
 /** Los juegos con sus textos en un idioma. */
 export function guidesFor(locale: Locale): GameGuide[] {
@@ -67,21 +68,26 @@ export function gameGuide(id: string, locale: Locale = "es"): GameGuide {
 }
 
 /** Metadatos de la página de un juego: título, descripción, URL canónica y tarjetas al compartir. */
-/** Dirección pública de una página en un idioma: la española sin prefijo, la inglesa con /en. */
+/** Dirección pública de una página en un idioma: la española sin prefijo, las demás con el suyo (/en, /ja). */
 export function localizedPath(path: string, locale: Locale): string {
   return locale === "es" ? path : `/${locale}${path === "/" ? "" : path}`;
 }
 
-/** Canónica en el idioma de la página y la misma página en el otro (hreflang). */
-export function alternatesFor(path: string, locale: Locale): NonNullable<Metadata["alternates"]> {
+/** La misma página en cada idioma (hreflang), con la española por defecto. */
+export function languageAlternates(path: string, url: (path: string) => string = (p) => p): Record<string, string> {
   return {
-    canonical: localizedPath(path, locale),
-    languages: { es: path, en: localizedPath(path, "en"), "x-default": path },
+    ...Object.fromEntries(LOCALES.map((locale) => [locale, url(localizedPath(path, locale))])),
+    "x-default": url(path),
   };
 }
 
+/** Canónica en el idioma de la página y la misma página en los demás (hreflang). */
+export function alternatesFor(path: string, locale: Locale): NonNullable<Metadata["alternates"]> {
+  return { canonical: localizedPath(path, locale), languages: languageAlternates(path) };
+}
+
 /** Código de idioma y región para Open Graph. */
-export const OG_LOCALE: Record<Locale, string> = { es: "es_ES", en: "en_US" };
+export const OG_LOCALE: Record<Locale, string> = { es: "es_ES", en: "en_US", ja: "ja_JP" };
 
 export function gameMetadata(id: string, locale: Locale = "es"): Metadata {
   const game = gameGuide(id, locale);
@@ -104,6 +110,15 @@ export function absoluteUrl(path: string): string {
 /** Preguntas frecuentes de la portada (también para los datos estructurados). */
 export function homeFaq(locale: Locale): { q: string; a: string }[] {
   const names = new Intl.ListFormat(locale, { type: "conjunction" }).format(guidesFor(locale).map((g) => g.name));
+  if (locale === "ja") {
+    return [
+      { q: `${brand.name}って何？`, a: `${brand.name}は、ちょっとした空き時間に遊べる無料のオンラインミニゲーム集です：${names}。ランキング、デイリーチャレンジ、フレンドとの対戦もあります。` },
+      { q: "無料ですか？", a: "はい、どのゲームも無料で広告もありません。応援してくれた人にはお礼にアバターの限定アイテムをお渡ししますが、ゲームが有利になることはありません。" },
+      { q: "ダウンロードは必要ですか？", a: GAMES_JA.snake.faq[1].a },
+      { q: "アカウントは必要ですか？", a: "ひとりで遊ぶゲームはアカウントなしで試せます。スコアの保存、ランキングへの参加、フレンドとの対戦には無料のアカウントが必要です。" },
+      { q: "フレンドと遊べますか？", a: "はい。コードでフレンドを追加して、○×ゲーム、四目並べ、バトルシップ、じゃんけん、Pong、Tronで挑戦できます。あなたの番が来たらお知らせします。" },
+    ];
+  }
   if (locale === "en") {
     return [
       { q: `What is ${brand.name}?`, a: `${brand.name} is a collection of free online mini-games for your spare moments: ${names}. There are rankings, daily challenges and games against your friends.` },

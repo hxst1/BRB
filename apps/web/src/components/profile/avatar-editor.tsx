@@ -207,19 +207,19 @@ export function AvatarEditor({
         )}
 
         <p className="text-sm text-muted">
-          {t.lockedHint}{" "}
+          {/* Los espacios y el punto van en los textos: en japonés el orden y la puntuación cambian. */}
+          {t.lockedHint}
           <Link href="/perfil?seccion=logros" className="font-medium text-ink underline underline-offset-4">
             {t.achievementsLink}
           </Link>
-          .
+          {t.lockedHintAfter}
           {!isSupporter && (
             <>
-              {" "}
-              {t.supporterHint}{" "}
+              {t.supporterHint}
               <Link href="/apoyar" className="font-medium text-ink underline underline-offset-4">
                 {t.howToGet}
               </Link>
-              .
+              {t.supporterHintAfter}
             </>
           )}
         </p>

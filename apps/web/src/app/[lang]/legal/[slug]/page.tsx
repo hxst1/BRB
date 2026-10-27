@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { renderMarkdown } from "@/lib/markdown";
 import { createClient } from "@/lib/supabase/server";
 import { getLocale, getMessages } from "@/lib/i18n/server";
+import { contentLanguage } from "@/lib/i18n/locales";
 import { alternatesFor } from "@/lib/seo";
 
 /** Los tres textos legales, en este orden en las pestañas. */
@@ -36,7 +37,8 @@ export default function LegalPage({ params, searchParams }: PageProps<"/[lang]/l
 
 /**
  * El texto que vale es el español. En otro idioma se muestra su traducción (si
- * la hay) avisando de ello, y con ?original el texto español.
+ * la hay) avisando de ello, y con ?original el texto español. En japonés aún no
+ * hay traducción: se muestra la inglesa, y el aviso lo dice.
  */
 async function LegalDocument({
   params,
@@ -51,10 +53,12 @@ async function LegalDocument({
     supabase.from("legal_documents").select("title, body, updated_at").eq("slug", slug).maybeSingle(),
     locale === "es" || original !== undefined
       ? Promise.resolve({ data: null })
-      : supabase.from("legal_translations").select("title, body, updated_at").eq("slug", slug).eq("lang", locale).maybeSingle(),
+      : supabase.from("legal_translations").select("title, body, updated_at").eq("slug", slug).eq("lang", contentLanguage(locale)).maybeSingle(),
   ]);
   if (!spanish) notFound();
   const doc = translation ?? spanish;
+  // Idioma del texto, que puede no ser el de la página (en japonés, el inglés o el español).
+  const docLang = translation ? contentLanguage(locale) : "es";
 
   return (
     <article className="flex flex-col gap-6">
@@ -79,7 +83,9 @@ async function LegalDocument({
       </nav>
 
       <header>
-        <h1 className="display text-4xl font-bold text-balance sm:text-5xl">{doc.title}</h1>
+        <h1 lang={docLang} className="display text-4xl font-bold text-balance sm:text-5xl">
+          {doc.title}
+        </h1>
         <p className="mt-2 text-sm text-muted">
           {m.legal.updated(new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" }).format(new Date(doc.updated_at)))}
         </p>
@@ -102,7 +108,7 @@ async function LegalDocument({
       </header>
 
       {/* Texto del panel de admin, pasado por un Markdown que escapa todo el HTML (lib/markdown.ts). */}
-      <div className="legal-text" dangerouslySetInnerHTML={{ __html: renderMarkdown(doc.body) }} />
+      <div lang={docLang} className="legal-text" dangerouslySetInnerHTML={{ __html: renderMarkdown(doc.body) }} />
     </article>
   );
 }

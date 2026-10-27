@@ -9,7 +9,7 @@ import { GameGuideSection } from "@/components/seo/game-guide";
 import { gameMetadata } from "@/lib/seo";
 import { HowToPlayButton } from "@/components/how-to-play";
 import { getLocale, getMessages } from "@/lib/i18n/server";
-import { isLocale, LOCALES, type Locale } from "@/lib/i18n/locales";
+import { CONTENT_LANGUAGES, contentLanguage, isContentLanguage, type ContentLanguage } from "@/lib/i18n/locales";
 
 export async function generateMetadata(): Promise<Metadata> {
   return gameMetadata("wordle", await getLocale());
@@ -34,10 +34,13 @@ export default async function WordlePage({ searchParams }: PageProps<"/[lang]/wo
   );
 }
 
-/** Las palabras van en el idioma de la app, salvo que se elijan las del otro (?palabras=en). */
+/**
+ * Las palabras van en el idioma de la app, salvo que se elijan las del otro
+ * (?palabras=en). En japonés aún no hay palabras: se juega con las inglesas.
+ */
 async function WordleForViewer({ searchParams }: { searchParams: PageProps<"/[lang]/wordle">["searchParams"] }) {
   const [viewerId, m, locale, { palabras }] = await Promise.all([getViewerId(), getMessages(), getLocale(), searchParams]);
-  const lang: Locale = isLocale(palabras) ? palabras : locale;
+  const lang: ContentLanguage = isContentLanguage(palabras) ? palabras : contentLanguage(locale);
   if (!viewerId) {
     return (
       <p>
@@ -65,7 +68,7 @@ async function WordleForViewer({ searchParams }: { searchParams: PageProps<"/[la
   return (
     <div className="flex flex-col gap-5">
       <nav aria-label={m.wordle.wordsIn} className="inline-flex self-start rounded-full bg-line/60 p-1">
-        {LOCALES.map((option) => (
+        {CONTENT_LANGUAGES.map((option) => (
           <Link
             key={option}
             href={`/wordle?palabras=${option}`}

@@ -340,4 +340,171 @@ const HOW_TO_PLAY_EN: Record<string, HowToPlay> = {
   },
 };
 
-export const HOW_TO_PLAY: Record<Locale, Record<string, HowToPlay>> = { es: HOW_TO_PLAY_ES, en: HOW_TO_PLAY_EN };
+/** En japonés. El Wordle se juega con palabras en inglés (aún no las hay en japonés). */
+const HOW_TO_PLAY_JA: Record<string, HowToPlay> = {
+  reversi: {
+    goal: "最後に、自分の色のコマをフレンドより多くしよう。",
+    steps: [
+      { icon: "wave", text: "フレンドに挑戦しよう。先手は赤です。" },
+      { icon: "tap", text: "印のついたマスにコマを置こう。自分のコマ2つで、フレンドのコマをはさめる場所です。" },
+      { icon: "repeat", text: "はさんだコマはひっくり返って、自分のものになります。" },
+      { icon: "trophy", text: "どちらも置けなくなったら、コマが多い人の勝ち！" },
+    ],
+  },
+  dots: {
+    goal: "フレンドより多く箱を閉じよう。",
+    steps: [
+      { icon: "pencil", text: "交代で、2つの点の間に線を引こう。" },
+      { icon: "box", text: "箱の4本目の線を引いたら、その箱はあなたのもの。" },
+      { icon: "repeat", text: "箱を閉じるたびに、もう1回引けます。" },
+      { icon: "trophy", text: "全部閉じたら、多く取った人の勝ち！" },
+    ],
+  },
+  typing: {
+    goal: "フレンドより先に文章を打ち終えよう。",
+    steps: [
+      { icon: "wave", text: "フレンドに挑戦して、2人ともゲームに入ろう。" },
+      { icon: "timer", text: "カウントダウンのあと、英語の文章が出てきます。2人とも同じ文章です。" },
+      { icon: "keyboard", text: "そのとおりに打とう。間違えたら消して、続きを打とう。" },
+      { icon: "fast", text: "先に打ち終えた人の勝ち！" },
+    ],
+  },
+  chess: {
+    goal: "フレンドのキングをチェックメイトしよう。攻撃して、逃げ場をなくすことです。",
+    steps: [
+      { icon: "wave", text: "フレンドに挑戦しよう。先手は赤です。" },
+      { icon: "tap", text: "自分の駒をタップすると、動けるマスが光ります。行きたいマスをタップしよう。" },
+      { icon: "knight", text: "駒ごとに動き方がちがいます。アプリは正しい手しか指させないので安心。" },
+      { icon: "wait", text: "持ち時間はなし。好きなときに指せば、フレンドにお知らせします。" },
+    ],
+  },
+  "2048": {
+    goal: "同じ数字のタイルを合体させて、どんどん大きな数字を作ろう。2048を目指せ！",
+    steps: [
+      { icon: "tap", text: "スワイプ（または矢印キー）で、全部のタイルがその方向にすべります。" },
+      { icon: "plus", text: "同じ数字のタイルがぶつかると合体！2と2で4になります。" },
+      { icon: "new", text: "動かすたびに、新しいタイルが出てきます。" },
+      { icon: "stop", text: "盤面がいっぱいで動かせなくなったら終わりです。" },
+    ],
+  },
+  snake: {
+    goal: "リンゴを食べてヘビをうんと長くしよう。ぶつからないでね！",
+    steps: [
+      { icon: "snake", text: "ヘビは止まりません。曲がる方向はあなたが決めます。" },
+      { icon: "tap", text: "スワイプか矢印キーで曲がろう。" },
+      { icon: "apple", text: "リンゴを食べると長くなって、10点もらえます。" },
+      { icon: "crash", text: "壁や自分のしっぽにぶつかったらおしまい。" },
+    ],
+  },
+  "lights-out": {
+    goal: "盤面のライトを全部消そう。",
+    steps: [
+      { icon: "idea", text: "マスをタップすると、そのマスと上下左右のマスが切り替わります。" },
+      { icon: "look", text: "タップする前にマスを長押し（パソコンならマウスを乗せる）すると、どこが変わるか見えます。" },
+      { icon: "repeat", text: "ついていたライトは消えて、消えていたライトはつきます。" },
+      { icon: "hand", text: "タップできる回数は少しだけ。よく考えてからタップしよう。" },
+      { icon: "up", text: "全部消したらレベルアップ。盤面も大きくなります。" },
+    ],
+  },
+  minesweeper: {
+    goal: "地雷のないマスを全部開けよう。地雷は踏まないでね！",
+    steps: [
+      { icon: "tap", text: "マスをタップして開けよう。最初のマスは絶対に地雷じゃありません。" },
+      { icon: "numbers", text: "数字は、そのマスのまわり（斜めも）にある地雷の数です。" },
+      { icon: "flag", text: "地雷の場所がわかったら旗を立てよう（長押しか旗モード）。" },
+      { icon: "timer", text: "地雷のないマスを全部開けたら勝ち。速いほどいいよ。" },
+    ],
+  },
+  sudoku: {
+    goal: "盤面を1から9の数字でうめよう。",
+    steps: [
+      { icon: "right", text: "横の列に同じ数字は入れられません。" },
+      { icon: "down", text: "縦の列もダメです。" },
+      { icon: "box", text: "3 × 3のブロックの中もダメ。" },
+      { icon: "pencil", text: "迷ったら、メモで入りそうな数字を書いておこう。" },
+    ],
+  },
+  queens: {
+    goal: "すべての行、すべての列、すべての色エリアにクイーンを1つずつ置こう。",
+    steps: [
+      { icon: "crown", text: "行・列・色ごとに、クイーンは1つだけ。" },
+      { icon: "stop", text: "クイーン同士はくっつけません。斜めもダメ。" },
+      { icon: "tap", text: "マスをタップすると×の印（ここには置かない）。もう1回タップでクイーンを置きます。" },
+      { icon: "timer", text: "どの盤面も答えはひとつだけ。速いほどいいよ。" },
+    ],
+  },
+  solitaire: {
+    goal: "全部のカードを上の4つの山へ移そう。マークごとに、Aからキングまで。",
+    steps: [
+      { icon: "cards", text: "列では、ひとつ大きい数字で色違いのカードの上に重ねよう。黒の7の上に赤の6、という感じ。" },
+      { icon: "tap", text: "カードをタップすると、置ける場所に動きます。ドラッグしてもOK。" },
+      { icon: "repeat", text: "行きづまったら山札をめくろう。なくなったら何度でも裏返せます。" },
+      { icon: "timer", text: "どの配り方もクリアできます。速く終わるほどいいよ。" },
+    ],
+  },
+  wordle: {
+    goal: "今日のひみつの単語を当てよう。英語の5文字で、チャンスは6回。",
+    steps: [
+      { icon: "keyboard", text: "英語の5文字の単語を入力して送ろう（日本語の単語はまだありません）。" },
+      { icon: "tile-green", text: "緑：その文字は単語に入っていて、位置も正解。" },
+      { icon: "tile-yellow", text: "黄色：単語に入っているけど、別の位置。" },
+      { icon: "tile-gray", text: "グレー：その文字は単語に入っていません。ヒントを使って次に挑戦しよう。" },
+    ],
+  },
+  tictactoe: {
+    goal: "フレンドより先に、自分の印を3つ並べよう。",
+    steps: [
+      { icon: "wave", text: "フレンドに挑戦しよう。ひとりが×、もうひとりが○です。" },
+      { icon: "repeat", text: "交代で、空いているマスに印をつけよう。" },
+      { icon: "line", text: "3つ並んだら勝ち。横、縦、斜めのどれでもOK。" },
+      { icon: "handshake", text: "3つ並ばないまま盤面がうまったら引き分けです。" },
+    ],
+  },
+  connect4: {
+    goal: "フレンドより先に、自分の色のコマを4つ並べよう。",
+    steps: [
+      { icon: "wave", text: "フレンドに挑戦しよう。交代で列を選びます。" },
+      { icon: "down", text: "コマはその列のいちばん下の空いたところまで落ちます。" },
+      { icon: "line", text: "4つ並んだら勝ち。横、縦、斜めのどれでもOK。" },
+      { icon: "think", text: "フレンドのコマもよく見て、じゃましよう。" },
+    ],
+  },
+  battleship: {
+    goal: "フレンドより先に、相手の船を全部沈めよう。",
+    steps: [
+      { icon: "ship", text: "自分の盤面に船を置こう。フレンドには見えません。" },
+      { icon: "target", text: "交代で、相手の盤面のマスを砲撃しよう。" },
+      { icon: "water", text: "はずれ：船はなし。命中：船に当たった。撃沈：船がまるごと沈んだ！" },
+      { icon: "trophy", text: "先に相手の船を全部沈めた人の勝ち！" },
+    ],
+  },
+  rps: {
+    goal: "フレンドよりいい手を選ぼう。先に2ラウンド勝った人の勝ち。",
+    steps: [
+      { icon: "secret", text: "2人同時に、こっそり選びます。" },
+      { icon: "rock", text: "グーはチョキに勝つ。" },
+      { icon: "scissors", text: "チョキはパーに勝つ。" },
+      { icon: "paper", text: "パーはグーに勝つ。トカゲとスポック入りだと、手が2つ増えます。" },
+    ],
+  },
+  pong: {
+    goal: "ボールを打ち返して、フレンドに返させないようにしよう。先に5点取った人の勝ち。",
+    steps: [
+      { icon: "wave", text: "フレンドに挑戦して、2人同時にゲームに入ろう。" },
+      { icon: "paddle", text: "パドルを動かして、ボールを跳ね返そう。" },
+      { icon: "fast", text: "打つたびに、ボールが少しずつ速くなります。" },
+      { icon: "goal", text: "ボールを取りのがしたら、フレンドに1点。" },
+    ],
+  },
+  tron: {
+    goal: "自分の軌跡でフレンドを閉じ込めよう。自分はぶつからないでね！",
+    steps: [
+      { icon: "tron", text: "バイクは止まらず、うしろに軌跡を残します。" },
+      { icon: "tap", text: "スワイプか矢印キーで曲がろう。" },
+      { icon: "crash", text: "壁や軌跡にぶつかった人がそのラウンドの負け。" },
+      { icon: "trophy", text: "先に3ラウンド勝った人の勝ち！" },
+    ],
+  },
+};
+
+export const HOW_TO_PLAY: Record<Locale, Record<string, HowToPlay>> = { es: HOW_TO_PLAY_ES, en: HOW_TO_PLAY_EN, ja: HOW_TO_PLAY_JA };
