@@ -16,7 +16,8 @@ export function buildManifest(icon: (file: string) => string = (file) => `/icons
     scope: "/",
     display: "standalone",
     orientation: "portrait",
-    background_color: brand.themeColor,
+    // El fondo del splash de Android: el del icono, igual que el splash animado que sale después.
+    background_color: "#15171c",
     theme_color: brand.themeColor,
     categories: ["games", "entertainment", "social"],
     icons: [

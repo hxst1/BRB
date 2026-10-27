@@ -2,8 +2,8 @@ import { ImageResponse } from "next/og";
 import { renderMonsterSvg, type MonsterParts } from "@repo/avatars";
 
 /** La mascota de la app: siempre la misma, contenta. */
-const MASCOT: MonsterParts = { body: "round", palette: "coral", eyes: "two", mouth: "tongue", top: "horns", cheeks: true };
-const BACKGROUND = "#15171c";
+export const MASCOT: MonsterParts = { body: "round", palette: "coral", eyes: "two", mouth: "tongue", top: "horns", cheeks: true };
+export const BACKGROUND = "#15171c";
 
 /**
  * Icono de la app en PNG. `maskable` deja más margen: Android puede recortar

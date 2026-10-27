@@ -6,6 +6,8 @@ import { ErrorReporter } from "@/components/error-reporter";
 import { InlineScript } from "@/components/inline-script";
 import { SiteFooter } from "@/components/site-footer";
 import { THEME_SCRIPT } from "@/lib/theme";
+import { IOS_SCREENS, SPLASH_SCRIPT, splashFile } from "@/lib/splash";
+import { Splash } from "@/components/pwa/splash";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { ServiceWorker } from "@/components/pwa/service-worker";
 import { ExtensionBridge } from "@/components/extension-bridge";
@@ -53,6 +55,11 @@ export async function generateMetadata(): Promise<Metadata> {
     appleWebApp: {
       capable: true,
       title: brand.name,
+      // Imágenes de arranque de cada iPhone (app/splash): la primera pantalla del splash.
+      startupImage: IOS_SCREENS.map((screen) => ({
+        url: `/splash/${splashFile(screen)}`,
+        media: `(device-width: ${screen.width}px) and (device-height: ${screen.height}px) and (-webkit-device-pixel-ratio: ${screen.ratio}) and (orientation: portrait)`,
+      })),
     },
   };
 }
@@ -82,8 +89,10 @@ export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
     >
       <head>
         <InlineScript html={THEME_SCRIPT} />
+        <InlineScript html={SPLASH_SCRIPT} />
       </head>
       <body className="flex min-h-full flex-col">
+        <Splash />
         <I18nProvider locale={locale}>
         <ServiceWorker />
         {/* Lee la ruta: con cacheComponents, dentro de Suspense para no frenar el resto. */}
