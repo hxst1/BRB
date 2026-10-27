@@ -5,13 +5,15 @@ import { useCallback, useState } from "react";
 import { Leaderboard } from "@/components/leaderboard";
 import { LightsOutGame } from "@/components/lightsout/game";
 import { MinesweeperGame } from "@/components/minesweeper/game";
+import { QueensGame } from "@/components/queens/game";
+import { SolitaireGame } from "@/components/solitaire/game";
 import { SnakeGame } from "@/components/snake/game";
 import { SudokuGame } from "@/components/sudoku/game";
 import { DAILY_GAMES } from "@/lib/daily";
 import { useMessages } from "@/lib/i18n/client";
 
 /**
- * El juego del reto de hoy (salvo el 2048, que tiene su propia pantalla) con
+ * El juego de un reto de hoy (salvo el 2048, que tiene su propia pantalla) con
  * el ranking del día. Al guardar la partida, la página pasa a enseñar el
  * resultado.
  */
@@ -33,6 +35,10 @@ export function DailyGame({ game, day, viewerId }: { game: string; day: string; 
       <MinesweeperGame viewerId={viewerId} difficulty="medium" daily={day} onSaved={onSaved} />
     ) : game === "sudoku-medium" ? (
       <SudokuGame viewerId={viewerId} difficulty="medium" daily={day} onSaved={onSaved} />
+    ) : game === "queens-medium" ? (
+      <QueensGame viewerId={viewerId} difficulty="medium" daily={day} onSaved={onSaved} />
+    ) : game === "solitaire" ? (
+      <SolitaireGame viewerId={viewerId} daily={day} onSaved={onSaved} />
     ) : null;
 
   return (

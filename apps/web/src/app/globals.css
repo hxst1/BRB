@@ -475,6 +475,107 @@ body {
   }
 }
 
+/* La llama de la racha (components/streak/flame): se mece, parpadea y chisporrotea. */
+.flame-sway {
+  transform-origin: 60px 132px;
+  animation: flame-sway 2.6s ease-in-out infinite;
+}
+
+.flame-flicker {
+  transform-origin: 60px 128px;
+  animation: flame-flicker 0.9s ease-in-out infinite alternate;
+}
+
+.flame-blink {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: flame-blink 4.6s infinite;
+}
+
+.flame-spark {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: flame-twinkle 1.8s ease-in-out infinite;
+}
+
+.flame-spark-2 {
+  animation-delay: 0.6s;
+}
+
+.flame-spark-3 {
+  animation-delay: 1.2s;
+}
+
+.flame-smoke {
+  animation: flame-smoke 3.2s ease-in infinite;
+}
+
+@keyframes flame-sway {
+  0%,
+  100% {
+    transform: skewX(0deg) scaleY(1);
+  }
+  30% {
+    transform: skewX(-3deg) scaleY(1.03);
+  }
+  70% {
+    transform: skewX(3deg) scaleY(0.98);
+  }
+}
+
+@keyframes flame-flicker {
+  from {
+    transform: scale(1, 1);
+  }
+  to {
+    transform: scale(0.94, 1.06);
+  }
+}
+
+@keyframes flame-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes flame-twinkle {
+  0%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+@keyframes flame-smoke {
+  from {
+    transform: translateY(6px);
+    opacity: 0.9;
+  }
+  to {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flame-sway,
+  .flame-flicker,
+  .flame-blink,
+  .flame-spark,
+  .flame-smoke {
+    animation: none;
+  }
+}
+
 /* Hundir la flota: casillas, barcos y disparos en capas sobre la misma cuadrícula. */
 .sea-board {
   --sea-gap: clamp(2px, 0.7vw, 4px);

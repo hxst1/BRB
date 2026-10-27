@@ -37,8 +37,8 @@ select results_eq($$ select friend from public.get_my_first_steps() $$, $$ value
 select is(pg_temp.has('00000000-0000-0000-0000-f6000000000a', 'first-steps'), false, 'con dos pasos aún no hay logro');
 
 select pg_temp.logout();
-insert into public.game_runs (user_id, game, seed, daily) values
-  ('00000000-0000-0000-0000-f6000000000a', 'sudoku-medium', 1, current_date);
+insert into public.game_runs (user_id, game, seed, daily, daily_slot) values
+  ('00000000-0000-0000-0000-f6000000000a', 'sudoku-medium', 1, current_date, 'puzzle');
 select is(pg_temp.has('00000000-0000-0000-0000-f6000000000a', 'first-steps'), true, 'empezar el reto diario completa el logro');
 
 set local role anon;

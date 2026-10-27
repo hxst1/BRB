@@ -12,7 +12,11 @@ export type Friendship = Tables<"friendships">;
 export type GameRun = Tables<"game_runs">;
 export type Match = Tables<"matches">;
 export type LeaderboardEntry = Functions<"get_leaderboard">["Returns"][number];
-export type DailySummary = Functions<"get_my_daily">["Returns"][number];
+/** Cada reto de hoy y cómo va (ver `get_my_dailies`). */
+export type DailyStatus = Functions<"get_my_dailies">["Returns"][number];
+
+/** La racha del usuario (ver `get_my_streak`). `recent`: [{ day, kind }] de las dos últimas semanas. */
+export type StreakStatus = Functions<"get_my_streak">["Returns"][number];
 
 /** Resultado de `send_friend_request` (ver migración init). */
 export type FriendRequestResult =

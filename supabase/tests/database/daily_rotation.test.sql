@@ -47,10 +47,10 @@ reset role;
 
 -- En los juegos de tiempo gana el menor: el ranking del día lo respeta.
 delete from public.game_runs where daily = private.game_day();
-insert into public.game_runs (user_id, game, seed, status, score, finished_at, daily) values
-  ('00000000-0000-0000-0000-d7000000000a', 'sudoku-medium', 1, 'finished', 900000, now(), private.game_day()),
-  ('00000000-0000-0000-0000-d7000000000b', 'sudoku-medium', 1, 'finished', 400000, now(), private.game_day());
-select is((select username from public.get_daily_leaderboard() where rank = 1), 'rot_bob',
+insert into public.game_runs (user_id, game, seed, status, score, finished_at, daily, daily_slot) values
+  ('00000000-0000-0000-0000-d7000000000a', 'sudoku-medium', 1, 'finished', 900000, now(), private.game_day(), 'puzzle'),
+  ('00000000-0000-0000-0000-d7000000000b', 'sudoku-medium', 1, 'finished', 400000, now(), private.game_day(), 'puzzle');
+select is((select username from public.get_daily_leaderboard(game => 'sudoku-medium') where rank = 1), 'rot_bob',
   'en un día de sudoku, el más rápido va primero');
 
 select * from finish();

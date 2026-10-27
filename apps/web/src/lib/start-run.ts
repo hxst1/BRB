@@ -13,7 +13,7 @@ export type RunNotice = "dayChanged" | "alreadyPlayedDaily" | "offlineDaily" | "
 export async function startRun(game: string, daily = false): Promise<{ run: StartedRun | null; notice: RunNotice | null }> {
   const supabase = createClient();
   if (daily) {
-    const { data, error } = await supabase.rpc("start_daily_run");
+    const { data, error } = await supabase.rpc("start_daily_run", { daily_game: game });
     const run = data?.[0];
     if (run && run.game === game) return { run: { id: run.id, seed: run.seed }, notice: null };
     if (run) return { run: null, notice: "dayChanged" };

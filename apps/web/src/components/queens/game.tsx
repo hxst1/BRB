@@ -29,21 +29,21 @@ const QUEEN = 2;
 /** Lo que se guarda en el navegador para retomar la partida al volver. */
 type Stored = { runId: string | null; seed: number; startedAt: number; marks: number[]; pause?: Pause };
 
-const storageKey = (difficulty: Difficulty) => `queens:${difficulty}`;
+const storageKey = (difficulty: Difficulty, daily: string | null) => (daily ? `queens:daily:${daily}` : `queens:${difficulty}`);
 
-function readStored(difficulty: Difficulty): Stored | null {
+function readStored(difficulty: Difficulty, daily: string | null): Stored | null {
   try {
-    const raw = localStorage.getItem(storageKey(difficulty));
+    const raw = localStorage.getItem(storageKey(difficulty, daily));
     return raw ? (JSON.parse(raw) as Stored) : null;
   } catch {
     return null;
   }
 }
 
-function writeStored(difficulty: Difficulty, stored: Stored | null) {
+function writeStored(difficulty: Difficulty, daily: string | null, stored: Stored | null) {
   try {
-    if (stored) localStorage.setItem(storageKey(difficulty), JSON.stringify(stored));
-    else localStorage.removeItem(storageKey(difficulty));
+    if (stored) localStorage.setItem(storageKey(difficulty, daily), JSON.stringify(stored));
+    else localStorage.removeItem(storageKey(difficulty, daily));
   } catch {
     // Sin almacenamiento (modo privado): simplemente no se podrá retomar.
   }
@@ -53,8 +53,8 @@ function writeStored(difficulty: Difficulty, stored: Stored | null) {
  * Retoma la partida guardada si sigue abierta en el servidor; si no, empieza
  * otra (con sesión, el servidor da la semilla y empieza a contar el tiempo).
  */
-async function prepare(difficulty: Difficulty, signedIn: boolean): Promise<{ stored: Stored; notice: RunNotice | null }> {
-  const saved = readStored(difficulty);
+async function prepare(difficulty: Difficulty, signedIn: boolean, daily: string | null): Promise<{ stored: Stored; notice: RunNotice | null }> {
+  const saved = readStored(difficulty, daily);
   if (saved) {
     if (!saved.runId && !signedIn) return { stored: saved, notice: null };
     if (saved.runId && signedIn) {
@@ -70,14 +70,25 @@ async function prepare(difficulty: Difficulty, signedIn: boolean): Promise<{ sto
     return { runId, seed, startedAt: clock(), marks: Array(size * size).fill(EMPTY) };
   };
   if (!signedIn) return { stored: fresh(randomSeed(), null), notice: null };
-  const { run, notice } = await startRun(GAME_IDS[difficulty]);
+  const { run, notice } = await startRun(GAME_IDS[difficulty], daily !== null);
   return run ? { stored: fresh(run.seed, run.id), notice: null } : { stored: fresh(randomSeed(), null), notice };
 }
 
 /** Gesto en curso sobre el tablero: un toque cambia la casilla; arrastrar marca × por donde pasa. */
 type Gesture = { start: number; painting: boolean; marks: number[] };
 
-export function QueensGame({ viewerId, difficulty, onSaved }: { viewerId: string | null; difficulty: Difficulty; onSaved: () => void }) {
+/** Con `daily` (el día, AAAA-MM-DD), el reto diario: un solo intento, sin "otro tablero". */
+export function QueensGame({
+  viewerId,
+  difficulty,
+  daily = null,
+  onSaved,
+}: {
+  viewerId: string | null;
+  difficulty: Difficulty;
+  daily?: string | null;
+  onSaved: () => void;
+}) {
   const m = useMessages();
   const t = m.queens;
   const signedIn = viewerId !== null;
@@ -104,10 +115,10 @@ export function QueensGame({ viewerId, difficulty, onSaved }: { viewerId: string
 
   const load = useCallback(
     async (fresh: boolean) => {
-      if (fresh) writeStored(difficulty, null);
-      if (fresh || !loading.current) loading.current = prepare(difficulty, signedIn);
+      if (fresh) writeStored(difficulty, daily, null);
+      if (fresh || !loading.current) loading.current = prepare(difficulty, signedIn, daily);
       const { stored, notice: message } = await loading.current;
-      writeStored(difficulty, stored);
+      writeStored(difficulty, daily, stored);
       setGame(stored);
       setNotice(message);
       setSave(null);
@@ -115,14 +126,14 @@ export function QueensGame({ viewerId, difficulty, onSaved }: { viewerId: string
       setConfirmingNew(false);
       setNow(clock());
     },
-    [difficulty, signedIn],
+    [difficulty, signedIn, daily],
   );
 
   useEffect(() => {
     let cancelled = false;
-    (loading.current ?? (loading.current = prepare(difficulty, signedIn))).then(({ stored, notice: message }) => {
+    (loading.current ?? (loading.current = prepare(difficulty, signedIn, daily))).then(({ stored, notice: message }) => {
       if (cancelled) return;
-      writeStored(difficulty, stored);
+      writeStored(difficulty, daily, stored);
       setGame(stored);
       setNotice(message);
       setNow(clock());
@@ -130,7 +141,7 @@ export function QueensGame({ viewerId, difficulty, onSaved }: { viewerId: string
     return () => {
       cancelled = true;
     };
-  }, [difficulty, signedIn]);
+  }, [difficulty, signedIn, daily]);
 
   // Cronómetro de la pantalla (el oficial lo mide el servidor).
   useEffect(() => {
@@ -142,9 +153,9 @@ export function QueensGame({ viewerId, difficulty, onSaved }: { viewerId: string
   const commit = useCallback(
     (next: Stored) => {
       setGame(next);
-      writeStored(difficulty, next);
+      writeStored(difficulty, daily, next);
     },
-    [difficulty],
+    [difficulty, daily],
   );
 
   /**
@@ -165,14 +176,14 @@ export function QueensGame({ viewerId, difficulty, onSaved }: { viewerId: string
         .then(async (response) => {
           const body = await response.json().catch(() => ({}));
           if (response.ok) {
-            writeStored(difficulty, null);
+            writeStored(difficulty, daily, null);
             setSave({ status: "saved", time: body.score });
             onSaved();
           } else if (response.status === 422) {
-            writeStored(difficulty, null);
+            writeStored(difficulty, daily, null);
             setSave({ status: "rejected" });
           } else if (response.status === 409) {
-            writeStored(difficulty, null);
+            writeStored(difficulty, daily, null);
             setSave({ status: "error", message: body.error ?? m.run.saveError, retry: false });
           } else {
             submitted.current = null;
@@ -184,15 +195,15 @@ export function QueensGame({ viewerId, difficulty, onSaved }: { viewerId: string
           setSave({ status: "error", message: m.run.offlineSave, retry: true });
         });
     },
-    [difficulty, puzzle, onSaved, m],
+    [difficulty, daily, puzzle, onSaved, m],
   );
 
   useEffect(() => {
     if (!solved || !game) return;
     if (game.runId) submit(game);
     // Sin sesión no hay nada que enviar: la próxima vez, tablero nuevo.
-    else writeStored(difficulty, null);
-  }, [solved, game, difficulty, submit]);
+    else writeStored(difficulty, daily, null);
+  }, [solved, game, difficulty, daily, submit]);
 
   const pauseGame = useCallback(() => {
     if (!game || solved || paused) return;
@@ -307,7 +318,7 @@ export function QueensGame({ viewerId, difficulty, onSaved }: { viewerId: string
         </div>
         <div className="flex items-center gap-2">
           {!solved && <PauseButton paused={paused} onToggle={paused ? resumeGame : pauseGame} />}
-          {confirmingNew ? (
+          {daily ? null : confirmingNew ? (
             <span className="flex items-center gap-3 text-sm">
               {t.abandon}
               <button type="button" onClick={() => void load(true)} className="font-medium text-danger">
@@ -395,11 +406,13 @@ export function QueensGame({ viewerId, difficulty, onSaved }: { viewerId: string
               </button>
             )}
           </div>
-          {/* Otra y, debajo, compartir: del mismo ancho. */}
+          {/* Otra (en el reto diario hay un solo intento) y, debajo, compartir: del mismo ancho. */}
           <div className="flex shrink-0 flex-col gap-2">
-            <button type="button" onClick={() => void load(true)} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-              {m.sudoku.another}
-            </button>
+            {!daily && (
+              <button type="button" onClick={() => void load(true)} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
+                {m.sudoku.another}
+              </button>
+            )}
             {save?.status === "saved" && game.runId && <ShareStory runId={game.runId} game="queens" />}
           </div>
         </div>

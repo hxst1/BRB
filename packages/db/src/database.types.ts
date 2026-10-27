@@ -169,14 +169,14 @@ isOneToOne: false
                   ]
                 },"game_runs": {
                   Row: {
-                    "daily": string | null,"finished_at": string | null,"game": string,"id": string,"max_tile": number | null,"moves": string | null,"paused_at": string | null,"paused_ms": number,"rejection_reason": string | null,"score": number | null,"seed": number,"started_at": string,"status": string,"user_id": string
+                    "daily": string | null,"daily_slot": string | null,"finished_at": string | null,"game": string,"id": string,"max_tile": number | null,"moves": string | null,"paused_at": string | null,"paused_ms": number,"rejection_reason": string | null,"score": number | null,"seed": number,"started_at": string,"status": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "daily"?: string | null,"finished_at"?: string | null,"game": string,"id"?: string,"max_tile"?: number | null,"moves"?: string | null,"paused_at"?: string | null,"paused_ms"?: number,"rejection_reason"?: string | null,"score"?: number | null,"seed": number,"started_at"?: string,"status"?: string,"user_id": string
+                    "daily"?: string | null,"daily_slot"?: string | null,"finished_at"?: string | null,"game": string,"id"?: string,"max_tile"?: number | null,"moves"?: string | null,"paused_at"?: string | null,"paused_ms"?: number,"rejection_reason"?: string | null,"score"?: number | null,"seed": number,"started_at"?: string,"status"?: string,"user_id": string
                   }
                   Update: {
-                    "daily"?: string | null,"finished_at"?: string | null,"game"?: string,"id"?: string,"max_tile"?: number | null,"moves"?: string | null,"paused_at"?: string | null,"paused_ms"?: number,"rejection_reason"?: string | null,"score"?: number | null,"seed"?: number,"started_at"?: string,"status"?: string,"user_id"?: string
+                    "daily"?: string | null,"daily_slot"?: string | null,"finished_at"?: string | null,"game"?: string,"id"?: string,"max_tile"?: number | null,"moves"?: string | null,"paused_at"?: string | null,"paused_ms"?: number,"rejection_reason"?: string | null,"score"?: number | null,"seed"?: number,"started_at"?: string,"status"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -387,14 +387,14 @@ isOneToOne: true
                   ]
                 },"profiles": {
                   Row: {
-                    "avatar_parts": NonNullable<Json>,"avatar_seed": number,"created_at": string,"first_steps_dismissed": boolean,"id": string,"locale": string,"streak_best": number,"streak_days": number,"streak_last_day": string | null,"supporter_since": string | null,"supporter_tier": string | null,"username": string,"username_changed_at": string | null,"xp": number
+                    "avatar_parts": NonNullable<Json>,"avatar_seed": number,"created_at": string,"first_steps_dismissed": boolean,"id": string,"locale": string,"streak_best": number,"streak_days": number,"streak_freezes": number,"streak_last_day": string | null,"supporter_since": string | null,"supporter_tier": string | null,"username": string,"username_changed_at": string | null,"xp": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "avatar_parts"?: NonNullable<Json>,"avatar_seed": number,"created_at"?: string,"first_steps_dismissed"?: boolean,"id": string,"locale"?: string,"streak_best"?: number,"streak_days"?: number,"streak_last_day"?: string | null,"supporter_since"?: string | null,"supporter_tier"?: string | null,"username": string,"username_changed_at"?: string | null,"xp"?: number
+                    "avatar_parts"?: NonNullable<Json>,"avatar_seed": number,"created_at"?: string,"first_steps_dismissed"?: boolean,"id": string,"locale"?: string,"streak_best"?: number,"streak_days"?: number,"streak_freezes"?: number,"streak_last_day"?: string | null,"supporter_since"?: string | null,"supporter_tier"?: string | null,"username": string,"username_changed_at"?: string | null,"xp"?: number
                   }
                   Update: {
-                    "avatar_parts"?: NonNullable<Json>,"avatar_seed"?: number,"created_at"?: string,"first_steps_dismissed"?: boolean,"id"?: string,"locale"?: string,"streak_best"?: number,"streak_days"?: number,"streak_last_day"?: string | null,"supporter_since"?: string | null,"supporter_tier"?: string | null,"username"?: string,"username_changed_at"?: string | null,"xp"?: number
+                    "avatar_parts"?: NonNullable<Json>,"avatar_seed"?: number,"created_at"?: string,"first_steps_dismissed"?: boolean,"id"?: string,"locale"?: string,"streak_best"?: number,"streak_days"?: number,"streak_freezes"?: number,"streak_last_day"?: string | null,"supporter_since"?: string | null,"supporter_tier"?: string | null,"username"?: string,"username_changed_at"?: string | null,"xp"?: number
                   }
                   Relationships: [
                     
@@ -774,13 +774,18 @@ isOneToOne: false
               "avatar_parts": Json,"avatar_seed": number,"friend_id": string,"last_at": string,"last_body": string,"last_from_me": boolean,"unread": number,"username": string
             }[]
                            },
+"get_daily_challenges":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "day": string,"game": string,"next_game": string,"slot": string
+            }[]
+                           },
 "get_daily_info":
 { Args: Record<PropertyKey, never>; Returns: {
               "day": string,"game": string,"next_game": string
             }[]
                            },
 "get_daily_leaderboard":
-{ Args: { "max_rows"?: number,"scope"?: string }; Returns: {
+{ Args: { "game"?: string,"max_rows"?: number,"scope"?: string }; Returns: {
               "achieved_at": string,"avatar_parts": Json,"avatar_seed": number,"rank": number,"score": number,"supporter_tier": string,"user_id": string,"username": string
             }[]
                            },
@@ -809,6 +814,11 @@ isOneToOne: false
               "attempt_score": number,"created_at": string,"game": string,"id": string,"incoming": boolean,"other_avatar_parts": Json,"other_avatar_seed": number,"other_id": string,"other_username": string,"status": string,"target_score": number
             }[]
                            },
+"get_my_dailies":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "game": string,"players": number,"rank": number,"score": number,"slot": string,"status": string
+            }[]
+                           },
 "get_my_daily":
 { Args: Record<PropertyKey, never>; Returns: {
               "day": string,"game": string,"next_game": string,"played_today": boolean,"players": number,"rank": number,"score": number,"status": string,"streak_best": number,"streak_days": number
@@ -827,6 +837,11 @@ isOneToOne: false
 "get_my_standing":
 { Args: { "game": string }; Returns: {
               "best_score": number,"friends_players": number,"friends_rank": number,"global_players": number,"global_rank": number
+            }[]
+                           },
+"get_my_streak":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "covering": number,"freezes": number,"played_today": boolean,"recent": Json,"streak_best": number,"streak_days": number
             }[]
                            },
 "get_pending_counts":
@@ -933,7 +948,7 @@ isOneToOne: false
             }[]
                            },
 "start_daily_run":
-{ Args: Record<PropertyKey, never>; Returns: {
+{ Args: { "daily_game"?: string }; Returns: {
               "game": string,"id": string,"seed": number
             }[]
                            },

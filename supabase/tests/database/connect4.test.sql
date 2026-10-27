@@ -1,6 +1,9 @@
 begin;
 select plan(7);
 
+-- El XP extra del duelo del día depende de la fecha: aquí no cuenta.
+alter table public.matches disable trigger daily_duel_on_match_finished;
+
 insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-c4000000000a', 'a@c4.local', '{"username": "c4_ana"}'),
   ('00000000-0000-0000-0000-c4000000000b', 'b@c4.local', '{"username": "c4_bob"}');

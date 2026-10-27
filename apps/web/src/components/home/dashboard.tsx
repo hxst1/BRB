@@ -2,7 +2,9 @@ import Link from "next/link";
 import { Suspense } from "react";
 import type { Functions, Match } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
-import { DailyCard } from "@/components/daily/daily-summary";
+import { DailyCards, type DailyCardData } from "@/components/daily/daily-cards";
+import { StreakHero } from "@/components/streak/streak-hero";
+import { recentDays } from "@/lib/streak";
 import { LevelBar } from "@/components/level-bar";
 import { battleshipMyTurn, isTurnBased, turnOf } from "@/components/tictactoe/data";
 import { CHALLENGE_EXPIRY_MS, matchGameKey, matchHref } from "@/lib/games";
@@ -46,7 +48,8 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     { data: solitaire },
     { data: queens },
     { data: challenges },
-    { data: daily },
+    { data: streak },
+    { data: dailies },
     { data: wordle },
     { data: battleship },
     { data: pins },
@@ -72,7 +75,8 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     supabase.rpc("get_my_standing", { game: "solitaire" }).maybeSingle(),
     supabase.rpc("get_my_standing", { game: "queens-medium" }).maybeSingle(),
     supabase.rpc("get_my_challenges", { max_rows: 20 }),
-    supabase.rpc("get_my_daily").maybeSingle(),
+    supabase.rpc("get_my_streak").maybeSingle(),
+    supabase.rpc("get_my_dailies"),
     supabase
       .from("wordle_games")
       .select("day, guesses, solved, finished_at")
@@ -87,8 +91,9 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     // La misma regla que el logro "Primeros pasos".
     supabase.rpc("get_my_first_steps").maybeSingle(),
   ]);
-  // Solo cuenta la partida de hoy (el día lo da el resumen del reto diario).
-  const wordleToday = wordle && daily && wordle.day === daily.day ? wordle : null;
+  // Solo cuenta la partida de hoy (el último día del resumen de la racha es hoy).
+  const today = recentDays(streak?.recent).at(-1)?.day;
+  const wordleToday = wordle && wordle.day === today ? wordle : null;
 
   // Elecciones ya hechas en la ronda en curso de piedra, papel o tijera.
   const rpsActive = (matches ?? []).filter((m) => m.status === "active" && (m.game === "rps" || m.game === "rpsls"));
@@ -235,15 +240,18 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
 
       {showFirstSteps && <FirstSteps viewerId={viewer.id} steps={firstSteps} />}
 
+      {/* Hoy: la racha en grande y los retos del día. */}
+      {streak && (
+        <div className="mt-10 flex flex-col gap-6">
+          <StreakHero streak={streak} compact />
+          <DailyCards cards={(dailies ?? []).map(toCard)} />
+        </div>
+      )}
+
       <div className="mt-12">
         <NowSection items={now} waiting={waiting} />
       </div>
 
-      {daily && (
-        <div className="mt-12">
-          <DailyCard summary={daily} />
-        </div>
-      )}
 
       <div className="mt-14">
         <GameCards
@@ -281,6 +289,15 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
     </>
   );
 }
+
+const toCard = (row: Functions<"get_my_dailies">["Returns"][number]): DailyCardData => ({
+  slot: row.slot as DailyCardData["slot"],
+  game: row.game,
+  status: row.status,
+  score: row.score,
+  rank: row.rank,
+  players: row.players,
+});
 
 const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 

@@ -35,7 +35,7 @@ export function Leaderboard({
     let cancelled = false;
     const supabase = createClient();
     (daily
-      ? supabase.rpc("get_daily_leaderboard", { scope, max_rows: 20 })
+      ? supabase.rpc("get_daily_leaderboard", { scope, max_rows: 20, game })
       : supabase.rpc("get_leaderboard", { game, scope, period, max_rows: 20 })
     ).then(({ data }) => {
       if (!cancelled) setResult({ key, rows: data ?? [] });

@@ -42,7 +42,7 @@ type Save =
 /** Lo que se guarda en el navegador para retomar la partida al volver. */
 type Stored = { runId: string | null; seed: number; startedAt: number; moves: string; pause?: Pause };
 
-const STORAGE_KEY = "solitaire";
+const storageKey = (daily: string | null) => (daily ? `solitaire:daily:${daily}` : "solitaire");
 
 /** Al final, las cartas suben solas: una cada tanto (por encima del mínimo por movimiento que pide el servidor). */
 const FINISH_STEP_MS = 130;
@@ -50,19 +50,19 @@ const FINISH_STEP_MS = 130;
 /** Lo que hay que mover el dedo para que un toque pase a ser arrastrar. */
 const DRAG_THRESHOLD = 6;
 
-function readStored(): Stored | null {
+function readStored(key: string): Stored | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as Stored) : null;
   } catch {
     return null;
   }
 }
 
-function writeStored(stored: Stored | null) {
+function writeStored(key: string, stored: Stored | null) {
   try {
-    if (stored) localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
-    else localStorage.removeItem(STORAGE_KEY);
+    if (stored) localStorage.setItem(key, JSON.stringify(stored));
+    else localStorage.removeItem(key);
   } catch {
     // Sin almacenamiento (modo privado): simplemente no se podrá retomar.
   }
@@ -72,8 +72,8 @@ function writeStored(stored: Stored | null) {
  * Retoma la partida guardada si sigue abierta en el servidor; si no, empieza
  * otra (con sesión, el servidor da la semilla y empieza a contar el tiempo).
  */
-async function prepare(signedIn: boolean): Promise<{ stored: Stored; notice: RunNotice | null }> {
-  const saved = readStored();
+async function prepare(signedIn: boolean, daily: string | null): Promise<{ stored: Stored; notice: RunNotice | null }> {
+  const saved = readStored(storageKey(daily));
   if (saved) {
     if (!saved.runId && !signedIn) return { stored: saved, notice: null };
     if (saved.runId && signedIn) {
@@ -86,7 +86,7 @@ async function prepare(signedIn: boolean): Promise<{ stored: Stored; notice: Run
   }
   const fresh = (seed: number, runId: string | null): Stored => ({ runId, seed, startedAt: clock(), moves: "" });
   if (!signedIn) return { stored: fresh(randomSeed(), null), notice: null };
-  const { run, notice } = await startRun(GAME_ID);
+  const { run, notice } = await startRun(GAME_ID, daily !== null);
   return run ? { stored: fresh(run.seed, run.id), notice: null } : { stored: fresh(randomSeed(), null), notice };
 }
 
@@ -153,7 +153,9 @@ function tableHeight(places: Place[], g: Geometry): number {
 
 type Drag = { card: number; pile: Pile; count: number; startX: number; startY: number; dx: number; dy: number; moved: boolean };
 
-export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; onSaved: () => void }) {
+/** Con `daily` (el día, AAAA-MM-DD), el reto diario: un solo intento, sin "nueva partida". */
+export function SolitaireGame({ viewerId, daily = null, onSaved }: { viewerId: string | null; daily?: string | null; onSaved: () => void }) {
+  const key = storageKey(daily);
   const m = useMessages();
   const t = m.solitaire;
   const signedIn = viewerId !== null;
@@ -193,9 +195,9 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
 
   useEffect(() => {
     let cancelled = false;
-    (loading.current ?? (loading.current = prepare(signedIn))).then(({ stored, notice: message }) => {
+    (loading.current ?? (loading.current = prepare(signedIn, daily))).then(({ stored, notice: message }) => {
       if (cancelled) return;
-      writeStored(stored);
+      writeStored(key, stored);
       setGame(stored);
       setNotice(message);
       setNow(clock());
@@ -203,19 +205,19 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
     return () => {
       cancelled = true;
     };
-  }, [signedIn]);
+  }, [signedIn, daily, key]);
 
   const restart = useCallback(async () => {
-    writeStored(null);
-    loading.current = prepare(signedIn);
+    writeStored(key, null);
+    loading.current = prepare(signedIn, daily);
     const { stored, notice: message } = await loading.current;
-    writeStored(stored);
+    writeStored(key, stored);
     setGame(stored);
     setNotice(message);
     setSave(null);
     setConfirmingNew(false);
     setNow(clock());
-  }, [signedIn]);
+  }, [signedIn, daily, key]);
 
   // El ancho del tablero manda en el tamaño de las cartas (el tablero aparece al cargar la partida).
   const loaded = game !== null;
@@ -236,8 +238,8 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
 
   const commit = useCallback((next: Stored) => {
     setGame(next);
-    writeStored(next);
-  }, []);
+    writeStored(key, next);
+  }, [key]);
 
   /**
    * Manda la partida ganada al servidor. Se borra del navegador solo cuando el
@@ -257,15 +259,15 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
         .then(async (response) => {
           const body = await response.json().catch(() => ({}));
           if (response.ok) {
-            writeStored(null);
+            writeStored(key, null);
             setSave({ status: "saved", time: body.score });
             onSaved();
           } else if (response.status === 422) {
-            writeStored(null);
+            writeStored(key, null);
             setSave({ status: "rejected" });
           } else if (response.status === 409) {
             // Ya estaba cerrada: lo normal es que un envío anterior llegara aunque no su respuesta.
-            writeStored(null);
+            writeStored(key, null);
             setSave({ status: "error", message: body.error ?? m.run.saveError, retry: false });
           } else {
             submitted.current = null;
@@ -277,15 +279,15 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
           setSave({ status: "error", message: m.run.offlineSave, retry: true });
         });
     },
-    [onSaved, m],
+    [key, onSaved, m],
   );
 
   useEffect(() => {
     if (!won || !game) return;
     if (game.runId) submit(game);
     // Sin sesión no hay nada que enviar: la próxima vez, partida nueva.
-    else writeStored(null);
-  }, [won, game, submit]);
+    else writeStored(key, null);
+  }, [won, game, key, submit]);
 
   /** Hace un movimiento si vale. */
   const play = useCallback(
@@ -431,7 +433,7 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
         </div>
         <div className="flex items-center gap-2">
         {!won && <PauseButton paused={paused} onToggle={paused ? resumeGame : pauseGame} />}
-        {confirmingNew ? (
+        {daily ? null : confirmingNew ? (
           <span className="flex items-center gap-3 text-sm">
             {t.abandon}
             <button type="button" onClick={() => void restart()} className="font-medium text-danger">
@@ -556,11 +558,13 @@ export function SolitaireGame({ viewerId, onSaved }: { viewerId: string | null; 
               </button>
             )}
           </div>
-          {/* Otra y, debajo, compartir: del mismo ancho. */}
+          {/* Otra (en el reto diario hay un solo intento) y, debajo, compartir: del mismo ancho. */}
           <div className="flex shrink-0 flex-col gap-2">
-            <button type="button" onClick={() => void restart()} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
-              {t.another}
-            </button>
+            {!daily && (
+              <button type="button" onClick={() => void restart()} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
+                {t.another}
+              </button>
+            )}
             {save?.status === "saved" && game.runId && <ShareStory runId={game.runId} game="solitaire" />}
           </div>
         </div>
