@@ -596,6 +596,9 @@ isOneToOne: false
 "admin_delete_news_post":
 { Args: { "admin_id": string,"post_id": string,"reason"?: string }; Returns: undefined
                            },
+"admin_delete_push_subscription":
+{ Args: { "endpoint": string }; Returns: undefined
+                           },
 "admin_games_played":
 { Args: { "days"?: number }; Returns: {
               "game": string,"kind": string,"players": number,"plays": number
@@ -662,6 +665,11 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"admin_list_push_subscriptions":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "admin_id": string,"auth": string,"created_at": string,"endpoint": string,"id": string,"p256dh": string
+            }[]
+                           },
 "admin_list_users":
 { Args: { "max_rows"?: number,"search"?: string,"skip"?: number }; Returns: {
               "avatar_parts": Json,"avatar_seed": number,"created_at": string,"friend_code": string,"id": string,"push_devices": number,"seen_at": string,"streak_best": number,"streak_days": number,"streak_last_day": string,"supporter_tier": string,"total_count": number,"username": string,"xp": number
@@ -695,6 +703,9 @@ isOneToOne: false
                            },
 "admin_save_news_post":
 { Args: { "admin_id": string,"body_en"?: string,"body_es": string,"cta_label_en"?: string,"cta_label_es"?: string,"cta_url"?: string,"kind": string,"pinned"?: boolean,"post_id": string,"published_at"?: string,"reason"?: string,"slug": string,"title_en"?: string,"title_es": string }; Returns: string
+                           },
+"admin_save_push_subscription":
+{ Args: { "admin_id": string,"auth": string,"endpoint": string,"p256dh": string }; Returns: string
                            },
 "admin_set_error_status":
 { Args: { "admin_id": string,"fingerprint": string,"reason"?: string,"status": string }; Returns: undefined

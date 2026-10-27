@@ -44,3 +44,7 @@ insert into public.game_runs (user_id, game, seed, status, score, max_tile, star
 -- corre en tu máquina. El secreto debe coincidir con PUSH_WEBHOOK_SECRET.
 select vault.create_secret('http://host.docker.internal:4321/api/push/dispatch', 'push_webhook_url');
 select vault.create_secret('local-dev-push-secret', 'push_webhook_secret');
+
+-- Avisos del panel de admin (brb-admin en local, puerto 4322): a dónde llama la base de datos y su secreto.
+select vault.create_secret('http://host.docker.internal:4322/api/avisos', 'admin_push_webhook_url');
+select vault.create_secret('local-dev-admin-push-secret', 'admin_push_webhook_secret');
