@@ -711,6 +711,11 @@ isOneToOne: false
 "admin_update_legal_translation":
 { Args: { "admin_id": string,"body": string,"lang": string,"reason"?: string,"slug": string,"title": string }; Returns: undefined
                            },
+"admin_user_streak_log":
+{ Args: { "days"?: number,"target_user": string }; Returns: {
+              "day": string,"kind": string
+            }[]
+                           },
 "admin_visits_by_country":
 { Args: { "days"?: number }; Returns: {
               "avg_seconds": number,"country": string,"pageviews": number,"signups": number,"visitors": number
