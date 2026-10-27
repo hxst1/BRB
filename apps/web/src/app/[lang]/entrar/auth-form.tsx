@@ -16,18 +16,17 @@ const inputClass =
 export function AuthFormSkeleton() {
   const m = useMessages();
   const t = m.auth;
-  const field = `${inputClass} h-[2.875rem]`;
   return (
     <div aria-hidden inert className="flex flex-col gap-4">
       <p className="display mb-2 text-4xl font-bold text-balance">{t.signin.title}</p>
-      <p className="flex flex-col gap-1.5 text-sm font-medium">
+      <div className="flex flex-col gap-1.5 text-sm font-medium">
         Email
-        <span className={field} />
-      </p>
-      <p className="flex flex-col gap-1.5 text-sm font-medium">
+        <input readOnly tabIndex={-1} className={inputClass} />
+      </div>
+      <div className="flex flex-col gap-1.5 text-sm font-medium">
         {m.account.password}
-        <span className={field} />
-      </p>
+        <PasswordInput readOnly tabIndex={-1} className={inputClass} />
+      </div>
       <p className="-mt-2 self-end text-sm text-muted">{t.forgot}</p>
       <p className="mt-2 rounded-xl bg-ink py-3 text-center font-semibold text-bg">{t.signin.submit}</p>
       <p className="text-center text-sm text-muted">

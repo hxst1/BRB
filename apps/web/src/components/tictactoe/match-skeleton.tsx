@@ -85,7 +85,12 @@ function Board({ game }: { game: TurnGame }) {
         </div>
       );
     case "rps":
-      return <ChoiceWheel variant="rps" me="x" picked={null} canChoose={false} onChoose={none} />;
+      // En gris: aún no se sabe de qué color juegas.
+      return (
+        <div className="grayscale">
+          <ChoiceWheel variant="rps" me="x" picked={null} canChoose={false} onChoose={none} />
+        </div>
+      );
     case "battleship":
       return (
         <div className="flex flex-col gap-2">
@@ -169,13 +174,11 @@ export function LiveMatchSkeleton({ game }: { game: "pong" | "tron" | "typing" }
             </div>
           ))}
         </div>
-        <div className="flex flex-col rounded-3xl bg-surface p-4 text-lg leading-relaxed shadow-soft sm:p-5 sm:text-xl">
-          <TextLine className="w-full" />
-          <TextLine className="w-full" />
-          <TextLine className="w-full" />
-          <TextLine className="w-1/2" />
+        {/* El texto no llega hasta que empieza la carrera: antes, la caja mide una línea. */}
+        <div className="rounded-3xl bg-surface p-4 text-lg leading-relaxed shadow-soft sm:p-5 sm:text-xl">
+          <TextLine className="mx-auto w-48 max-w-full" />
         </div>
-        <span className="block h-[5.5rem] rounded-2xl border-2 border-line bg-surface" />
+        <span className="block h-[5.25rem] rounded-2xl border-2 border-line bg-surface" />
         <span className="min-h-5" />
       </div>
     );
