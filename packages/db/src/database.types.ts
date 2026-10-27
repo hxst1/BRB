@@ -701,6 +701,11 @@ isOneToOne: false
               "runs": number,"xp": number
             }[]
                            },
+"admin_retention":
+{ Args: { "days"?: number }; Returns: {
+              "cohort": string,"d1": number,"played": number,"signups": number,"week1": number
+            }[]
+                           },
 "admin_save_news_post":
 { Args: { "admin_id": string,"body_en"?: string,"body_es": string,"cta_label_en"?: string,"cta_label_es"?: string,"cta_url"?: string,"kind": string,"pinned"?: boolean,"post_id": string,"published_at"?: string,"reason"?: string,"slug": string,"title_en"?: string,"title_es": string }; Returns: string
                            },
