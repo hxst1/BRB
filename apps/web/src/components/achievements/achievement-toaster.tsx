@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { sanitizeParts } from "@repo/avatars";
 import type { Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
@@ -18,6 +18,12 @@ import { rewardBackground } from "@/lib/theme";
 const SHOW_MS = 9000;
 
 /**
+ * Evento del navegador para enseñar un logro que esta misma página acaba de
+ * conseguir (detail: su id), por si llega antes de que el canal esté conectado.
+ */
+export const ACHIEVEMENT_EVENT = "achievement-unlocked";
+
+/**
  * Aviso de "logro desbloqueado", en cualquier pantalla: llega en directo al
  * crearse el logro en la base de datos. Si llegan varios, van de uno en uno.
  */
@@ -28,22 +34,33 @@ export function AchievementToaster({ viewerId, avatarSeed, avatarParts }: { view
   const [queue, setQueue] = useState<Achievement[]>([]);
   const [state, setState] = useState<"idle" | "saving" | "worn" | "error">("idle");
   const current = queue[0];
+  /** Los ya enseñados: el mismo logro puede llegar por el evento y por Realtime. */
+  const shown = useRef(new Set<string>());
 
   useEffect(() => {
+    const enqueue = (id: string) => {
+      const achievement = achievementById(id, locale);
+      if (!achievement || shown.current.has(id)) return;
+      shown.current.add(id);
+      setQueue((list) => [...list, achievement]);
+    };
+    const onEvent = (event: Event) => enqueue(String((event as CustomEvent<string>).detail));
+    window.addEventListener(ACHIEVEMENT_EVENT, onEvent);
     const supabase = createClient();
-    return subscribeWhenReady(supabase, () =>
+    const unsubscribe = subscribeWhenReady(supabase, () =>
       supabase
         .channel(channelName(`achievements:${viewerId}`))
         .on(
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "user_achievements", filter: `user_id=eq.${viewerId}` },
-          (payload) => {
-            const achievement = achievementById(String(payload.new.achievement), locale);
-            if (achievement) setQueue((list) => [...list, achievement]);
-          },
+          (payload) => enqueue(String(payload.new.achievement)),
         )
         .subscribe(),
     );
+    return () => {
+      window.removeEventListener(ACHIEVEMENT_EVENT, onEvent);
+      unsubscribe();
+    };
   }, [viewerId, locale]);
 
   useEffect(() => {

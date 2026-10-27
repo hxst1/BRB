@@ -358,6 +358,16 @@ const TOPS = {
       `<circle cx="48" cy="${b.top - 1}" r="1.8" fill="#ff6b6b"/><circle cx="53" cy="${b.top + 3}" r="1.8" fill="#ffd43b"/>` +
       `<circle cx="50" cy="${b.top - 13}" r="3.3" fill="#ff6b6b"/>`,
   },
+  // Gorro de lana naranja con el triángulo del voto: para quien llegó desde Product Hunt en su lanzamiento.
+  launch: {
+    layer: "front",
+    achievement: "product-hunt",
+    draw: (b) =>
+      `<circle cx="50" cy="${b.top - 12.5}" r="4" fill="#ffffff" stroke="#b8401f" stroke-width="2.2"/>` +
+      `<path d="M28 ${b.top + 8}a22 22 0 0 1 44 0z" fill="#ff6154" stroke="#b8401f" stroke-width="2.2" stroke-linejoin="round"/>` +
+      `<rect x="26" y="${b.top + 2}" width="48" height="10" rx="5" fill="#da552f" stroke="#b8401f" stroke-width="2.2"/>` +
+      `<path d="M50 ${b.top - 9}l6.5 9h-13z" fill="#ffffff" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>`,
+  },
 } satisfies Record<string, Top>;
 
 export type BodyId = keyof typeof BODIES;

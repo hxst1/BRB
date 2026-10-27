@@ -153,6 +153,11 @@ export const es = {
     solo: "En solitario",
     withFriends: "Contra tus amigos",
   },
+  productHunt: {
+    title: "¡Hola, gente de Product Hunt!",
+    body: "Crea tu cuenta gratis esta semana y tu monster se lleva el gorro exclusivo del lanzamiento.",
+    later: "Ahora no",
+  },
   ratingPrompt: {
     kicker: (games: number) => `Llevas ${games} partidas`,
     title: (app: string) => `¿Te está gustando ${app}?`,

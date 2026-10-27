@@ -149,6 +149,11 @@ export const en: Messages = {
     solo: "Solo",
     withFriends: "Against your friends",
   },
+  productHunt: {
+    title: "Hi, Product Hunt folks!",
+    body: "Create a free account this week and your monster gets the exclusive launch beanie.",
+    later: "Not now",
+  },
   ratingPrompt: {
     kicker: (games: number) => `You've played ${games} games`,
     title: (app: string) => `Enjoying ${app}?`,

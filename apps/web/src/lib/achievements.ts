@@ -13,6 +13,11 @@ export type Achievement = {
   icon: Picto;
   /** Ropa del monster (`palette`, `top`) o un color para toda la app (`tint`, ver lib/theme.ts). */
   reward: { slot: "palette" | "top" | "tint"; id: string; label: string };
+  /**
+   * Los de tiempo limitado: hasta cuándo se pueden conseguir (lo mismo que dice
+   * la base de datos). Pasada la fecha, solo los ve quien los tiene.
+   */
+  until?: string;
 };
 
 export const ACHIEVEMENTS: Achievement[] = [
@@ -128,7 +133,21 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "handshake",
     reward: { slot: "tint", id: "sky", label: "Tema cielo" },
   },
+  {
+    id: "product-hunt",
+    name: "Desde Product Hunt",
+    description: "Llega desde Product Hunt durante su lanzamiento, con tu cuenta (solo hasta el 4 de noviembre).",
+    icon: "rocket",
+    reward: { slot: "top", id: "launch", label: "Gorro de Product Hunt" },
+    // Igual que private.launch_reward_open.
+    until: "2026-11-05T00:00:00+01:00",
+  },
 ];
+
+/** ¿Se puede ver este logro? Los de tiempo limitado, pasada su fecha, solo si ya lo tienes. */
+export function achievementVisible(achievement: Pick<Achievement, "until">, unlocked: boolean, now = Date.now()): boolean {
+  return unlocked || !achievement.until || now < new Date(achievement.until).getTime();
+}
 
 /** En inglés: nombre, descripción y nombre del premio de cada logro. */
 const EN: Record<string, { name: string; description: string; reward: string }> = {
@@ -148,6 +167,11 @@ const EN: Record<string, { name: string; description: string; reward: string }> 
   "first-steps": { name: "First steps", description: "Customise your monster, add a friend and play the daily challenge.", reward: "Mint theme" },
   explorer: { name: "Explorer", description: "Play 6 different solo games (Wordle counts once you finish it).", reward: "Tangerine theme" },
   "matches-10": { name: "Friendly rivalry", description: "Finish 10 games against friends (without resigning).", reward: "Sky theme" },
+  "product-hunt": {
+    name: "From Product Hunt",
+    description: "Come over from Product Hunt during its launch, signed in (only until 4 November).",
+    reward: "Product Hunt beanie",
+  },
 };
 
 /** Los logros con sus textos en un idioma. */

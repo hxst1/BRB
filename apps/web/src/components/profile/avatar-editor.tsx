@@ -7,7 +7,7 @@ import { isSupporterPart, PART_OPTIONS, partAchievement, resolveMonster, sanitiz
 import { randomSeed } from "@repo/games";
 import type { Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
-import { achievementById } from "@/lib/achievements";
+import { achievementById, achievementVisible } from "@/lib/achievements";
 import { useLocale, useMessages } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 import { InlinePicto } from "@/components/picto";
@@ -139,6 +139,9 @@ export function AvatarEditor({
             {(PART_OPTIONS[activeSlot] as string[]).map((id) => {
               const lockable = activeSlot === "palette" || activeSlot === "top";
               const needed = lockable ? partAchievement(activeSlot, id) : null;
+              // La ropa de un logro que ya no se puede conseguir solo sale a quien lo tiene.
+              const limited = needed ? achievementById(needed, locale) : undefined;
+              if (needed && limited && !achievementVisible(limited, unlocked.includes(needed))) return null;
               const supporterOnly = lockable && isSupporterPart(activeSlot, id) && !isSupporter;
               const achievementLocked = needed !== null && !unlocked.includes(needed);
               const locked = supporterOnly || achievementLocked;

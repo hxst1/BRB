@@ -1,7 +1,7 @@
 import type { Json } from "@repo/db";
 import { sanitizeParts } from "@repo/avatars";
 import { Avatar } from "@repo/ui/avatar";
-import { achievementsFor, wearing } from "@/lib/achievements";
+import { achievementVisible, achievementsFor, wearing } from "@/lib/achievements";
 import { rewardBackground } from "@/lib/theme";
 import { getLocale, getMessages } from "@/lib/i18n/server";
 import { InlinePicto } from "@/components/picto";
@@ -17,8 +17,8 @@ export async function Achievements({ statuses, avatarSeed, avatarParts }: { stat
   const locale = await getLocale();
   const m = await getMessages();
   const dateFormat = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" });
-  const catalog = achievementsFor(locale);
   const byId = new Map(statuses.map((status) => [status.achievement, status]));
+  const catalog = achievementsFor(locale).filter((achievement) => achievementVisible(achievement, Boolean(byId.get(achievement.id)?.unlocked_at)));
   const items = catalog.map((achievement) => ({
     achievement,
     status: byId.get(achievement.id) ?? { achievement: achievement.id, progress: 0, goal: 1, unlocked_at: null },

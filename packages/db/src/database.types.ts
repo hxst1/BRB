@@ -612,6 +612,11 @@ isOneToOne: false
 "admin_invalidate_run":
 { Args: { "admin_id": string,"reason": string,"run_id": string }; Returns: number
                            },
+"admin_launch_rewards":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "claims": number,"first_claim": string,"last_claim": string,"new_accounts": number,"source": string
+            }[]
+                           },
 "admin_list_error_groups":
 { Args: { "max_rows"?: number,"status"?: string }; Returns: {
               "count": number,"fingerprint": string,"first_seen": string,"last_seen": string,"last_version": string,"message": string,"paths": (string)[],"source": string,"status": string,"user_agents": (string)[],"users": number
@@ -691,6 +696,9 @@ isOneToOne: false
                            },
 "cancel_match":
 { Args: { "match_id": string }; Returns: undefined
+                           },
+"claim_launch_reward":
+{ Args: { "source": string }; Returns: boolean
                            },
 "create_challenge":
 { Args: { "friend": string,"run_id": string }; Returns: string

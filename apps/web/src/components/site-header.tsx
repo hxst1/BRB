@@ -11,6 +11,7 @@ import { LiveRefresh } from "@/components/live-refresh";
 import { LocaleSync } from "@/components/locale-sync";
 import { PresenceReporter } from "@/components/presence-reporter";
 import { VisitTracker } from "@/components/visit-tracker";
+import { ProductHuntWelcome } from "@/components/product-hunt-welcome";
 import { PersonalIcons } from "@/components/pwa/personal-icons";
 import { TintGuard } from "@/components/pwa/tint-picker";
 import { SupportButton } from "@/components/support/support-button";
@@ -66,6 +67,7 @@ async function Navigation() {
         </Link>
         <GuestBar />
         <VisitTracker signedIn={false} />
+        <ProductHuntWelcome signedIn={false} />
       </>
     );
   }
@@ -74,6 +76,7 @@ async function Navigation() {
     <>
       <LiveRefresh viewerId={viewer.id} />
       <VisitTracker signedIn />
+      <ProductHuntWelcome signedIn />
       <LocaleSync userId={viewer.id} saved={viewer.locale} />
       <PresenceReporter />
       <TintGuard isSupporter={viewer.supporter_tier !== null} />
