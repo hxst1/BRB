@@ -748,7 +748,7 @@ isOneToOne: false
             }[]
                            },
 "admin_retention":
-{ Args: { "days"?: number }; Returns: {
+{ Args: { "days"?: number,"source"?: string }; Returns: {
               "cohort": string,"d1": number,"played": number,"signups": number,"week1": number
             }[]
                            },
