@@ -1,5 +1,5 @@
 begin;
-select plan(19);
+select plan(27);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-d0000000000a', 'a@dc.local', '{"username": "dc_ana"}'),
@@ -81,6 +81,34 @@ select is((select streak_days from public.get_my_streak()), 0, 'si no llegan, la
 select pg_temp.logout();
 select private.touch_streak('00000000-0000-0000-0000-d0000000000a');
 select is((select streak_days from public.profiles where id = '00000000-0000-0000-0000-d0000000000a'), 1, 'y al jugar empieza otra');
+
+-- Las versiones anteriores de la app: sin juego, el arcade.
+select pg_temp.login('00000000-0000-0000-0000-d0000000000b');
+select is((select game from public.start_daily_run()), (select value from t where name = 'arcade'), 'start_daily_run() sin juego sigue dando el arcade');
+select lives_ok($$ select * from public.get_daily_leaderboard('global', 50) $$, 'el ranking con dos argumentos sigue funcionando');
+select is((select game from public.get_my_daily()), (select value from t where name = 'arcade'), 'y el resumen de antes, con el arcade');
+select pg_temp.logout();
+
+set local role anon;
+select is((select count(*)::integer from public.get_daily_challenges()), 3, 'sin cuenta se ve qué toca hoy');
+select throws_ok($$ select * from public.get_my_streak() $$, '42501', null, 'pero no la racha');
+select throws_ok($$ select * from private.streak_log $$, '42501', null, 'ni los días jugados');
+reset role;
+
+-- Duelos que no cuentan: rendirse, otro juego, y el segundo del día.
+update public.profiles set xp = 0 where id = '00000000-0000-0000-0000-d0000000000a';
+delete from private.daily_duels where user_id = '00000000-0000-0000-0000-d0000000000a';
+insert into public.matches (game, player_x, player_o, created_by, status, end_reason, winner)
+values ((select value from t where name = 'duel'), '00000000-0000-0000-0000-d0000000000a', '00000000-0000-0000-0000-d0000000000b', '00000000-0000-0000-0000-d0000000000a', 'active', null, null);
+update public.matches set status = 'finished', end_reason = 'resign', winner = 'o'
+where player_x = '00000000-0000-0000-0000-d0000000000a' and status = 'active';
+select is((select xp from public.profiles where id = '00000000-0000-0000-0000-d0000000000a'), 0, 'rendirse no completa el duelo');
+
+-- Como mucho 2 protectores.
+update public.profiles set streak_days = 13, streak_last_day = private.game_day() - 1, streak_freezes = 2
+where id = '00000000-0000-0000-0000-d0000000000a';
+select private.touch_streak('00000000-0000-0000-0000-d0000000000a');
+select is((select streak_freezes from public.profiles where id = '00000000-0000-0000-0000-d0000000000a'), 2, 'a los 14 días no pasa de 2 protectores');
 
 select * from finish();
 rollback;

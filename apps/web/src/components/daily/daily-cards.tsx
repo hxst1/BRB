@@ -23,8 +23,8 @@ function guideId(slot: DailySlot, game: string): string {
 function href(card: DailyCardData): string {
   if (card.slot === "wordle") return "/wordle";
   if (card.slot === "duel") return matchGame(card.game).path;
-  // "Jugar" ya es pedir empezar; ver el resultado, no.
-  return card.status === "available" ? `/reto-diario?reto=${card.slot}&empezar=1#jugar` : `/reto-diario?reto=${card.slot}#jugar`;
+  // Lleva al reto, no lo empieza: el intento se gasta con "Empezar el reto" (toda la tarjeta es el enlace).
+  return `/reto-diario?reto=${card.slot}#jugar`;
 }
 
 /**

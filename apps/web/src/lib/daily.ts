@@ -26,6 +26,11 @@ export const DAILY_POOLS = {
   duel: ["connect4", "reversi", "dots", "tictactoe", "typing", "battleship", "rps", "pong", "tron"],
 } as const;
 
+/** Hoy en España (AAAA-MM-DD), el día de juego del servidor (private.game_day). */
+export function gameDay(at = Date.now()): string {
+  return new Date(at).toLocaleDateString("sv-SE", { timeZone: "Europe/Madrid" });
+}
+
 /** Día 0 de la rotación (un lunes): como private.daily_rotation. */
 const ROTATION_START = Date.UTC(2026, 0, 5);
 

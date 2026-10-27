@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { DAILY_GAMES, DAILY_POOLS, dailyRotation } from "./daily";
+import { DAILY_GAMES, DAILY_POOLS, dailyRotation, gameDay } from "./daily";
 
 describe("retos diarios", () => {
   const dir = new URL("../../../../supabase/migrations/", import.meta.url);
@@ -24,5 +24,13 @@ describe("retos diarios", () => {
 
   it("todos los juegos en solitario que pueden tocar tienen su ficha", () => {
     expect(Object.keys(DAILY_GAMES).sort()).toEqual([...DAILY_POOLS.puzzle, ...DAILY_POOLS.arcade].sort());
+  });
+});
+
+describe("día de juego", () => {
+  it("es el día en España, no en UTC", () => {
+    // 23:30 UTC del 27 de octubre (horario de invierno): en España ya es día 28.
+    expect(gameDay(Date.UTC(2026, 9, 27, 23, 30))).toBe("2026-10-28");
+    expect(gameDay(Date.UTC(2026, 9, 27, 22, 30))).toBe("2026-10-27");
   });
 });

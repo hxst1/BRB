@@ -7,7 +7,7 @@ import { DailyGame, DailyLeaderboard } from "@/components/daily/daily-game";
 import { Game2048Screen } from "@/components/game2048/screen";
 import { HowToPlayButton } from "@/components/how-to-play";
 import { StreakHero } from "@/components/streak/streak-hero";
-import { DAILY_GAMES, dailyGameName, formatDailyScore, type DailySlot } from "@/lib/daily";
+import { DAILY_GAMES, dailyGameName, formatDailyScore, gameDay, type DailySlot } from "@/lib/daily";
 import type { Messages } from "@/lib/i18n";
 import { getLocale, getMessages } from "@/lib/i18n/server";
 import { alternatesFor } from "@/lib/seo";
@@ -77,7 +77,7 @@ async function DailyForViewer({ searchParams }: { searchParams: PageProps<"/[lan
     playable.find((row) => row.slot === reto) ??
     playable.find((row) => row.status === "available" || row.status === "playing") ??
     playable[0];
-  const day = recentDays(streak?.recent).at(-1)?.day ?? "";
+  const day = recentDays(streak?.recent).at(-1)?.day ?? gameDay();
 
   return (
     <>
