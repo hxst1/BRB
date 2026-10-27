@@ -811,6 +811,17 @@ html[data-splash="out"] #splash {
  * la página entra por el lado de su pestaña; si no, un fundido corto.
  * ------------------------------------------------------------------------- */
 
+/* Si un navegador no aplica las clases de abajo (nav-forward…), la página no
+ * hace el fundido cruzado de serie (las dos a la vez, una encima de otra): la
+ * vieja se va y luego entra la nueva. Las reglas con nombre o clase mandan. */
+::view-transition-old(*) {
+  animation: 100ms ease-in both page-fade-in reverse;
+}
+
+::view-transition-new(*) {
+  animation: 200ms ease-out 100ms both page-fade-in;
+}
+
 /* La página entera no hace el fundido de serie: solo se mueve el contenido. */
 ::view-transition-old(root),
 ::view-transition-new(root) {
@@ -825,7 +836,7 @@ html[data-splash="out"] #splash {
 ::view-transition-old(.nav-forward) {
   --slide-offset: -48px;
   animation:
-    160ms ease-in both page-fade-in reverse,
+    120ms ease-in both page-fade-in reverse,
     360ms cubic-bezier(0.4, 0, 0.2, 1) both page-slide reverse;
 }
 
@@ -839,7 +850,7 @@ html[data-splash="out"] #splash {
 ::view-transition-old(.nav-back) {
   --slide-offset: 48px;
   animation:
-    160ms ease-in both page-fade-in reverse,
+    120ms ease-in both page-fade-in reverse,
     360ms cubic-bezier(0.4, 0, 0.2, 1) both page-slide reverse;
 }
 
@@ -851,11 +862,11 @@ html[data-splash="out"] #splash {
 }
 
 ::view-transition-old(.page-fade) {
-  animation: 120ms ease-in both page-fade-in reverse;
+  animation: 100ms ease-in both page-fade-in reverse;
 }
 
 ::view-transition-new(.page-fade) {
-  animation: 200ms ease-out 60ms both page-fade-in;
+  animation: 200ms ease-out 100ms both page-fade-in;
 }
 
 /* La cabecera y la barra de pestañas se quedan quietas encima. Solo durante la
@@ -885,9 +896,13 @@ html:active-view-transition .tab-bar {
   animation: none;
 }
 
+/* Con los dos extremos: sin el "to", Safari puede no animar las capas de la transición. */
 @keyframes page-fade-in {
   from {
     opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
