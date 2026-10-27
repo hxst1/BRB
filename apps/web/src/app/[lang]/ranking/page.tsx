@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { RankingBoard } from "@/components/ranking/ranking-board";
+import { RankingSkeleton } from "@/components/ranking/ranking-skeleton";
 import { getViewer } from "@/lib/session";
 import { getLocale, getMessages } from "@/lib/i18n/server";
 import { alternatesFor } from "@/lib/seo";
@@ -19,7 +20,8 @@ export default async function RankingPage() {
   return (
     <main className="mx-auto w-full max-w-2xl px-4 pt-4 pb-16 sm:px-6">
       <h1 className="display mb-6 text-5xl font-bold sm:text-6xl">{m.ranking.title}</h1>
-      <Suspense fallback={<div className="h-64 animate-pulse rounded-3xl bg-line/40" />}>
+      {/* Sin fundido: el tablero llega con sus propios esqueletos, iguales que este. */}
+      <Suspense fallback={<RankingSkeleton />}>
         <BoardForViewer />
       </Suspense>
     </main>

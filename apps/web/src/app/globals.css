@@ -5,6 +5,10 @@
 
 /* Lo propio de la web (el tema común está en packages/ui/src/theme.css). */
 
+/* Esqueletos con y sin sesión: data-session en <html> (lib/session-hint.ts). */
+@custom-variant signed-in (&:where([data-session] *));
+@custom-variant signed-out (&:where(:root:not([data-session]) *));
+
 body {
   /* En el móvil, sitio para la barra de pestañas flotante. */
   &:has(.tab-bar) {
@@ -1428,6 +1432,44 @@ html.swipe-lock body {
   .now-enter,
   .now-enter > *,
   .now-pop {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Esqueletos de carga (components/skeleton.tsx): bloques con la forma de lo
+ * que va a llegar. Quietos al principio (si llega enseguida, ni se nota) y
+ * luego laten despacio. Lo que llega en su lugar entra con un fundido corto,
+ * sin esperar a nada.
+ * ------------------------------------------------------------------------- */
+
+.skeleton {
+  background: color-mix(in srgb, var(--line) 85%, transparent);
+  animation: skeleton-pulse 1.6s ease-in-out 0.6s infinite;
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* .reveal (con display: contents) funde a sus hijos; .reveal-in, al propio elemento. */
+.reveal > *,
+.reveal-in {
+  animation: reveal 220ms ease-out;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .reveal > *,
+  .reveal-in {
     animation: none;
   }
 }

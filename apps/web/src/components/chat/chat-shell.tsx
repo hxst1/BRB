@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { Json } from "@repo/db";
 import { createClient } from "@/lib/supabase/client";
 import { Conversation } from "./conversation";
+import { ConversationSkeleton } from "./chat-skeleton";
 import { ConversationList, type ConversationSummary } from "./conversation-list";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import { useMessages } from "@/lib/i18n/client";
@@ -64,7 +65,9 @@ export function ChatShell({
       <div className={`min-h-0 ${friendId ? "" : "hidden lg:block"}`}>
         {friendId === null ? (
           <p className="grid h-full place-items-center text-muted">{m.chat.pick}</p>
-        ) : items === null ? null : friend ? (
+        ) : items === null ? (
+          <ConversationSkeleton />
+        ) : friend ? (
           <Conversation
             key={friend.friend_id}
             viewerId={viewerId}

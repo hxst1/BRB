@@ -15,6 +15,7 @@ import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import type { Messages } from "@/lib/i18n";
 import { useMessages } from "@/lib/i18n/client";
 import { MatchNotFound } from "@/components/match-not-found";
+import { MatchSkeleton } from "@/components/tictactoe/match-skeleton";
 import { PIECE_MARK_COLORS } from "@/lib/piece-colors";
 import { ChoiceWheel, choiceSrc } from "./choice-wheel";
 
@@ -82,7 +83,7 @@ export function RpsMatchView({ matchId, viewerId }: { matchId: string; viewerId:
     [matchId, m],
   );
 
-  if (match === undefined) return <div className="h-80 w-full max-w-md animate-pulse rounded-3xl bg-line/40" />;
+  if (match === undefined) return <MatchSkeleton game="rps" />;
   if (match === null) {
     return <MatchNotFound path="/piedra-papel-tijera" />;
   }
@@ -138,7 +139,7 @@ export function RpsMatchView({ matchId, viewerId }: { matchId: string; viewerId:
   );
 
   return (
-    <div className="flex w-full max-w-md flex-col gap-6" style={PIECE_MARK_COLORS}>
+    <div className="reveal-in flex w-full max-w-md flex-col gap-6" style={PIECE_MARK_COLORS}>
       <MatchSounds progress={match.moves.length} myTurn={match.status === "active"} result={resultFor(match, me)} />
       <p className="text-center text-sm text-muted">{matchGame(match.game).name}</p>
 

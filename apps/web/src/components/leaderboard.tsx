@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { LeaderboardEntry } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
+import { Bone, SessionHint, TextLine, ToggleSkeleton } from "@/components/skeleton";
 import { useMessages } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 
@@ -79,11 +80,10 @@ export function Leaderboard({
       )}
 
       <ol className="flex flex-col">
-        {rows === null &&
-          Array.from({ length: 5 }, (_, i) => <li key={i} className="h-12 animate-pulse border-b border-line" />)}
+        {rows === null && <LeaderboardRowsSkeleton />}
 
         {rows?.length === 0 && (
-          <li className="py-6 text-sm text-muted">
+          <li className="reveal-in py-6 text-sm text-muted">
             {scope === "friends" ? m.ranking.emptyFriends : daily ? m.ranking.emptyDaily : m.ranking.empty}
           </li>
         )}
@@ -93,7 +93,7 @@ export function Leaderboard({
           return (
             <li
               key={row.user_id}
-              className={`flex items-center gap-3 border-b border-line py-2.5 ${isViewer ? "font-semibold" : ""}`}
+              className={`reveal-in flex items-center gap-3 border-b border-line py-2.5 ${isViewer ? "font-semibold" : ""}`}
             >
               <span className="tabular w-6 text-right text-sm text-muted">{row.rank}</span>
               <Avatar seed={row.avatar_seed} parts={row.avatar_parts} size={30} />
@@ -108,6 +108,39 @@ export function Leaderboard({
       </ol>
     </section>
   );
+}
+
+/**
+ * El ranking mientras carga (en el esqueleto de cada juego): el título, los
+ * selectores y unas filas. `daily`: el del reto de hoy, sin selector de periodo.
+ */
+export function LeaderboardSkeleton({ daily = false }: { daily?: boolean }) {
+  const m = useMessages();
+  return (
+    <div aria-hidden className="flex w-full max-w-[30rem] flex-col gap-4 lg:max-w-none">
+      <SessionHint />
+      <div className="flex items-center justify-between gap-3">
+        <p className="display text-3xl font-bold">{daily ? m.ranking.today : m.ranking.title}</p>
+        {!daily && <ToggleSkeleton item="px-3 py-1 text-sm" options={[m.ranking.allTime, m.ranking.week]} />}
+      </div>
+      <ToggleSkeleton item="px-3 py-1 text-sm" className="inline-flex self-start signed-out:hidden" options={[m.ranking.everyone, m.ranking.friends]} />
+      <ol className="flex flex-col">
+        <LeaderboardRowsSkeleton />
+      </ol>
+    </div>
+  );
+}
+
+/** Filas del ranking en gris, del alto de las de verdad. */
+function LeaderboardRowsSkeleton() {
+  return Array.from({ length: 5 }, (_, i) => (
+    <li key={i} aria-hidden className="flex items-center gap-3 border-b border-line py-2.5">
+      <TextLine className="w-6 pl-2 text-sm" />
+      <Bone className="size-[30px] shrink-0 rounded-full" />
+      <TextLine className="w-28 min-w-0 flex-1" />
+      <TextLine className="w-14" />
+    </li>
+  ));
 }
 
 function Toggle<T extends string>({

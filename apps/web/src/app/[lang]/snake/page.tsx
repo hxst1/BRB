@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { SnakeSkeleton, SoloScreenSkeleton } from "@/components/games/skeletons";
 import { SnakeScreen } from "@/components/snake/screen";
 import { getViewerId } from "@/lib/session";
 import { GameGuideSection } from "@/components/seo/game-guide";
@@ -22,7 +23,13 @@ export default async function SnakePage() {
         </div>
         <p className="mb-8 text-muted">{m.gamePages["snake"]}</p>
       </div>
-      <Suspense fallback={<div className="mx-auto aspect-square max-w-[30rem] animate-pulse rounded-[22px] bg-line/40 lg:mx-0" />}>
+      <Suspense
+        fallback={
+          <SoloScreenSkeleton picker={null}>
+            <SnakeSkeleton />
+          </SoloScreenSkeleton>
+        }
+      >
         <SnakeForViewer />
       </Suspense>
       <GameGuideSection id="snake" />

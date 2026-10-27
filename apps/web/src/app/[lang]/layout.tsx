@@ -7,6 +7,7 @@ import { InlineScript } from "@/components/inline-script";
 import { SiteFooter } from "@/components/site-footer";
 import { THEME_SCRIPT } from "@/lib/theme";
 import { IOS_SCREENS, SPLASH_SCRIPT, splashFile } from "@/lib/splash";
+import { SESSION_HINT_SCRIPT } from "@/lib/session-hint";
 import { Splash } from "@/components/pwa/splash";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { ServiceWorker } from "@/components/pwa/service-worker";
@@ -91,6 +92,7 @@ export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
       <head>
         <InlineScript html={THEME_SCRIPT} />
         <InlineScript html={SPLASH_SCRIPT} />
+        <InlineScript html={SESSION_HINT_SCRIPT} />
       </head>
       <body className="flex min-h-full flex-col">
         <Splash />

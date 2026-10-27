@@ -35,7 +35,7 @@ export function ChallengesList({ refreshKey }: { refreshKey: number }) {
   if (!rows || rows.data.length === 0) return null;
 
   return (
-    <section aria-labelledby="challenges-title" className="flex w-full max-w-[30rem] flex-col gap-3 lg:max-w-none">
+    <section aria-labelledby="challenges-title" className="reveal-in flex w-full max-w-[30rem] flex-col gap-3 lg:max-w-none">
       <h2 id="challenges-title" className="display text-3xl font-bold">
         {m.challenge2048.title}
       </h2>

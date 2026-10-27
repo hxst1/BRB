@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { FriendCode } from "@/components/profile/friend-code";
 import { Friends } from "@/components/profile/friends";
+import { FriendsPageSkeleton } from "@/components/profile/friends-skeleton";
 import { getViewerId } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { PRIVATE_PAGE } from "@/lib/seo";
@@ -18,7 +19,7 @@ export default async function FriendsPage({ searchParams }: PageProps<"/[lang]/a
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pt-4 pb-16 sm:px-6">
       <h1 className="display mb-8 text-5xl font-bold sm:text-6xl">{m.nav.friends}</h1>
-      <Suspense fallback={<div className="h-48 max-w-md animate-pulse rounded-3xl bg-line/40" />}>
+      <Suspense fallback={<FriendsPageSkeleton />}>
         <FriendsForViewer searchParams={searchParams} />
       </Suspense>
     </main>

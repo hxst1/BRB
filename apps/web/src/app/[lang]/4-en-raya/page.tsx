@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { MatchListSkeleton } from "@/components/tictactoe/match-list-skeleton";
 import { MatchList } from "@/components/tictactoe/match-list";
 import { getViewer } from "@/lib/session";
 import { GameGuideSection } from "@/components/seo/game-guide";
@@ -21,7 +22,7 @@ export default async function ConnectFourPage() {
         <HowToPlayButton game="connect4" name={m.gameCards["connect4"].title} />
       </div>
       <p className="mb-8 text-muted">{m.gamePages["connect4"]}</p>
-      <Suspense fallback={<div className="h-40 max-w-xl animate-pulse rounded-3xl bg-line/40" />}>
+      <Suspense fallback={<MatchListSkeleton />}>
         <ListForViewer />
       </Suspense>
       <GameGuideSection id="connect4" />

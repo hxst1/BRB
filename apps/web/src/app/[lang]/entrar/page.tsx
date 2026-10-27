@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { INVITE_COOKIE } from "@/lib/invite";
 import { safeNext } from "@/lib/safe-next";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { AuthForm } from "./auth-form";
+import { AuthForm, AuthFormSkeleton } from "./auth-form";
 import { PRIVATE_PAGE } from "@/lib/seo";
 import { getMessages } from "@/lib/i18n/server";
 import { InlinePicto } from "@/components/picto";
@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function SignInPage({ searchParams }: PageProps<"/[lang]/entrar">) {
   return (
     <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-4 pb-24">
-      <Suspense>
+      <Suspense fallback={<AuthFormSkeleton />}>
         <AuthFormForRequest searchParams={searchParams} />
       </Suspense>
     </main>

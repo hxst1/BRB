@@ -25,6 +25,7 @@ import { createClient } from "@/lib/supabase/client";
 import { STICKER_LIST, stickerFromEmoji } from "@/lib/stickers";
 import { ChallengeEmbed } from "./embed";
 import { StickerImage } from "./sticker";
+import { MessagesSkeleton } from "./chat-skeleton";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import { useLocale, useMessages } from "@/lib/i18n/client";
 import type { Messages } from "@/lib/i18n";
@@ -365,7 +366,7 @@ export function Conversation({
             {m.chat.loadOlder}
           </button>
         )}
-        {messages === null && <div className="m-auto h-6 w-32 animate-pulse rounded-full bg-line/60" />}
+        {messages === null && <MessagesSkeleton />}
         {messages !== null && items.length === 0 && (
           <p className="m-auto max-w-xs text-center text-sm text-muted">
             {m.chat.empty}
@@ -610,7 +611,8 @@ function useMobileFullscreen(): { active: boolean; keyboard: boolean; style?: CS
     top: 0,
   });
 
-  useEffect(() => {
+  // Antes de pintar: si no, la conversación se ve un momento dentro de la página y luego salta a pantalla completa.
+  useLayoutEffect(() => {
     const query = window.matchMedia("(max-width: 1023px)");
     const viewport = window.visualViewport;
     const root = document.documentElement;

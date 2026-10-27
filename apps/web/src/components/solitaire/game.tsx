@@ -26,6 +26,7 @@ import { createClient } from "@/lib/supabase/client";
 import { GuestNotice } from "@/components/guest-notice";
 import { NO_PAUSE, PauseButton, PauseCover, endPause, pauseFromRun, playedMs, reportPause, startPause, useAutoPause, type Pause } from "@/components/pause";
 import { ShareStory } from "@/components/share-story";
+import { SolitaireSkeleton } from "@/components/games/skeletons";
 import { useMessages } from "@/lib/i18n/client";
 import { playSound } from "@/lib/sound";
 import { CardFace, Suit } from "./card";
@@ -402,7 +403,7 @@ export function SolitaireGame({ viewerId, daily = null, onSaved }: { viewerId: s
     if (to && to !== drag.pile) play({ from: drag.pile, to, count: drag.count });
   }
 
-  if (!game || !state) return <div className="aspect-[4/5] w-full max-w-[30rem] animate-pulse rounded-[18px] bg-line/40" />;
+  if (!game || !state) return <SolitaireSkeleton signedIn={signedIn} />;
 
   const elapsed = playedMs(game.startedAt, paused ? game.pause!.since! : now, game.pause ?? NO_PAUSE);
   /** Cartas que se arrastran: la cogida y las que lleva encima. */
@@ -419,7 +420,7 @@ export function SolitaireGame({ viewerId, daily = null, onSaved }: { viewerId: s
   const cardName = (card: number) => t.cardAria(t.ranks[rank(card) - 1]!, t.suits[suit(card)]!);
 
   return (
-    <section className="flex w-full max-w-[30rem] flex-col gap-4">
+    <section className="reveal-in flex w-full max-w-[30rem] flex-col gap-4">
       <div className="flex items-end justify-between gap-4">
         <div className="flex items-end gap-5">
           <div className="flex flex-col">

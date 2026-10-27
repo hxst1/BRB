@@ -8,6 +8,7 @@ import { GuestNotice } from "@/components/guest-notice";
 import { useSwipeLock } from "@/components/swipe-lock";
 import { playSound } from "@/lib/sound";
 import { ShareStory } from "@/components/share-story";
+import { SnakeBoardSkeleton } from "@/components/games/skeletons";
 import { useMessages } from "@/lib/i18n/client";
 
 const KEYS: Record<string, Direction> = {
@@ -287,7 +288,7 @@ export function SnakeGame({
           )}
         </div>
       ) : (
-        <div className="aspect-square w-full animate-pulse rounded-[22px]" style={{ background: "var(--board)" }} />
+        <SnakeBoardSkeleton />
       )}
 
       {/* Cruceta en pantallas táctiles, para quien prefiera botones a deslizar. */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { SoundSetting } from "@/components/sound-toggle";
+import { Bone } from "@/components/skeleton";
 import { useSyncExternalStore } from "react";
 import { brand } from "@repo/brand";
 import { showInstallGuide } from "./install-prompt";
@@ -33,7 +34,7 @@ export function AppSettings({ isSupporter = false, unlocked = [] }: { isSupporte
         <p className="text-sm font-medium">{t.notifications}</p>
         <p className="text-sm text-muted">{t.notificationsHint}</p>
         <div className="mt-2 flex flex-wrap items-center gap-3">
-          {push === "loading" && <span className="h-9 w-40 animate-pulse rounded-full bg-line/60" />}
+          {push === "loading" && <Bone className="h-9 w-40 rounded-full" />}
           {push === "off" && (
             <button type="button" disabled={busy} onClick={() => void enable()} className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-bg disabled:opacity-50">
               {t.enable}

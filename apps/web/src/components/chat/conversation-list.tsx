@@ -5,6 +5,7 @@ import type { Functions } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { useLocale, useMessages } from "@/lib/i18n/client";
 import { stickerFromEmoji } from "@/lib/stickers";
+import { ConversationListSkeleton } from "./chat-skeleton";
 
 export type ConversationSummary = Functions<"get_conversations">["Returns"][number];
 
@@ -12,7 +13,7 @@ export function ConversationList({ items, activeId }: { items: ConversationSumma
   const m = useMessages();
   const locale = useLocale();
   if (items === null) {
-    return <div className="h-40 animate-pulse rounded-3xl bg-line/40" />;
+    return <ConversationListSkeleton />;
   }
   // Un sticker se guarda como su emoji; en la lista se nombra en vez de enseñar el emoji.
   const preview = (body: string) => {
@@ -21,7 +22,7 @@ export function ConversationList({ items, activeId }: { items: ConversationSumma
   };
   if (items.length === 0) {
     return (
-      <p className="text-sm text-muted">
+      <p className="reveal-in text-sm text-muted">
         {m.chat.needFriends}{" "}
         <Link href="/amigos" className="font-medium text-ink underline underline-offset-4">
           {m.matchList.addSomeone}
@@ -32,7 +33,7 @@ export function ConversationList({ items, activeId }: { items: ConversationSumma
   }
 
   return (
-    <ul className="flex flex-col">
+    <ul className="reveal-in flex flex-col">
       {items.map((item) => {
         const active = item.friend_id === activeId;
         const unread = item.unread > 0;

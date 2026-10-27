@@ -13,6 +13,8 @@ import type { Viewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { LatestNews } from "@/components/news/latest-news";
 import { FirstSteps, type FirstStep } from "./first-steps";
+import { Loading } from "@/components/skeleton";
+import { QuickGamesSkeleton } from "./dashboard-skeleton";
 import { QuickGames } from "./quick-games";
 import { NowSection, type NowItem, type WaitingItem } from "./now";
 
@@ -162,9 +164,9 @@ export async function Dashboard({ viewer }: { viewer: Viewer }) {
         </div>
       </section>
 
-      <Suspense fallback={<div className="mt-8 h-28" />}>
+      <Loading skeleton={<QuickGamesSkeleton />}>
         <QuickGames viewerId={viewer.id} />
-      </Suspense>
+      </Loading>
 
       <Suspense fallback={null}>
         <div className="mt-6 empty:hidden">

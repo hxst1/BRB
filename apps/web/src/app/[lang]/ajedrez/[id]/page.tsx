@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { MatchSkeleton } from "@/components/tictactoe/match-skeleton";
 import { ChessMatchView } from "@/components/chess/match-view";
 import { getMessages } from "@/lib/i18n/server";
 import { getViewer } from "@/lib/session";
@@ -14,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function ChessMatchPage({ params }: PageProps<"/[lang]/ajedrez/[id]">) {
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col items-center px-4 pt-4 pb-16 sm:px-6">
-      <Suspense fallback={<div className="aspect-square w-full max-w-lg animate-pulse rounded-[18px] bg-line/40" />}>
+      <Suspense fallback={<MatchSkeleton game="chess" />}>
         <MatchForViewer params={params} />
       </Suspense>
     </main>

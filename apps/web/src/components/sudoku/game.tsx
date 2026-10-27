@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { GuestNotice } from "@/components/guest-notice";
 import { NO_PAUSE, PauseButton, PauseCover, endPause, pauseFromRun, playedMs, reportPause, startPause, useAutoPause, type Pause } from "@/components/pause";
 import { ShareStory } from "@/components/share-story";
+import { SudokuSkeleton } from "@/components/games/skeletons";
 import { useMessages } from "@/lib/i18n/client";
 import { playSound } from "@/lib/sound";
 
@@ -253,7 +254,7 @@ export function SudokuGame({
     return () => window.removeEventListener("keydown", onKey);
   }, [input, undo]);
 
-  if (!game || !puzzle) return <div className="aspect-square w-full max-w-[30rem] animate-pulse rounded-[18px] bg-line/40" />;
+  if (!game || !puzzle) return <SudokuSkeleton signedIn={signedIn} />;
 
   // Se resalta el número de la casilla elegida o, si está vacía, el último pulsado en el teclado.
   const selectedDigit = (selected !== null ? game.values[selected] : 0) || focusDigit;
@@ -262,7 +263,7 @@ export function SudokuGame({
   const elapsed = playedMs(game.startedAt, paused ? game.pause!.since! : now, game.pause ?? NO_PAUSE);
 
   return (
-    <section className="flex w-full max-w-[30rem] flex-col gap-4">
+    <section className="reveal-in flex w-full max-w-[30rem] flex-col gap-4">
       <div className="flex items-end justify-between gap-4">
         <div className="flex flex-col">
           <span className="text-xs text-muted">{m.minesweeper.time}</span>

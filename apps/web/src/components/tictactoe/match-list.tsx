@@ -12,6 +12,7 @@ import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import { brand } from "@repo/brand";
 import { INVITE_GAMES, inviteUrl } from "@/lib/guest";
 import { useMessages } from "@/lib/i18n/client";
+import { MatchRowsSkeleton } from "./match-list-skeleton";
 import type { Messages } from "@/lib/i18n";
 
 type Loaded = { matches: MatchWithPlayers[]; chosen: Set<string> };
@@ -138,16 +139,16 @@ export function MatchList({ viewerId, games }: { viewerId: string; games: readon
       </div>
 
       {matches === null ? (
-        <div className="h-40 animate-pulse rounded-3xl bg-line/40" />
+        <MatchRowsSkeleton />
       ) : matches.length === 0 ? (
-        <p className="text-muted">{m.matchList.empty}</p>
+        <p className="reveal-in text-muted">{m.matchList.empty}</p>
       ) : (
-        <>
+        <div className="reveal contents">
           <Group title={m.matchList.invited} matches={groups.invited} viewerId={viewerId} note={() => m.matchList.wantsToPlay} />
           <Group title={m.match.yourTurn} matches={groups.myTurn} viewerId={viewerId} note={() => m.matchList.yourTurn} highlight />
           <Group title={m.matchList.waiting} matches={groups.waiting} viewerId={viewerId} note={(match) => (match.status === "pending" ? m.matchList.notAccepted : m.matchList.theirTurn)} />
           <Group title={m.matchList.finished} matches={groups.finished} viewerId={viewerId} note={(match) => resultText(m, match, viewerId)} />
-        </>
+        </div>
       )}
     </div>
   );

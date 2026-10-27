@@ -7,6 +7,7 @@ import { Avatar } from "@repo/ui/avatar";
 import { ChallengeMenu } from "@/components/challenge-menu";
 import { createClient } from "@/lib/supabase/client";
 import { useMessages } from "@/lib/i18n/client";
+import { FriendRowsSkeleton } from "./friends-skeleton";
 
 type Person = { id: string; username: string; avatar_seed: number; avatar_parts: Json };
 type Row = { id: string; status: "pending" | "accepted"; other: Person; incoming: boolean };
@@ -118,9 +119,9 @@ export function Friends({ viewerId, initialCode = "" }: { viewerId: string; init
       </form>
 
       {rows === null ? (
-        <div className="h-24 animate-pulse rounded-2xl bg-line/40" />
+        <FriendRowsSkeleton />
       ) : (
-        <>
+        <div className="reveal contents">
           {incoming.length > 0 && (
             <PeopleList title={m.friends.incoming}>
               {incoming.map((row) => (
@@ -162,7 +163,7 @@ export function Friends({ viewerId, initialCode = "" }: { viewerId: string; init
               ))}
             </PeopleList>
           )}
-        </>
+        </div>
       )}
     </section>
   );

@@ -10,6 +10,7 @@ import { useMessages } from "@/lib/i18n/client";
 import { levelFromXp } from "@repo/games/level";
 import { createClient } from "@/lib/supabase/client";
 import { InlinePicto } from "@/components/picto";
+import { RankingRowsSkeleton } from "./ranking-skeleton";
 import type { Picto } from "@/lib/pictos";
 
 type GameId = "2048" | "snake" | "lightsout" | "minesweeper" | "sudoku" | "solitaire" | "queens" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron" | "chess" | "reversi" | "dots" | "typing";
@@ -240,9 +241,9 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
       )}
 
       {rows === null ? (
-        <div className="h-64 animate-pulse rounded-3xl bg-line/40" />
+        <RankingRowsSkeleton />
       ) : top.length === 0 ? (
-        <p className="py-10 text-center text-muted">
+        <p className="reveal-in py-10 text-center text-muted">
           {scope === "friends"
             ? t.emptyFriends
             : effectivePeriod === "week"
@@ -250,7 +251,7 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
               : t.empty}
         </p>
       ) : (
-        <>
+        <div className="reveal contents">
           <Podium rows={podium} viewerId={viewerId} />
           {rest.length > 0 && (
             <ol className="flex flex-col">
@@ -269,7 +270,7 @@ export function RankingBoard({ viewerId }: { viewerId: string | null }) {
               </ol>
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   );
