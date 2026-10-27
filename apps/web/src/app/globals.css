@@ -744,6 +744,37 @@ html[data-splash="out"] #splash {
   }
 }
 
+/* Chat: el corazón que salta al dar me gusta con dos toques. */
+.chat-heart-burst svg {
+  animation: chat-heart-burst 700ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+
+@keyframes chat-heart-burst {
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  35% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.1) translateY(-6px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-heart-burst svg {
+    animation: none;
+    opacity: 0;
+  }
+}
+
 /* Hundir la flota: casillas, barcos y disparos en capas sobre la misma cuadrícula. */
 .sea-board {
   --sea-gap: clamp(2px, 0.7vw, 4px);

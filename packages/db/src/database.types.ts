@@ -281,14 +281,14 @@ isOneToOne: false
                   ]
                 },"messages": {
                   Row: {
-                    "body": string,"created_at": string,"id": string,"kind": string,"read_at": string | null,"recipient_id": string,"ref_id": string | null,"sender_id": string
+                    "body": string,"created_at": string,"id": string,"kind": string,"liked_by": (string)[],"read_at": string | null,"recipient_id": string,"ref_id": string | null,"sender_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "body": string,"created_at"?: string,"id"?: string,"kind"?: string,"read_at"?: string | null,"recipient_id": string,"ref_id"?: string | null,"sender_id": string
+                    "body": string,"created_at"?: string,"id"?: string,"kind"?: string,"liked_by"?: (string)[],"read_at"?: string | null,"recipient_id": string,"ref_id"?: string | null,"sender_id": string
                   }
                   Update: {
-                    "body"?: string,"created_at"?: string,"id"?: string,"kind"?: string,"read_at"?: string | null,"recipient_id"?: string,"ref_id"?: string | null,"sender_id"?: string
+                    "body"?: string,"created_at"?: string,"id"?: string,"kind"?: string,"liked_by"?: (string)[],"read_at"?: string | null,"recipient_id"?: string,"ref_id"?: string | null,"sender_id"?: string
                   }
                   Relationships: [
                     {
@@ -873,6 +873,9 @@ isOneToOne: false
               "attempts": number,"avatar_parts": Json,"avatar_seed": number,"patterns": (string)[],"solved": boolean,"user_id": string,"username": string
             }[]
                            },
+"like_message":
+{ Args: { "liked"?: boolean,"message_id": string }; Returns: (string)[]
+                           },
 "mark_announcements_seen":
 { Args: { "ids": (string)[] }; Returns: undefined
                            },
@@ -927,6 +930,7 @@ isOneToOne: false
 "created_at": string,
 "id": string,
 "kind": string,
+"liked_by": (string)[],
 "read_at": string | null,
 "recipient_id": string,
 "ref_id": string | null,
@@ -944,6 +948,7 @@ isOneToOne: false
 "created_at": string,
 "id": string,
 "kind": string,
+"liked_by": (string)[],
 "read_at": string | null,
 "recipient_id": string,
 "ref_id": string | null,

@@ -865,6 +865,8 @@ export const es = {
     challengeFrom: (name: string) => `Reto de ${name}`,
   },
   chat: {
+    like: "Me gusta",
+    unlike: "Quitar el me gusta",
     sendErrors: {
       rate_limited: "Vas muy rápido. Espera un momento.",
       not_friends: "Ya no sois amigos, así que no puedes escribirle.",

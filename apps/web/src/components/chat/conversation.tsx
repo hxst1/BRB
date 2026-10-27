@@ -2,7 +2,19 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type FormEvent, type KeyboardEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FormEvent,
+  type KeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from "react";
 import type { Json, Match, Tables } from "@repo/db";
 import type { Sticker } from "@repo/avatars";
 import { Avatar } from "@repo/ui/avatar";
@@ -16,12 +28,15 @@ import { StickerImage } from "./sticker";
 import { channelName, subscribeWhenReady } from "@/lib/realtime";
 import { useLocale, useMessages } from "@/lib/i18n/client";
 import type { Messages } from "@/lib/i18n";
+import { playSound } from "@/lib/sound";
 
 type Message = Tables<"messages">;
 /** Mensaje propio aún sin confirmar por el servidor (o que ha fallado). */
 type Outgoing = { id: string; body: string; created_at: string; failed?: boolean };
 
 const PAGE = 50;
+/** Dos toques más seguidos que esto son un "me gusta". */
+const DOUBLE_TAP_MS = 320;
 const BUBBLE = "max-w-[80%] rounded-2xl px-3.5 py-2 text-left whitespace-pre-wrap [overflow-wrap:anywhere]";
 
 /** Errores de envío que tienen texto propio (m.chat.sendErrors). */
@@ -101,6 +116,11 @@ export function Conversation({
           setMessages((current) => (current && !current.some((m) => m.id === message.id) ? [...current, message] : current));
           if (message.sender_id === friend.id && document.visibilityState === "visible") void markRead();
         })
+        // Me gusta (y leído): llegan como cambios del mensaje.
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages" }, (payload) => {
+          const message = payload.new as Message;
+          setMessages((current) => current?.map((m) => (m.id === message.id ? { ...m, liked_by: message.liked_by, read_at: message.read_at } : m)) ?? current);
+        })
         .subscribe(),
     );
 
@@ -169,6 +189,43 @@ export function Conversation({
     observer.observe(content.current);
     return () => observer.disconnect();
   }, []);
+
+  // Me gusta: dos toques (o doble clic) en un mensaje; el corazón de debajo lo quita o lo pone.
+  const [burst, setBurst] = useState<string | null>(null);
+  const lastTap = useRef<{ id: string; at: number } | null>(null);
+  const lastPointer = useRef<string>("mouse");
+
+  async function setLike(id: string, liked: boolean) {
+    const apply = (likedBy: (current: string[]) => string[]) =>
+      setMessages((current) => current?.map((m) => (m.id === id ? { ...m, liked_by: likedBy(m.liked_by) } : m)) ?? current);
+    apply((current) => (liked ? [...new Set([...current, viewerId])] : current.filter((user) => user !== viewerId)));
+    if (liked) {
+      setBurst(id);
+      playSound("pop");
+      navigator.vibrate?.(12);
+      setTimeout(() => setBurst((current) => (current === id ? null : current)), 700);
+    }
+    const { data, error: likeError } = await createClient().rpc("like_message", { message_id: id, liked });
+    if (!likeError && data) apply(() => data);
+  }
+
+  function onBubblePointer(id: string, event: ReactPointerEvent) {
+    lastPointer.current = event.pointerType;
+    if (event.pointerType === "mouse") return;
+    const now = event.timeStamp;
+    const last = lastTap.current;
+    if (last && last.id === id && now - last.at < DOUBLE_TAP_MS) {
+      lastTap.current = null;
+      void setLike(id, true);
+    } else {
+      lastTap.current = { id, at: now };
+    }
+  }
+
+  function onBubbleDoubleClick(id: string) {
+    // Con el dedo ya lo cuenta onBubblePointer (algunos navegadores también lanzan dblclick).
+    if (lastPointer.current === "mouse") void setLike(id, true);
+  }
 
   async function loadOlder() {
     const oldest = messages?.[0];
@@ -252,6 +309,7 @@ export function Conversation({
       pending: false,
       kind: m.kind,
       ref_id: m.ref_id,
+      liked_by: m.liked_by,
     })),
     ...outgoing.map((m) => ({
       id: m.id,
@@ -262,6 +320,7 @@ export function Conversation({
       pending: !m.failed,
       kind: "text",
       ref_id: null,
+      liked_by: [] as string[],
     })),
   ];
 
@@ -319,14 +378,25 @@ export function Conversation({
             <div key={item.id} className="flex flex-col">
               {showDay && <p className="my-2 self-center text-xs text-muted">{day}</p>}
               {item.kind === "sticker" && stickerFromEmoji(item.body) ? (
-                <span title={formatTime(item.created_at, locale)} className={item.mine ? "self-end" : "self-start"}>
-                  <StickerImage
-                    sticker={stickerFromEmoji(item.body)!.id}
-                    seed={item.mine ? viewerAvatar.seed : friend.avatar_seed}
-                    parts={item.mine ? viewerAvatar.parts : friend.avatar_parts}
-                    label={`Sticker: ${m.stickers[stickerFromEmoji(item.body)!.id]}`}
-                  />
-                </span>
+                <Likeable
+                  mine={item.mine}
+                  likedBy={item.liked_by}
+                  viewerId={viewerId}
+                  burst={burst === item.id}
+                  onPointerUp={(event) => onBubblePointer(item.id, event)}
+                  onDoubleClick={() => onBubbleDoubleClick(item.id)}
+                  onToggle={(liked) => void setLike(item.id, liked)}
+                  m={m}
+                >
+                  <span title={formatTime(item.created_at, locale)}>
+                    <StickerImage
+                      sticker={stickerFromEmoji(item.body)!.id}
+                      seed={item.mine ? viewerAvatar.seed : friend.avatar_seed}
+                      parts={item.mine ? viewerAvatar.parts : friend.avatar_parts}
+                      label={`Sticker: ${m.stickers[stickerFromEmoji(item.body)!.id]}`}
+                    />
+                  </span>
+                </Likeable>
               ) : (item.kind === "match" || item.kind === "challenge") && item.ref_id ? (
                 <ChallengeEmbed
                   kind={item.kind}
@@ -346,17 +416,28 @@ export function Conversation({
                   {item.body}
                   <span className="sr-only"> (no enviado, pulsa para reintentarlo)</span>
                 </button>
-              ) : (
-                <p
-                  title={formatTime(item.created_at, locale)}
-                  className={`${BUBBLE} ${
-                    item.mine
-                      ? `self-end rounded-br-md bg-ink text-bg ${item.pending ? "opacity-60" : ""}`
-                      : "self-start rounded-bl-md bg-surface shadow-soft"
-                  }`}
-                >
+              ) : item.pending ? (
+                <p title={formatTime(item.created_at, locale)} className={`${BUBBLE} self-end rounded-br-md bg-ink text-bg opacity-60`}>
                   {item.body}
                 </p>
+              ) : (
+                <Likeable
+                  mine={item.mine}
+                  likedBy={item.liked_by}
+                  viewerId={viewerId}
+                  burst={burst === item.id}
+                  onPointerUp={(event) => onBubblePointer(item.id, event)}
+                  onDoubleClick={() => onBubbleDoubleClick(item.id)}
+                  onToggle={(liked) => void setLike(item.id, liked)}
+                  m={m}
+                >
+                  <p
+                    title={formatTime(item.created_at, locale)}
+                    className={`${BUBBLE} max-w-full ${item.mine ? "rounded-br-md bg-ink text-bg" : "rounded-bl-md bg-surface shadow-soft"}`}
+                  >
+                    {item.body}
+                  </p>
+                </Likeable>
               )}
             </div>
           );
@@ -432,6 +513,72 @@ export function Conversation({
         </button>
       </form>
     </section>
+  );
+}
+
+/**
+ * Un mensaje al que se le puede dar me gusta: dos toques o doble clic encima,
+ * y el corazón de la esquina (si alguien le ha dado) lo quita o lo pone.
+ */
+function Likeable({
+  mine,
+  likedBy,
+  viewerId,
+  burst,
+  onPointerUp,
+  onDoubleClick,
+  onToggle,
+  m,
+  children,
+}: {
+  mine: boolean;
+  likedBy: string[];
+  viewerId: string;
+  burst: boolean;
+  onPointerUp: (event: ReactPointerEvent) => void;
+  onDoubleClick: () => void;
+  onToggle: (liked: boolean) => void;
+  m: Messages;
+  children: ReactNode;
+}) {
+  const likedByMe = likedBy.includes(viewerId);
+  return (
+    <div
+      onPointerUp={onPointerUp}
+      onDoubleClick={onDoubleClick}
+      // Que el doble clic no seleccione la palabra.
+      onMouseDown={(event: ReactMouseEvent) => event.detail > 1 && event.preventDefault()}
+      className={`relative flex max-w-[80%] touch-manipulation ${mine ? "self-end justify-end" : "self-start"} ${likedBy.length ? "mb-3" : ""}`}
+    >
+      {children}
+      {burst && (
+        <span aria-hidden className="chat-heart-burst pointer-events-none absolute inset-0 grid place-items-center">
+          <HeartIcon className="size-12 drop-shadow" />
+        </span>
+      )}
+      {likedBy.length > 0 && (
+        <button
+          type="button"
+          onClick={() => onToggle(!likedByMe)}
+          aria-pressed={likedByMe}
+          aria-label={likedByMe ? m.chat.unlike : m.chat.like}
+          className={`absolute -bottom-3 flex items-center gap-0.5 rounded-full border-2 border-bg bg-surface px-1.5 py-0.5 text-xs font-semibold shadow-soft ${
+            mine ? "left-1" : "right-1"
+          }`}
+        >
+          <HeartIcon className="size-3.5" />
+          {likedBy.length > 1 && <span className="tabular">{likedBy.length}</span>}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function HeartIcon({ className }: { className: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden>
+      <path d="M12 20.5s-7.5-4.6-9.2-9.4C1.6 7.6 3.8 4.5 7 4.5c2 0 3.6 1.2 5 3 1.4-1.8 3-3 5-3 3.2 0 5.4 3.1 4.2 6.6-1.7 4.8-9.2 9.4-9.2 9.4z" fill="#ff6b6b" stroke="#15171c" strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
   );
 }
 

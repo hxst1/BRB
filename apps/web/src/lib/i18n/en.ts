@@ -861,6 +861,8 @@ export const en: Messages = {
     challengeFrom: (name: string) => `Challenge from ${name}`,
   },
   chat: {
+    like: "Like",
+    unlike: "Remove like",
     sendErrors: {
       rate_limited: "You're going too fast. Wait a moment.",
       not_friends: "You're no longer friends, so you can't message them.",
