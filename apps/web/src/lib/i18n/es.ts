@@ -26,6 +26,9 @@ export const es = {
   },
   nav: {
     home: "Inicio",
+    games: "Juegos",
+    news: "Novedades",
+    newsUnseen: "Novedades: hay algo nuevo",
     chat: "Chat",
     ranking: "Ranking",
     friends: "Amigos",
@@ -393,6 +396,15 @@ export const es = {
     covering: (n: number): string => (n === 1 ? "Un protector salva el día que no jugaste" : `${n} protectores salvan los días que no jugaste`),
     freezesLeft: (n: number): string => (n === 1 ? "te queda 1" : `te quedan ${n}`),
     freezesHint: "Cada 7 días de racha ganas un protector (como mucho 2). Si un día no juegas, se gasta uno y la racha sigue.",
+  },
+  quickGames: {
+    title: "Jugar",
+    all: "Ver todos",
+  },
+  gamesPage: {
+    title: "Juegos",
+    intro: "Todos los juegos, con tus récords y tus partidas. Fija tus favoritos para tenerlos arriba y en el inicio.",
+    ranking: "Ver el ranking",
   },
   dailies: {
     title: "Retos de hoy",

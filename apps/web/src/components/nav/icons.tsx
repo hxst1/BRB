@@ -45,3 +45,21 @@ export function TrophyIcon() {
     </svg>
   );
 }
+
+export function GamesIcon() {
+  return (
+    <svg {...base}>
+      <path d="M7 8h10a4 4 0 0 1 4 4v2.5a2.5 2.5 0 0 1-4.6 1.4L15 14H9l-1.4 1.9A2.5 2.5 0 0 1 3 14.5V12a4 4 0 0 1 4-4z" />
+      <path d="M8 10.5v3M6.5 12h3M15.5 11h.01M17.5 13h.01" />
+    </svg>
+  );
+}
+
+export function MegaphoneIcon() {
+  return (
+    <svg {...base}>
+      <path d="M4 10v4a1 1 0 0 0 1 1h2l8 4V5L7 9H5a1 1 0 0 0-1 1z" />
+      <path d="M7 15l1.2 4.2a1 1 0 0 0 1 .8h1.3M18.5 9.5a3.5 3.5 0 0 1 0 5" />
+    </svg>
+  );
+}

@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import type { Json } from "@repo/db";
 import { Avatar } from "@repo/ui/avatar";
 import { Badge } from "./badge";
-import { ChatIcon, FriendsIcon, HomeIcon, TrophyIcon } from "./icons";
+import { ChatIcon, FriendsIcon, GamesIcon, HomeIcon, TrophyIcon } from "./icons";
 import { isActive, NAV_ITEMS, type NavCounts } from "./nav-items";
 import { useMessages, usePagePath } from "@/lib/i18n/client";
 
@@ -15,6 +15,7 @@ const TAB_IDLE = "text-muted active:bg-line/60";
 
 const ICONS: Record<string, ReactNode> = {
   "/": <HomeIcon />,
+  "/juegos": <GamesIcon />,
   "/chat": <ChatIcon />,
   "/ranking": <TrophyIcon />,
   "/amigos": <FriendsIcon />,
@@ -31,7 +32,7 @@ export function TabBar({ counts, avatarSeed, avatarParts }: { counts: NavCounts;
       aria-label={m.nav.main}
       className="tab-bar pointer-events-none fixed inset-x-0 bottom-0 z-20 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:hidden"
     >
-      <ul className="pointer-events-auto mx-auto grid max-w-md grid-cols-5 gap-1 rounded-full border border-line bg-surface/85 p-1.5 shadow-lift backdrop-blur-md">
+      <ul className="pointer-events-auto mx-auto grid max-w-md grid-cols-6 gap-0.5 rounded-full border border-line bg-surface/85 p-1.5 shadow-lift backdrop-blur-md">
         {NAV_ITEMS.map((item) => {
           const active = isActive(pathname, item.href);
           return (

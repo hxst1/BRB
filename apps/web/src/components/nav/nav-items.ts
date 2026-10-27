@@ -3,13 +3,14 @@ export type NavCounts = { home: number; chat: number; friends: number };
 /** `label` y `countLabel`: claves de m.nav (lib/i18n). */
 export type NavItem = {
   href: string;
-  label: "home" | "chat" | "ranking" | "friends";
+  label: "home" | "games" | "chat" | "ranking" | "friends";
   count?: keyof NavCounts;
   countLabel?: "pending" | "unread" | "requests";
 };
 
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "home", count: "home", countLabel: "pending" },
+  { href: "/juegos", label: "games" },
   { href: "/chat", label: "chat", count: "chat", countLabel: "unread" },
   { href: "/ranking", label: "ranking" },
   { href: "/amigos", label: "friends", count: "friends", countLabel: "requests" },

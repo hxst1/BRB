@@ -12,6 +12,8 @@ import { LocaleSync } from "@/components/locale-sync";
 import { PresenceReporter } from "@/components/presence-reporter";
 import { VisitTracker } from "@/components/visit-tracker";
 import { ProductHuntWelcome } from "@/components/product-hunt-welcome";
+import { NewsBell } from "@/components/news/news-bell";
+import { latestNewsAt } from "@/lib/news";
 import { PersonalIcons } from "@/components/pwa/personal-icons";
 import { TintGuard } from "@/components/pwa/tint-picker";
 import { SupportButton } from "@/components/support/support-button";
@@ -54,14 +56,24 @@ export function SiteHeader() {
   );
 }
 
+/** Fecha de lo último en /novedades (el anuncio publicado más reciente o el último juego). */
+async function getLatestNews(): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("news_posts").select("published_at").order("published_at", { ascending: false }).limit(1).maybeSingle();
+  return latestNewsAt(data?.published_at);
+}
+
 async function Navigation() {
   // Sin sesión no hay nada que pedir; con ella, perfil y avisos a la vez.
-  const [viewer, counts] = (await getViewerId()) ? await Promise.all([getViewer(), getNavCounts()]) : [null, null];
+  const [viewer, counts, latestNews] = (await getViewerId())
+    ? await Promise.all([getViewer(), getNavCounts(), getLatestNews()])
+    : [null, null, await getLatestNews()];
 
   if (!viewer || !counts) {
     const m = await getMessages();
     return (
       <>
+        <NewsBell latestAt={latestNews} />
         <Link href="/entrar" className="rounded-full bg-ink px-4 py-1.5 text-sm font-medium text-bg">
           {m.common.signIn}
         </Link>
@@ -88,6 +100,7 @@ async function Navigation() {
       <AchievementToaster viewerId={viewer.id} avatarSeed={viewer.avatar_seed} avatarParts={viewer.avatar_parts} />
       <div className="flex items-center gap-3">
         <MainNav counts={counts} />
+        <NewsBell latestAt={latestNews} />
         <AccountMenu
           username={viewer.username}
           avatarSeed={viewer.avatar_seed}

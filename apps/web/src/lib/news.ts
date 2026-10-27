@@ -24,6 +24,15 @@ export const NEWS_POST_COLUMNS = "slug, kind, title_es, body_es, title_en, body_
 /** Día (en España) de una fecha: los juegos salidos el mismo día van en una sola novedad. */
 const dayOf = (date: Date) => date.toLocaleDateString("sv-SE", { timeZone: "Europe/Madrid" });
 
+/** Lo más reciente de las novedades (anuncio o juego ya publicado), para el punto del megáfono. */
+export function latestNewsAt(latestPost: string | null | undefined, now = Date.now()): string | null {
+  const games = guidesFor("es")
+    .map((game) => new Date(game.addedAt).getTime())
+    .filter((time) => time <= now);
+  const latest = Math.max(latestPost ? Date.parse(latestPost) : 0, ...games);
+  return latest > 0 ? new Date(latest).toISOString() : null;
+}
+
 export function newsItems(posts: NewsPost[], locale: Locale, now = Date.now()): NewsItem[] {
   const items: NewsItem[] = posts.map((post) => {
     const en = locale === "en" && post.title_en && post.body_en;

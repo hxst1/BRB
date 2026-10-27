@@ -47,7 +47,9 @@ export default function DailyPage({ searchParams }: PageProps<"/[lang]/reto-diar
 }
 
 async function DailyForViewer({ searchParams }: { searchParams: PageProps<"/[lang]/reto-diario">["searchParams"] }) {
-  const [{ reto, empezar }, viewerId, m, supabase] = await Promise.all([searchParams, getViewerId(), getMessages(), createClient()]);
+  const [{ reto, empezar }, viewerId, m] = await Promise.all([searchParams, getViewerId(), getMessages()]);
+  // Después de getViewerId: la sesión de la petición ya está leída (el cliente usa Date.now()).
+  const supabase = await createClient();
 
   if (!viewerId) {
     const { data: challenges } = await supabase.rpc("get_daily_challenges");

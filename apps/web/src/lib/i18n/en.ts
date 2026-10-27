@@ -23,6 +23,9 @@ export const en: Messages = {
   },
   nav: {
     home: "Home",
+    games: "Games",
+    news: "What's new",
+    newsUnseen: "What's new: there's something new",
     chat: "Chat",
     ranking: "Ranking",
     friends: "Friends",
@@ -389,6 +392,15 @@ export const en: Messages = {
     covering: (n: number) => (n === 1 ? "A freeze is saving the day you missed" : `${n} freezes are saving the days you missed`),
     freezesLeft: (n: number) => `${n} left`,
     freezesHint: "Every 7 days of streak you earn a freeze (2 at most). If you miss a day, one is used up and your streak carries on.",
+  },
+  quickGames: {
+    title: "Play",
+    all: "See all",
+  },
+  gamesPage: {
+    title: "Games",
+    intro: "Every game, with your best scores and your matches. Pin your favourites to keep them at the top and on the home page.",
+    ranking: "See the ranking",
   },
   dailies: {
     title: "Today's challenges",

@@ -19,6 +19,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
     { url: absoluteUrl("/reto-diario"), lastModified, changeFrequency: "daily", priority: 0.7 },
     { url: absoluteUrl("/ranking"), lastModified, changeFrequency: "daily", priority: 0.6 },
+    { url: absoluteUrl("/juegos"), lastModified, changeFrequency: "weekly", priority: 0.8 },
     { url: absoluteUrl("/novedades"), lastModified, changeFrequency: "weekly", priority: 0.5 },
     { url: absoluteUrl("/apoyar"), lastModified, changeFrequency: "yearly", priority: 0.3 },
     { url: absoluteUrl("/creditos"), lastModified, changeFrequency: "yearly", priority: 0.1 },
