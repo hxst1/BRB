@@ -11,7 +11,10 @@ export function ErrorReporter() {
       if (!event.error && event.message === "Script error.") return;
       reportError(event.error ?? event.message);
     };
-    const onRejection = (event: PromiseRejectionEvent) => reportError(event.reason);
+    const onRejection = (event: PromiseRejectionEvent) => {
+      if (isSkippedTransition(event.reason)) return;
+      reportError(event.reason);
+    };
     window.addEventListener("error", onError);
     window.addEventListener("unhandledrejection", onRejection);
     return () => {
@@ -20,4 +23,18 @@ export function ErrorReporter() {
     };
   }, []);
   return null;
+}
+
+/**
+ * El navegador cancela la transición entre páginas si cambia el tamaño de la
+ * pantalla a mitad (en Android, al esconderse la barra de direcciones o salir el
+ * teclado) o si empieza otra. La página cambia igual, solo sin animación, pero
+ * React deja la promesa rechazada sin capturar: no es un fallo.
+ */
+function isSkippedTransition(reason: unknown) {
+  return (
+    reason instanceof DOMException &&
+    (reason.name === "InvalidStateError" || reason.name === "AbortError") &&
+    reason.message.startsWith("Transition was")
+  );
 }
