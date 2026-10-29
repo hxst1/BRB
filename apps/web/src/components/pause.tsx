@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 import { useMessages } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 
@@ -56,6 +56,27 @@ export function useAutoPause(pause: () => void, { onLeave = false }: { onLeave?:
       if (onLeave) latest.current();
     };
   }, [onLeave]);
+}
+
+/**
+ * Para los juegos que no van por tiempo pero se retoman (2048 y Lights Out): sin
+ * tapar nada, pausa la partida en el servidor al cambiar de app o salir del
+ * juego, y la sigue al volver. Así el rato fuera no cuenta para que caduque.
+ * Al retomar una partida guardada, quien la retoma tiene que seguirla (`reportPause`).
+ */
+export function useBackgroundPause(runId: RefObject<string | null>) {
+  useEffect(() => {
+    // Al volver a una pantalla que Next ha guardado oculta (sin desmontarla), la partida sigue.
+    reportPause(runId.current, false);
+    const onVisibility = () => reportPause(runId.current, document.visibilityState === "hidden");
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      // La partida que haya al salir (no la del montaje): si ya terminó, es null y no hace nada.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      reportPause(runId.current, true);
+    };
+  }, [runId]);
 }
 
 /** Botón de pausa, junto al tiempo. */
