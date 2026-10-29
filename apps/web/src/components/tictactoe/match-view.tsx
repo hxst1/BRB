@@ -154,10 +154,10 @@ export function MatchView({
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ [MOVE_FIELD[game]]: cell }),
-    });
-    if (!response.ok) {
-      const body = await response.json().catch(() => ({}));
-      setError(body.error ?? m.match.moveError);
+    }).catch(() => null); // Sin conexión: se avisa y se puede volver a tocar.
+    if (!response?.ok) {
+      const body = response ? await response.json().catch(() => ({})) : {};
+      setError(body.error ?? (response ? m.match.moveError : m.match.offline));
       setPendingCell(null);
       setMatch(await fetchMatch(matchId));
       return;

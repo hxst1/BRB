@@ -718,6 +718,7 @@ export const es = {
     actionError: "No se ha podido completar. Recarga la página e inténtalo otra vez.",
     rematchError: "No se ha podido crear la revancha.",
     moveError: "No se ha podido hacer la jugada.",
+    offline: "Sin conexión: inténtalo otra vez.",
     notFound: "No encontramos esta partida",
     seeYours: "Ver tus partidas",
     accept: "Aceptar el reto",

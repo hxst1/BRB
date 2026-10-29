@@ -112,10 +112,10 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
-    });
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      setError(data.error ?? m.battleship.actionError);
+    }).catch(() => null); // Sin conexión: se avisa y no se queda bloqueado.
+    if (!response?.ok) {
+      const data = response ? await response.json().catch(() => ({})) : {};
+      setError(data.error ?? (response ? m.battleship.actionError : m.match.offline));
     }
     await refresh();
     setBusy(false);
