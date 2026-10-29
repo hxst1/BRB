@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { DragScrollList } from "@/components/drag-scroll";
 import { Crown } from "@/components/queens/crown";
 import { CardFace } from "@/components/solitaire/card";
+import { Avatar } from "@repo/ui/avatar";
 import { PinButton } from "./pin-button";
 import { getMessages } from "@/lib/i18n/server";
 
@@ -41,6 +42,8 @@ const PREVIEW_ORBITS = [
   { r: 29, color: "--t2048", gap: 150 },
   { r: 18, color: "--t256", gap: 60 },
 ];
+/** Parejas en miniatura (4 × 3): monstruo boca arriba (su semilla) o carta tapada (null). */
+const PREVIEW_PAIRS: (number | null)[] = [null, 7, null, null, 21, null, null, 7, null, null, null, 21];
 /** Wordle en miniatura: tres intentos hasta acertar. */
 const PREVIEW_WORDLE = ["bybbb", "gbygb", "ggggg"];
 
@@ -59,6 +62,7 @@ export type GameId =
   | "solitaire"
   | "queens"
   | "orbits"
+  | "pairs"
   | "wordle"
   | "tictactoe"
   | "connect4"
@@ -229,6 +233,24 @@ const GAMES: Game[] = [
               ) : PREVIEW_QUEENS.marks[i] === "x" ? (
                 <span className="text-xs font-bold opacity-45 sm:text-base">×</span>
               ) : null}
+            </span>
+          ))}
+        </div>
+    ),
+  },
+  {
+    id: "pairs",
+    group: "solo",
+    href: "/parejas",
+    preview: (
+        <div aria-hidden className="grid grid-cols-4 gap-1 rounded-xl p-1 sm:gap-1.5 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+          {PREVIEW_PAIRS.map((monster, i) => (
+            <span
+              key={i}
+              className="grid aspect-square place-items-center rounded-md transition-transform duration-300 group-hover:scale-95 sm:rounded-lg"
+              style={{ background: monster === null ? "var(--t2048)" : "var(--surface)", transitionDelay: `${(i % 4) * 25}ms` }}
+            >
+              {monster !== null && <Avatar seed={monster} size={30} />}
             </span>
           ))}
         </div>

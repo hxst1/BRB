@@ -54,6 +54,23 @@ export const GAMES_EN: Record<keyof typeof GAMES_ES, GameTexts> = {
       { q: "Do I need to download anything?", a: NO_DOWNLOAD },
     ],
   },
+  pairs: {
+    name: "Pairs",
+    title: "Pairs memory game online for free",
+    description: "Play the pairs memory game for free: turn the cards over two at a time and find the 10 pairs of monsters. Streaks, misses and a speed bonus, with a ranking.",
+    tagline: "Find the matching monsters",
+    genre: "Memory game",
+    howTo: [
+      "There are 20 face-down cards: 10 pairs of monsters.",
+      "Turn over two cards. If they're the same monster, they stay face up; if not, they turn back over.",
+      "Each pair scores 100 points, and each pair in a row without a miss scores 50 more than the last. Each miss takes away 20.",
+      "When you finish, every second under 90 adds 10 points. The highest score wins.",
+    ],
+    faq: [
+      { q: "Can you cheat by looking at the page's code?", a: "No. The server shows each card when you turn it over, and your score is worked out from the cards you actually turned." },
+      { q: "Do I need to download anything?", a: NO_DOWNLOAD },
+    ],
+  },
   "lights-out": {
     name: "Lights Out",
     title: "Lights Out online for free",

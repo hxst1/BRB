@@ -1,6 +1,6 @@
 import type { MatchGame } from "@/lib/games";
 
-export type IconName = MatchGame | "2048" | "snake" | "orbits" | "lightsout" | "minesweeper" | "sudoku" | "solitaire" | "queens" | "wordle" | "friend";
+export type IconName = MatchGame | "2048" | "snake" | "orbits" | "pairs" | "lightsout" | "minesweeper" | "sudoku" | "solitaire" | "queens" | "wordle" | "friend";
 
 /** Los que ya existen en otro sitio: el caballo del ajedrez y las manos de piedra, papel o tijera. */
 const SHARED: Partial<Record<IconName, string>> = {

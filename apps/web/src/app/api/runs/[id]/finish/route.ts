@@ -2,6 +2,7 @@ import { verifyRun as verify2048 } from "@repo/games/2048/verify";
 import { verifyRun as verifyLightsOut } from "@repo/games/lightsout/verify";
 import { GAME_IDS, type Difficulty } from "@repo/games/minesweeper";
 import { verifyRun as verifyMinesweeper } from "@repo/games/minesweeper/verify";
+import { verifyRun as verifyPairs } from "@repo/games/pairs/verify";
 import { verifyRun as verifySnake } from "@repo/games/snake/verify";
 import { GAME_ID as SOLITAIRE_ID } from "@repo/games/solitaire";
 import { GAME_IDS as QUEENS_IDS, type Difficulty as QueensDifficulty } from "@repo/games/queens";
@@ -9,6 +10,7 @@ import { verifyRun as verifyQueens } from "@repo/games/queens/verify";
 import { verifyRun as verifySolitaire } from "@repo/games/solitaire/verify";
 import { GAME_IDS as SUDOKU_IDS, type Difficulty as SudokuDifficulty } from "@repo/games/sudoku";
 import { verifyRun as verifySudoku } from "@repo/games/sudoku/verify";
+import { pairsBoard } from "@/lib/pairs-board";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClientForRequest } from "@/lib/supabase/server";
 import { apiJson } from "@/lib/i18n/api";
@@ -67,6 +69,12 @@ function verify(game: string, seed: number, moves: string, elapsedMs: number): V
   return null;
 }
 
+/** Parejas: el tablero sale de un secreto del servidor, no solo de la semilla. */
+function verifyPairsRun(runId: string, seed: number, flips: string, elapsedMs: number): Verified {
+  const result = verifyPairs(pairsBoard(runId, seed), flips, elapsedMs);
+  return result.valid ? { valid: true, score: result.score, detail: result.fails } : result;
+}
+
 /**
  * Cierra una partida: el cliente envía solo los movimientos y el servidor
  * recalcula la puntuación repitiendo la partida desde la semilla.
@@ -88,7 +96,7 @@ export async function POST(request: Request, { params }: RouteContext<"/api/runs
   // Con el cliente del usuario: RLS garantiza que la partida es suya.
   const { data: run, error: runError } = await supabase
     .from("game_runs")
-    .select("id, game, seed, status, started_at, paused_ms, paused_at")
+    .select("id, game, seed, status, started_at, paused_ms, paused_at, moves")
     .eq("id", id)
     .maybeSingle();
 
@@ -107,14 +115,17 @@ export async function POST(request: Request, { params }: RouteContext<"/api/runs
   const now = Date.now();
   const pausedMs = run.paused_ms + (run.paused_at ? now - new Date(run.paused_at).getTime() : 0);
   const elapsedMs = now - new Date(run.started_at).getTime() - pausedMs;
-  const result = verify(run.game, run.seed, moves, elapsedMs);
+  // En Parejas cuentan los giros que apuntó el servidor (ver flip/route.ts), no los del cliente.
+  const recorded = run.game === "pairs" ? (run.moves ?? "") : moves;
+  const result =
+    run.game === "pairs" ? verifyPairsRun(run.id, run.seed, recorded, elapsedMs) : verify(run.game, run.seed, moves, elapsedMs);
   if (!result) {
     return apiJson({ error: "Juego desconocido" }, { status: 404 });
   }
   const admin = createAdminClient();
 
   const { error } = result.valid
-    ? await admin.rpc("finish_run", { run_id: run.id, moves, score: result.score, max_tile: result.detail })
+    ? await admin.rpc("finish_run", { run_id: run.id, moves: recorded, score: result.score, max_tile: result.detail })
     : await admin.rpc("reject_run", { run_id: run.id, reason: result.reason });
 
   if (error?.code === RUN_NOT_PLAYING) {

@@ -38,6 +38,7 @@ const GAMES: GameMeta[] = [
   { id: "solitaire", path: "/solitario", mode: "solo", accent: "#845ef7", addedAt: "2026-10-26T13:00:00+01:00" },
   { id: "queens", path: "/reinas", mode: "solo", accent: "#e599f7", addedAt: "2026-10-26T15:00:00+01:00" },
   { id: "orbits", path: "/orbitas", mode: "solo", accent: "#3bc9db", addedAt: "2026-10-29T12:00:00+01:00" },
+  { id: "pairs", path: "/parejas", mode: "solo", accent: "#845ef7", addedAt: "2026-10-29T12:30:00+01:00" },
   { id: "wordle", path: "/wordle", mode: "solo", accent: "#40c057", addedAt: "2026-10-20T18:34:41+02:00" },
   { id: "tictactoe", path: "/3-en-raya", mode: "friends", accent: "#ff6b6b", addedAt: "2026-10-20T11:27:56+02:00" },
   { id: "connect4", path: "/4-en-raya", mode: "friends", accent: "#ff6b6b", addedAt: "2026-10-21T09:56:59+02:00" },
