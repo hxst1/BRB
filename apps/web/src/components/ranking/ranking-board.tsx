@@ -14,7 +14,7 @@ import { InlinePicto } from "@/components/picto";
 import { RankingRowsSkeleton } from "./ranking-skeleton";
 import type { Picto } from "@/lib/pictos";
 
-type GameId = "2048" | "snake" | "lightsout" | "minesweeper" | "sudoku" | "solitaire" | "queens" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron" | "chess" | "reversi" | "dots" | "typing";
+type GameId = "2048" | "snake" | "lightsout" | "pairs" | "minesweeper" | "sudoku" | "solitaire" | "queens" | "tictactoe" | "connect4" | "battleship" | "rps" | "pong" | "tron" | "chess" | "reversi" | "dots" | "typing";
 type Category = "level" | GameId;
 type Difficulty = "easy" | "medium" | "hard";
 type Scope = "global" | "friends" | "group";
@@ -62,6 +62,9 @@ const RANKED_GAMES: RankedGame[] = [
   {
     id: "lightsout",
     unit: "levels",
+  },
+  {
+    id: "pairs",
   },
   {
     id: "minesweeper",

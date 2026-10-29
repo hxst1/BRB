@@ -15,6 +15,7 @@ const SOLO: { id: GameId; href: string; boards: { game: string; level?: Level }[
   { id: "2048", href: "/2048", boards: [{ game: "2048" }], unit: "points" },
   { id: "snake", href: "/snake", boards: [{ game: "snake" }], unit: "points" },
   { id: "lights-out", href: "/lights-out", boards: [{ game: "lightsout" }], unit: "levels" },
+  { id: "pairs", href: "/parejas", boards: [{ game: "pairs" }], unit: "points" },
   {
     id: "minesweeper",
     href: "/buscaminas",

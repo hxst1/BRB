@@ -71,6 +71,23 @@ export const GAMES_ES = {
       { q: "¿Hay que descargar algo?", a: NO_DOWNLOAD },
     ],
   },
+  pairs: {
+    name: "Parejas",
+    title: "Juego de parejas online gratis",
+    description: "Juega gratis al juego de parejas (memoria): gira las cartas de dos en dos y encuentra las 10 parejas de monstruos. Rachas, fallos y bonus de rapidez, con ranking.",
+    tagline: "Encuentra los monstruos gemelos",
+    genre: "Juego de memoria",
+    howTo: [
+      "Hay 20 cartas boca abajo: 10 parejas de monstruos.",
+      "Gira dos cartas. Si son el mismo monstruo, se quedan boca arriba; si no, vuelven a taparse.",
+      "Cada pareja suma 100 puntos y cada pareja seguida sin fallar, 50 más que la anterior. Cada fallo resta 20.",
+      "Al terminar, cada segundo por debajo de 90 suma 10 puntos. Gana quien más puntos hace.",
+    ],
+    faq: [
+      { q: "¿Se puede hacer trampa mirando el código de la página?", a: "No. Las cartas las enseña el servidor al girarlas, y la puntuación se calcula con las cartas que has girado de verdad." },
+      { q: "¿Hay que descargar algo?", a: NO_DOWNLOAD },
+    ],
+  },
   "lights-out": {
     name: "Lights Out",
     title: "Lights Out online gratis",

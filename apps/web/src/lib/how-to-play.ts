@@ -64,6 +64,15 @@ const HOW_TO_PLAY_ES: Record<string, HowToPlay> = {
       { icon: "up", text: "Cada nivel tiene más anillos y van más rápido." },
     ],
   },
+  pairs: {
+    goal: "Encuentra las 10 parejas de monstruos con los menos fallos posibles.",
+    steps: [
+      { icon: "tap", text: "Toca dos cartas para darles la vuelta." },
+      { icon: "look", text: "Si son el mismo monstruo, se quedan boca arriba. Si no, se tapan: ¡acuérdate de dónde estaban!" },
+      { icon: "fire", text: "Las parejas seguidas sin fallar suman cada vez más. Cada fallo resta." },
+      { icon: "timer", text: "Cuanto antes acabes, más puntos extra." },
+    ],
+  },
   snake: {
     goal: "Come manzanas para hacer tu serpiente muy larga, ¡sin chocarte!",
     steps: [
@@ -238,6 +247,15 @@ const HOW_TO_PLAY_EN: Record<string, HowToPlay> = {
       { icon: "target", text: "Wait for the right moment: the ball has to go through every gap." },
       { icon: "crash", text: "If you hit a ring, you lose a life. After 3 hits, the game is over." },
       { icon: "up", text: "Every level has more rings, and they spin faster." },
+    ],
+  },
+  pairs: {
+    goal: "Find all 10 pairs of monsters with as few misses as possible.",
+    steps: [
+      { icon: "tap", text: "Tap two cards to turn them over." },
+      { icon: "look", text: "If they're the same monster, they stay face up. If not, they turn back over: remember where they were!" },
+      { icon: "fire", text: "Pairs in a row without a miss score more and more. Every miss takes points away." },
+      { icon: "timer", text: "The sooner you finish, the more bonus points you get." },
     ],
   },
   snake: {
@@ -415,6 +433,15 @@ const HOW_TO_PLAY_JA: Record<string, HowToPlay> = {
       { icon: "target", text: "タイミングを待とう：ボールはすべてのすき間を通らなければなりません。" },
       { icon: "crash", text: "ぶつかるとライフが1つ減ります。3回ぶつかるとゲームオーバー。" },
       { icon: "up", text: "レベルが上がるとリングが増えて、速く回ります。" },
+    ],
+  },
+  pairs: {
+    goal: "できるだけミスせずに、モンスターのペアを10組ぜんぶ見つけよう。",
+    steps: [
+      { icon: "tap", text: "カードを2枚タップしてめくろう。" },
+      { icon: "look", text: "同じモンスターなら表のまま。違ったら裏に戻るので、場所を覚えておこう！" },
+      { icon: "fire", text: "ミスせずに続けて当てるほど、ポイントが増えます。ミスすると減点。" },
+      { icon: "timer", text: "早くクリアするほど、ボーナスポイントがもらえます。" },
     ],
   },
   snake: {

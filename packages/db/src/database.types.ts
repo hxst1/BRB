@@ -964,6 +964,9 @@ isOneToOne: false
 "record_github_contribution":
 { Args: { "github_login": string,"kind": string,"url": string,"user_id": string }; Returns: boolean
                            },
+"record_pairs_flip":
+{ Args: { "flip": string,"previous_count": number,"run_id": string }; Returns: boolean
+                           },
 "record_visit":
 { Args: { "country"?: string,"device"?: string,"kind": string,"lang"?: string,"path"?: string,"referrer"?: string,"seconds"?: number,"signed_in"?: boolean,"visitor": string }; Returns: undefined
                            },
