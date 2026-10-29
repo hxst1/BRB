@@ -35,6 +35,12 @@ const PREVIEW_QUEENS = { regions: [0, 0, 1, 1, 1, 0, 2, 2, 1, 1, 3, 3, 2, 2, 1, 
 const PREVIEW_REVERSI = [".o..", "xxo.", ".xox", "..o."];
 /** Carrera de tecleo en miniatura: palabras de cada línea (su ancho) y cuántas van escritas. */
 const PREVIEW_TYPING = { lines: [[22, 14, 30, 18], [16, 26, 12, 24], [28, 18, 20]], typed: 5 };
+/** Órbitas en miniatura: anillos (radio, color y hacia dónde mira su hueco, en grados) alrededor del centro. */
+const PREVIEW_ORBITS = [
+  { r: 40, color: "--t1024", gap: -40 },
+  { r: 29, color: "--t2048", gap: 150 },
+  { r: 18, color: "--t256", gap: 60 },
+];
 /** Wordle en miniatura: tres intentos hasta acertar. */
 const PREVIEW_WORDLE = ["bybbb", "gbygb", "ggggg"];
 
@@ -52,6 +58,7 @@ export type GameId =
   | "sudoku"
   | "solitaire"
   | "queens"
+  | "orbits"
   | "wordle"
   | "tictactoe"
   | "connect4"
@@ -64,7 +71,8 @@ export type GameId =
   | "dots"
   | "typing";
 
-type Game = { id: GameId; group: "solo" | "friends"; href: string; preview: ReactNode };
+/** `beta`: juego en pruebas (sin ranking todavía), con su etiqueta en la tarjeta. */
+type Game = { id: GameId; group: "solo" | "friends"; href: string; preview: ReactNode; beta?: true };
 
 const GAMES: Game[] = [
   {
@@ -223,6 +231,38 @@ const GAMES: Game[] = [
               ) : null}
             </span>
           ))}
+        </div>
+    ),
+  },
+  {
+    id: "orbits",
+    group: "solo",
+    href: "/orbitas",
+    beta: true,
+    preview: (
+        <div aria-hidden className="rounded-xl p-1 sm:rounded-2xl sm:p-1.5" style={{ background: "var(--board)" }}>
+          <svg viewBox="0 0 100 100" className="block aspect-square w-full">
+            {PREVIEW_ORBITS.map((ring, i) => {
+              // El arco entero menos un hueco de 70°, que gira un poco al pasar por encima.
+              const start = ((ring.gap + 35) * Math.PI) / 180;
+              const end = ((ring.gap - 35 + 360) * Math.PI) / 180;
+              const point = (angle: number) => `${50 + ring.r * Math.cos(angle)} ${50 + ring.r * Math.sin(angle)}`;
+              return (
+                <path
+                  key={i}
+                  d={`M${point(start)} A${ring.r} ${ring.r} 0 1 1 ${point(end)}`}
+                  fill="none"
+                  stroke={`var(${ring.color})`}
+                  strokeWidth="7"
+                  strokeLinecap="round"
+                  className="origin-center transition-transform duration-500 group-hover:rotate-45"
+                  style={{ transitionDelay: `${i * 60}ms`, transformBox: "view-box" }}
+                />
+              );
+            })}
+            <circle cx="50" cy="50" r="6" fill="var(--cell)" />
+            <circle cx="50" cy="94" r="4" fill="var(--ink)" />
+          </svg>
         </div>
     ),
   },
@@ -470,7 +510,13 @@ export async function GameCards({ stats = {}, pinned }: { stats?: Partial<Record
   const rest = GAMES.filter((game) => !favourites.includes(game));
   const card = (game: Game) => (
     <li key={game.id} className={ITEM}>
-      <GameCard game={game} texts={m.gameCards[game.id]} stats={stats[game.id]} pinned={pinned ? favourites.includes(game) : undefined} />
+      <GameCard
+        game={game}
+        texts={m.gameCards[game.id]}
+        stats={stats[game.id]}
+        pinned={pinned ? favourites.includes(game) : undefined}
+        beta={game.beta && m.gameCards.beta}
+      />
     </li>
   );
 
@@ -513,7 +559,20 @@ function GameSection({ title, description, children }: { title: string; descript
  * En el móvil, apaisada (dibujo a la izquierda, nombre a la derecha y tus
  * datos debajo); desde `sm`, en vertical.
  */
-function GameCard({ game, texts, stats, pinned }: { game: Game; texts: { title: string; subtitle: string }; stats?: ReactNode; pinned?: boolean }) {
+function GameCard({
+  game,
+  texts,
+  stats,
+  pinned,
+  beta,
+}: {
+  game: Game;
+  texts: { title: string; subtitle: string };
+  stats?: ReactNode;
+  pinned?: boolean;
+  /** Etiqueta de juego en pruebas. */
+  beta?: string;
+}) {
   return (
     <div className="group relative grid h-full grid-cols-[6rem_minmax(0,1fr)] grid-rows-[auto_1fr] gap-x-3.5 gap-y-3 rounded-3xl bg-surface p-3.5 shadow-soft transition-shadow hover:shadow-lift sm:flex sm:flex-col sm:gap-5 sm:p-5">
       <div className="self-center sm:self-auto">{game.preview}</div>
@@ -523,6 +582,7 @@ function GameCard({ game, texts, stats, pinned }: { game: Game; texts: { title: 
             {texts.title}
           </Link>
           <p className="text-xs text-muted sm:text-sm">{texts.subtitle}</p>
+          {beta && <span className="mt-1.5 inline-block rounded-full bg-line px-2 py-0.5 text-[0.7rem] font-semibold text-muted">{beta}</span>}
         </div>
         {pinned !== undefined && <PinButton game={game.id} title={texts.title} pinned={pinned} />}
       </div>
