@@ -12,6 +12,7 @@ import { QueensSkeleton } from "@/components/games/skeletons";
 import { useMessages } from "@/lib/i18n/client";
 import { playSound } from "@/lib/sound";
 import { Crown } from "./crown";
+import { reportGameFinished } from "@/lib/game-rating";
 
 /** Hora actual (fuera del componente: solo se llama desde eventos y efectos). */
 const clock = () => Date.now();
@@ -179,6 +180,7 @@ export function QueensGame({
           if (response.ok) {
             writeStored(difficulty, daily, null);
             setSave({ status: "saved", time: body.score });
+            reportGameFinished("queens");
             onSaved();
           } else if (response.status === 422) {
             writeStored(difficulty, daily, null);

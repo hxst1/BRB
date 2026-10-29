@@ -10,6 +10,7 @@ import { playSound } from "@/lib/sound";
 import { SessionHint, ToggleSkeleton } from "@/components/skeleton";
 import { useLocale, useMessages } from "@/lib/i18n/client";
 import { CONTENT_LANGUAGES, contentLanguage, type ContentLanguage } from "@/lib/i18n/locales";
+import { reportGameFinished } from "@/lib/game-rating";
 
 export type WordleState = {
   guesses: string[];
@@ -103,6 +104,7 @@ export function WordleGame({
         answer: body.answer,
       }));
       if (body.finished) {
+        reportGameFinished("wordle");
         const { data } = await createClient().rpc("get_wordle_friends", { lang });
         setFriends(data ?? []);
       }

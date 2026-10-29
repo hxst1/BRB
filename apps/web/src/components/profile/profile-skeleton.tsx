@@ -8,7 +8,7 @@ import { Bone, TextLine, ToggleSkeleton } from "@/components/skeleton";
 import { useMessages } from "@/lib/i18n/client";
 
 /** Pestañas del perfil (en la URL: /perfil?seccion=logros), en el orden de perfil/page.tsx. */
-export const PROFILE_SECTIONS = ["monster", "logros", "records", "ajustes"] as const;
+export const PROFILE_SECTIONS = ["monster", "logros", "records", "opinion", "ajustes"] as const;
 export type ProfileSection = (typeof PROFILE_SECTIONS)[number];
 const SLOTS = ["body", "palette", "eyes", "mouth", "top"] as const;
 
@@ -98,7 +98,34 @@ export function MonsterSkeleton() {
   );
 }
 
-/** Ajustes: las tarjetas de la app, los mensajes, tu cuenta y borrarla, en gris. */
+/** Opinión: contar algo y tus mensajes; tus valoraciones de juegos, en gris. */
+export function OpinionSkeleton() {
+  const card = "flex flex-col gap-4 rounded-3xl bg-surface p-5 shadow-soft";
+  return (
+    <div aria-hidden className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:gap-10">
+      <div className={card}>
+        <div className="flex flex-col">
+          <TextLine className="w-36" />
+          <TextLine className="w-full text-sm" />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Bone className="h-9 w-40 rounded-full" />
+          <Bone className="h-9 w-36 rounded-full" />
+          <Bone className="h-9 w-28 rounded-full" />
+        </div>
+      </div>
+      <div className={card}>
+        <TextLine className="w-44" />
+        <TextLine className="w-full text-sm" />
+        {[0, 1].map((i) => (
+          <Bone key={i} className="h-10 w-full rounded-2xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Ajustes: las tarjetas de la app, tu cuenta y borrarla, en gris. */
 export function SettingsSkeleton() {
   const card = "flex flex-col gap-4 rounded-3xl bg-surface p-5 shadow-soft";
   const field = (key: number) => (
@@ -113,16 +140,6 @@ export function SettingsSkeleton() {
         <div className={card}>
           <TextLine className="w-32" />
           {[0, 1, 2, 3, 4].map(field)}
-        </div>
-        <div className={card}>
-          <div className="flex flex-col">
-            <TextLine className="w-36" />
-            <TextLine className="w-full text-sm" />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Bone className="h-9 w-32 rounded-full" />
-            <Bone className="h-9 w-28 rounded-full" />
-          </div>
         </div>
       </div>
       <div className="flex flex-col gap-8">

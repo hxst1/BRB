@@ -13,6 +13,7 @@ import { ShareStory } from "@/components/share-story";
 import { LightsOutSkeleton } from "@/components/games/skeletons";
 import { useMessages } from "@/lib/i18n/client";
 import { playSound } from "@/lib/sound";
+import { reportGameFinished } from "@/lib/game-rating";
 
 const BEST_KEY = "lightsout:best";
 /** Cuánto se ve el aviso de nivel superado. */
@@ -173,6 +174,7 @@ function Game({ viewerId, onSaved, daily = null, onReviewTutorial }: GameProps &
         const body = await response.json().catch(() => ({}));
         if (response.ok) {
           setSave({ status: "saved", score: body.score, runId: id });
+          reportGameFinished("lights-out");
           onSaved();
         } else if (response.status === 422) {
           setSave({ status: "rejected" });

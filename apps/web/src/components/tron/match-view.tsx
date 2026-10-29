@@ -253,7 +253,7 @@ function LiveTron({
 
   return (
     <div className="flex flex-col gap-3">
-      <LiveSounds mine={score[me]} theirs={score[rival]} playing={phase === "playing"} done={phase === "done"} />
+      <LiveSounds game="tron" mine={score[me]} theirs={score[rival]} playing={phase === "playing"} done={phase === "done"} />
       <div className="flex items-baseline justify-between">
         <span className="flex items-center gap-2 text-sm">
           <span className="size-3 rounded-sm" style={{ background: MARK_COLOR[me] }} />

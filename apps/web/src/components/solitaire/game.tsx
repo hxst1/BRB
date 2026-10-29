@@ -30,6 +30,7 @@ import { SolitaireSkeleton } from "@/components/games/skeletons";
 import { useMessages } from "@/lib/i18n/client";
 import { playSound } from "@/lib/sound";
 import { CardFace, Suit } from "./card";
+import { reportGameFinished } from "@/lib/game-rating";
 
 /** Hora actual (fuera del componente: solo se llama desde eventos y efectos). */
 const clock = () => Date.now();
@@ -262,6 +263,7 @@ export function SolitaireGame({ viewerId, daily = null, onSaved }: { viewerId: s
           if (response.ok) {
             writeStored(key, null);
             setSave({ status: "saved", time: body.score });
+            reportGameFinished("solitaire");
             onSaved();
           } else if (response.status === 422) {
             writeStored(key, null);

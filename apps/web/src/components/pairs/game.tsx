@@ -11,6 +11,7 @@ import { pairMonsters } from "@/lib/pairs-monsters";
 import { GuestNotice } from "@/components/guest-notice";
 import { playSound } from "@/lib/sound";
 import { useMessages } from "@/lib/i18n/client";
+import { reportGameFinished } from "@/lib/game-rating";
 
 /** Lo que se ven las dos cartas de un fallo antes de taparse. */
 const MISS_MS = 900;
@@ -165,6 +166,7 @@ export function PairsGame({ viewerId, onSaved }: { viewerId: string | null; onSa
         const body = await response.json().catch(() => ({}));
         if (response.ok) {
           setSave({ status: "saved", score: body.score });
+          reportGameFinished("pairs");
           onSaved();
         } else if (response.status === 422) setSave({ status: "rejected" });
         else setSave({ status: "error", message: body.error ?? m.run.saveError });

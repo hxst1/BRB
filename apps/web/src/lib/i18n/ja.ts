@@ -219,6 +219,19 @@ export const ja: Messages = {
     body: "今週中に無料アカウントを作ると、ローンチ限定のニット帽、カラー、テーマがもらえます。",
     later: "今はいい",
   },
+  gameRating: {
+    kicker: "あなたの感想が力になります",
+    betaKicker: "テスト中のゲーム",
+    title: (game: string) => `${game}はどうですか？`,
+    body: "どのゲームも、もっと良くしていきたいと思っています。正直に教えてください：楽しいですか？",
+    betaBody: "このゲームを残すかどうか、まだ迷っています。正直な感想を教えてください：楽しいですか？",
+    answers: { love: "すごく好き", ok: "まあまあ", meh: "いまいち" },
+    placeholder: "変えてほしいところや、足りないものは？（任意）",
+    send: "感想を送る",
+    later: "あとで",
+    thanks: "感想をありがとうございます！",
+    thanksBody: "すべて読んでいて、何を良くするか決めるのにとても役立ちます。",
+  },
   ratingPrompt: {
     kicker: (games: number) => `${games}回遊びました`,
     title: (app: string) => `${app}、楽しんでますか？`,
@@ -590,17 +603,6 @@ export const ja: Messages = {
     over: "ライフがなくなりました",
     summary: (levels: number) => `${levels}レベルクリアしました。`,
     beta: "テスト中のゲームです。ランキングはまだありません。記録はこの端末に保存されます。",
-    feedback: {
-      kicker: "テスト中のゲーム",
-      title: "オービットはどうでしたか？",
-      body: "このゲームを残すかどうか、まだ迷っています。正直な感想を教えてください：楽しいですか？",
-      answers: { love: "すごく好き", ok: "まあまあ", meh: "いまいち" },
-      placeholder: "変えてほしいところや、足りないものは？（任意）",
-      send: "感想を送る",
-      later: "あとで",
-      thanks: "感想をありがとうございます！",
-      thanksBody: "残すかどうか、どう良くするかを決めるのにとても役立ちます。",
-    },
   },
   lightsOut: {
     practice: {
@@ -1072,7 +1074,7 @@ export const ja: Messages = {
   },
   profile: {
     sections: "プロフィールの項目",
-    tabs: { monster: "モンスター", logros: "実績", records: "記録", ajustes: "設定" },
+    tabs: { monster: "モンスター", logros: "実績", records: "記録", opinion: "ご意見", ajustes: "設定" },
     account: "アカウント",
     thanksSupport: "応援ありがとうございます ✦",
     support: "プロジェクトを応援する",
@@ -1195,6 +1197,10 @@ export const ja: Messages = {
     howToInstall: "インストール方法を見る",
   },
   feedbackSection: {
+    gameRatings: "ゲームの評価",
+    gameRatingsIntro: "同じゲームを3回遊ぶと、感想をおたずねします。",
+    gameRatingsEmpty: "まだどのゲームも評価していません。",
+    answers: { 1: "いまいち", 2: "まあまあ", 3: "すごく好き" } as Record<number, string>,
     title: "改善にご協力ください",
     intro: "何かが壊れていたり、アイデアがあったりしたら教えてください。全部読んでいます。",
     report: "不具合を報告",

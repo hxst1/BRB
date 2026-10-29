@@ -96,7 +96,7 @@ export function LiveMatchShell({
   return (
     <div className={`reveal-in flex w-full ${width} flex-col gap-4`}>
       {/* La carrera acaba en cuanto llega el primero: el resultado suena aquí, no en la carrera. */}
-      {game === "typing" && <MatchSounds progress={0} myTurn={false} result={resultFor(match, me)} />}
+      {game === "typing" && <MatchSounds game="typing" progress={0} myTurn={false} result={resultFor(match, me)} />}
       {match.status === "active" ? (
         live({ match, me, rivalName: rival.username, onReported: reload })
       ) : (

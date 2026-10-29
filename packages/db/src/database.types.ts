@@ -167,6 +167,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"game_ratings": {
+                  Row: {
+                    "app_version": string | null,"comment": string | null,"created_at": string,"dismissals": number,"game": string,"games_played": number,"id": string,"locale": string | null,"rating": number | null,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "app_version"?: string | null,"comment"?: string | null,"created_at"?: string,"dismissals"?: number,"game": string,"games_played"?: number,"id"?: string,"locale"?: string | null,"rating"?: number | null,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "app_version"?: string | null,"comment"?: string | null,"created_at"?: string,"dismissals"?: number,"game"?: string,"games_played"?: number,"id"?: string,"locale"?: string | null,"rating"?: number | null,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "game_ratings_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"game_runs": {
                   Row: {
                     "daily": string | null,"daily_slot": string | null,"finished_at": string | null,"game": string,"id": string,"max_tile": number | null,"moves": string | null,"paused_at": string | null,"paused_ms": number,"rejection_reason": string | null,"score": number | null,"seed": number,"started_at": string,"status": string,"user_id": string
@@ -645,6 +665,11 @@ isOneToOne: false
 "admin_delete_push_subscription":
 { Args: { "endpoint": string }; Returns: undefined
                            },
+"admin_game_ratings_summary":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "average": number,"average_30d": number,"average_before_30d": number,"comments": number,"count_1": number,"count_2": number,"count_3": number,"count_7d": number,"game": string,"ratings": number
+            }[]
+                           },
 "admin_games_played":
 { Args: { "days"?: number }; Returns: {
               "game": string,"kind": string,"players": number,"plays": number
@@ -686,6 +711,11 @@ isOneToOne: false
 "admin_list_error_groups":
 { Args: { "max_rows"?: number,"status"?: string }; Returns: {
               "count": number,"fingerprint": string,"first_seen": string,"last_seen": string,"last_version": string,"message": string,"paths": (string)[],"source": string,"status": string,"user_agents": (string)[],"users": number
+            }[]
+                           },
+"admin_list_game_ratings":
+{ Args: { "before"?: string,"game"?: string,"max"?: number,"max_rating"?: number,"min_rating"?: number,"with_comment"?: boolean }; Returns: {
+              "app_version": string,"avatar_parts": Json,"avatar_seed": number,"comment": string,"created_at": string,"friend_code": string,"game": string,"games_played": number,"id": string,"locale": string,"rating": number,"updated_at": string,"user_id": string,"username": string
             }[]
                            },
 "admin_list_news_posts":
@@ -834,6 +864,9 @@ isOneToOne: false
 "delete_push_subscription":
 { Args: { "endpoint": string }; Returns: undefined
                            },
+"dismiss_game_rating":
+{ Args: { "game": string,"games_played"?: number }; Returns: undefined
+                           },
 "finish_run":
 { Args: { "max_tile": number,"moves": string,"run_id": string,"score": number }; Returns: undefined
                            },
@@ -960,6 +993,9 @@ isOneToOne: false
                            },
 "pause_run":
 { Args: { "run_id": string }; Returns: undefined
+                           },
+"rate_game":
+{ Args: { "app_version"?: string,"comment"?: string,"game": string,"games_played"?: number,"locale"?: string,"rating": number }; Returns: undefined
                            },
 "record_github_contribution":
 { Args: { "github_login": string,"kind": string,"url": string,"user_id": string }; Returns: boolean
