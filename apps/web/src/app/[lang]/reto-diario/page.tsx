@@ -4,6 +4,7 @@ import type { DailyStatus } from "@repo/db";
 import { DailyCards, type DailyCardData } from "@/components/daily/daily-cards";
 import { DailyGame, DailyLeaderboard } from "@/components/daily/daily-game";
 import { DailyPageSkeleton } from "@/components/daily/daily-page-skeleton";
+import { ScrollToPlay } from "@/components/daily/play-anchor";
 import { Loading } from "@/components/skeleton";
 import { Game2048Screen } from "@/components/game2048/screen";
 import { HowToPlayButton } from "@/components/how-to-play";
@@ -117,6 +118,7 @@ async function Challenge({ row, day, viewerId, m, start }: { row: DailyStatus; d
 
   return (
     <section id="jugar" aria-labelledby="challenge-title" className="mt-12 scroll-mt-24">
+      <ScrollToPlay slot={row.slot} />
       <div className="mb-6 flex items-center justify-between gap-3">
         <h2 id="challenge-title" className="display text-4xl font-bold">
           <span className="block text-base font-semibold text-muted">{m.dailies.slots[row.slot as DailySlot]}</span>
@@ -127,7 +129,11 @@ async function Challenge({ row, day, viewerId, m, start }: { row: DailyStatus; d
       {row.status === "available" && !start ? (
         <div className="flex max-w-xl flex-col items-start gap-4 rounded-3xl bg-surface p-5 shadow-soft">
           <p>{m.daily.ready}</p>
-          <Link href={`/reto-diario?reto=${row.slot}&empezar=1#jugar`} className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg">
+          <Link
+            href={`/reto-diario?reto=${row.slot}&empezar=1#jugar`}
+            data-start-challenge
+            className="rounded-full bg-ink px-5 py-2.5 font-semibold text-bg"
+          >
             {m.daily.start}
           </Link>
         </div>

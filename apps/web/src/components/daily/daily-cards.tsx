@@ -1,7 +1,7 @@
-import Link from "next/link";
 import type { DailyStatus } from "@repo/db";
 import { DragScrollList } from "@/components/drag-scroll";
 import { GameTile } from "@/components/news/game-tile";
+import { DailyCardLink } from "./play-anchor";
 import { DAILY_GAMES, dailyGameName, formatDailyScore, type DailySlot } from "@/lib/daily";
 import { matchGame, matchGameKey } from "@/lib/games";
 import type { Messages } from "@/lib/i18n";
@@ -93,14 +93,15 @@ function Card({ card, m, selected }: { card: DailyCardData; m: Messages; selecte
         <h3 className="display text-2xl leading-tight font-bold">{name}</h3>
         <p className="text-sm text-muted">{status(card, m)}</p>
       </div>
-      <Link
+      <DailyCardLink
         href={href(card)}
+        selected={selected}
         className={`self-start rounded-full px-4 py-2 text-sm font-semibold after:absolute after:inset-0 after:rounded-3xl ${
           finished || used ? "border border-line" : "bg-ink text-bg"
         }`}
       >
         {action(card, m)}
-      </Link>
+      </DailyCardLink>
     </article>
   );
 }
