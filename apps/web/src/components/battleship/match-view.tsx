@@ -171,7 +171,7 @@ export function BattleshipMatchView({ matchId, viewerId }: { matchId: string; vi
 
   return (
     <div className="reveal-in flex w-full max-w-md flex-col gap-6">
-      <MatchSounds progress={match.moves.length} myTurn={myTurn} result={resultFor(match, me)} />
+      <MatchSounds game="battleship" progress={match.moves.length} myTurn={myTurn} result={resultFor(match, me)} />
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         <PlayerBadge
           player={players[me]}

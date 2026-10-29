@@ -4,13 +4,14 @@ import { redirect } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 import { signOut } from "@/app/[lang]/entrar/actions";
 import { FeedbackSection } from "@/components/feedback/feedback-section";
+import { GameRatings } from "@/components/feedback/game-ratings";
 import { LevelBar } from "@/components/level-bar";
 import { AccountSettings } from "@/components/profile/account-settings";
 import { DeleteAccount } from "@/components/profile/delete-account";
 import { Achievements, AchievementsSkeleton } from "@/components/profile/achievements";
 import { AvatarEditor } from "@/components/profile/avatar-editor";
 import { Records, RecordsSkeleton } from "@/components/profile/records";
-import { MonsterSkeleton, ProfileSkeleton, SettingsSkeleton } from "@/components/profile/profile-skeleton";
+import { MonsterSkeleton, OpinionSkeleton, ProfileSkeleton, SettingsSkeleton } from "@/components/profile/profile-skeleton";
 import { Loading } from "@/components/skeleton";
 import { AppSettings } from "@/components/pwa/app-settings";
 import { LEGAL_LINKS } from "@/components/site-footer";
@@ -24,8 +25,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: m.meta.profile, robots: PRIVATE_PAGE };
 }
 
-/** Pestañas del perfil (en la URL: /perfil?seccion=logros). */
-const SECTIONS = ["monster", "logros", "records", "ajustes"] as const;
+/** Pestañas del perfil (en la URL: /perfil?seccion=logros), las mismas que PROFILE_SECTIONS del esqueleto. */
+const SECTIONS = ["monster", "logros", "records", "opinion", "ajustes"] as const;
 type Section = (typeof SECTIONS)[number];
 
 export default function ProfilePage({ searchParams }: PageProps<"/[lang]/perfil">) {
@@ -79,10 +80,11 @@ async function Profile({ searchParams }: { searchParams: PageProps<"/[lang]/perf
 
       {/* Cada pestaña carga solo lo suyo. */}
       {/* El monstruo y los récords ya salen casi enteros en su esqueleto: sin fundido. */}
-      <Loading key={section} skeleton={SECTION_SKELETONS[section]} fade={section === "logros" || section === "ajustes"}>
+      <Loading key={section} skeleton={SECTION_SKELETONS[section]} fade={section === "logros" || section === "opinion" || section === "ajustes"}>
         {section === "monster" && <MonsterSection viewer={viewer} />}
         {section === "logros" && <AchievementsSection viewer={viewer} />}
         {section === "records" && <Records viewerId={viewer.id} />}
+        {section === "opinion" && <OpinionSection />}
         {section === "ajustes" && <SettingsSection viewer={viewer} />}
       </Loading>
     </div>
@@ -94,6 +96,7 @@ const SECTION_SKELETONS: Record<Section, ReactNode> = {
   monster: <MonsterSkeleton />,
   logros: <AchievementsSkeleton />,
   records: <RecordsSkeleton />,
+  opinion: <OpinionSkeleton />,
   ajustes: <SettingsSkeleton />,
 };
 
@@ -116,22 +119,35 @@ async function AchievementsSection({ viewer }: { viewer: Viewer }) {
   return <Achievements statuses={achievements ?? []} avatarSeed={viewer.avatar_seed} avatarParts={viewer.avatar_parts} />;
 }
 
+/** Opinión: contar un problema o una idea (con tus mensajes y sus respuestas) y tus valoraciones de juegos. */
+async function OpinionSection() {
+  const supabase = await createClient();
+  const [{ data: feedback }, { data: ratings }] = await Promise.all([
+    supabase.from("feedback").select("id, kind, body, rating, status, admin_reply, created_at").order("created_at", { ascending: false }).limit(10),
+    supabase.from("game_ratings").select("game, rating, comment, updated_at").not("rating", "is", null).order("updated_at", { ascending: false }),
+  ]);
+  return (
+    <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:gap-10">
+      <FeedbackSection items={feedback ?? []} />
+      <GameRatings items={ratings ?? []} />
+    </div>
+  );
+}
+
 async function SettingsSection({ viewer }: { viewer: Viewer }) {
   const supabase = await createClient();
   const m = await getMessages();
-  const [{ data: feedback }, { data: friendCode }, { data: achievements }] = await Promise.all([
-    supabase.from("feedback").select("id, kind, body, rating, status, admin_reply, created_at").order("created_at", { ascending: false }).limit(10),
+  const [{ data: friendCode }, { data: achievements }] = await Promise.all([
     supabase.from("friend_codes").select("code").eq("user_id", viewer.id).maybeSingle(),
     // Los colores de la app que dan los logros.
     supabase.from("user_achievements").select("achievement"),
   ]);
 
-  // En escritorio, dos columnas: la app y los mensajes; tu cuenta, enlaces y borrar la cuenta.
+  // En escritorio, dos columnas: la app; tu cuenta, enlaces y borrar la cuenta.
   return (
     <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:gap-10">
       <div className="flex flex-col gap-8">
         <AppSettings isSupporter={viewer.supporter_tier !== null} unlocked={(achievements ?? []).map((a) => a.achievement)} />
-        <FeedbackSection items={feedback ?? []} />
       </div>
 
       <div className="flex flex-col gap-8">

@@ -10,6 +10,7 @@ import { playSound } from "@/lib/sound";
 import { ShareStory } from "@/components/share-story";
 import { SnakeBoardSkeleton } from "@/components/games/skeletons";
 import { useMessages } from "@/lib/i18n/client";
+import { reportGameFinished } from "@/lib/game-rating";
 
 const KEYS: Record<string, Direction> = {
   ArrowUp: "up",
@@ -240,6 +241,7 @@ export function SnakeGame({
         const body = await response.json().catch(() => ({}));
         if (response.ok) {
           setSave({ status: "saved", score: body.score, runId: id });
+          reportGameFinished("snake");
           onSaved();
         } else if (response.status === 422) {
           setSave({ status: "rejected" });

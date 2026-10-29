@@ -212,6 +212,19 @@ export const en: Messages = {
     body: "Create a free account this week and get the exclusive launch beanie, colour and theme.",
     later: "Not now",
   },
+  gameRating: {
+    kicker: "Your opinion helps us",
+    betaKicker: "Game in testing",
+    title: (game: string) => `What do you think of ${game}?`,
+    body: "We want to keep improving every game. Tell us honestly: is it fun?",
+    betaBody: "We're not sure about this game yet. Give us your honest opinion: is it fun?",
+    answers: { love: "I love it", ok: "It's OK", meh: "Not for me" },
+    placeholder: "What would you change? What's missing? (optional)",
+    send: "Send feedback",
+    later: "Not now",
+    thanks: "Thanks for your feedback!",
+    thanksBody: "We read every one, and it really helps us decide what to improve.",
+  },
   ratingPrompt: {
     kicker: (games: number) => `You've played ${games} games`,
     title: (app: string) => `Enjoying ${app}?`,
@@ -583,17 +596,6 @@ export const en: Messages = {
     over: "Out of lives",
     summary: (levels: number) => (levels === 1 ? "You cleared 1 level." : `You cleared ${levels} levels.`),
     beta: "Game in testing: no ranking yet. Your record is saved on this device.",
-    feedback: {
-      kicker: "Game in testing",
-      title: "What do you think of Orbits?",
-      body: "We're not sure about this game yet. Give us your honest opinion: is it fun?",
-      answers: { love: "I love it", ok: "It's OK", meh: "Not for me" },
-      placeholder: "What would you change? What's missing? (optional)",
-      send: "Send feedback",
-      later: "Not now",
-      thanks: "Thanks for your feedback!",
-      thanksBody: "It really helps us decide whether to keep it and how to make it better.",
-    },
   },
   lightsOut: {
     practice: {
@@ -1065,7 +1067,7 @@ export const en: Messages = {
   },
   profile: {
     sections: "Profile sections",
-    tabs: { monster: "Monster", logros: "Achievements", records: "Records", ajustes: "Settings" },
+    tabs: { monster: "Monster", logros: "Achievements", records: "Records", opinion: "Feedback", ajustes: "Settings" },
     account: "Account",
     thanksSupport: "Thanks for your support ✦",
     support: "Support the project",
@@ -1187,6 +1189,10 @@ export const en: Messages = {
     howToInstall: "See how to install it",
   },
   feedbackSection: {
+    gameRatings: "Your game ratings",
+    gameRatingsIntro: "Once you've played a game 3 times, we'll ask what you think of it.",
+    gameRatingsEmpty: "You haven't rated any games yet.",
+    answers: { 1: "Not for me", 2: "It's OK", 3: "I love it" } as Record<number, string>,
     title: "Help us improve",
     intro: "If something breaks or you have an idea, tell us. We read everything.",
     report: "Report a problem",

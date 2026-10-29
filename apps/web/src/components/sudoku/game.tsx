@@ -11,6 +11,7 @@ import { ShareStory } from "@/components/share-story";
 import { SudokuSkeleton } from "@/components/games/skeletons";
 import { useMessages } from "@/lib/i18n/client";
 import { playSound } from "@/lib/sound";
+import { reportGameFinished } from "@/lib/game-rating";
 
 /** Hora actual (fuera del componente: solo se llama desde eventos y efectos). */
 const clock = () => Date.now();
@@ -167,6 +168,7 @@ export function SudokuGame({
           const body = await response.json().catch(() => ({}));
           if (response.ok) {
             setSave({ status: "saved", time: body.score });
+            reportGameFinished("sudoku");
             onSaved();
           } else if (response.status === 422) {
             setSave({ status: "rejected" });

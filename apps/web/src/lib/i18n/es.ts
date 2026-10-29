@@ -217,6 +217,19 @@ export const es = {
     body: "Crea tu cuenta gratis esta semana y llévate el gorro, el color y el tema exclusivos del lanzamiento.",
     later: "Ahora no",
   },
+  gameRating: {
+    kicker: "Tu opinión nos ayuda",
+    betaKicker: "Juego en pruebas",
+    title: (game: string) => `¿Qué te parece ${game}?`,
+    body: "Queremos seguir mejorando cada juego. Dinos con sinceridad: ¿te parece divertido?",
+    betaBody: "No tenemos claro si este juego nos convence. Danos tu opinión sincera: ¿te parece divertido?",
+    answers: { love: "Me encanta", ok: "Está bien", meh: "No me convence" },
+    placeholder: "¿Qué cambiarías? ¿Qué le falta? (opcional)",
+    send: "Enviar opinión",
+    later: "Ahora no",
+    thanks: "¡Gracias por tu opinión!",
+    thanksBody: "La leemos toda y nos ayuda mucho a decidir qué mejorar.",
+  },
   ratingPrompt: {
     kicker: (games: number) => `Llevas ${games} partidas`,
     title: (app: string) => `¿Te está gustando ${app}?`,
@@ -588,17 +601,6 @@ export const es = {
     over: "Sin vidas",
     summary: (levels: number) => (levels === 1 ? "Has superado 1 nivel." : `Has superado ${levels} niveles.`),
     beta: "Juego en pruebas: aún no tiene ranking. Tu récord se guarda en este dispositivo.",
-    feedback: {
-      kicker: "Juego en pruebas",
-      title: "¿Qué te parece Órbitas?",
-      body: "No tenemos claro si este juego nos convence. Danos tu opinión sincera: ¿te parece divertido?",
-      answers: { love: "Me encanta", ok: "Está bien", meh: "No me convence" },
-      placeholder: "¿Qué cambiarías? ¿Qué le falta? (opcional)",
-      send: "Enviar opinión",
-      later: "Ahora no",
-      thanks: "¡Gracias por tu opinión!",
-      thanksBody: "Nos ayuda mucho a decidir si se queda y cómo mejorarlo.",
-    },
   },
   lightsOut: {
     practice: {
@@ -1070,7 +1072,7 @@ export const es = {
   },
   profile: {
     sections: "Secciones del perfil",
-    tabs: { monster: "Monster", logros: "Logros", records: "Récords", ajustes: "Ajustes" },
+    tabs: { monster: "Monster", logros: "Logros", records: "Récords", opinion: "Opinión", ajustes: "Ajustes" },
     account: "Cuenta",
     thanksSupport: "Gracias por apoyar ✦",
     support: "Apoyar el proyecto",
@@ -1192,6 +1194,10 @@ export const es = {
     howToInstall: "Ver cómo instalarla",
   },
   feedbackSection: {
+    gameRatings: "Tus valoraciones de juegos",
+    gameRatingsIntro: "Cuando lleves 3 partidas de un juego, te preguntaremos qué te parece.",
+    gameRatingsEmpty: "Aún no has valorado ningún juego.",
+    answers: { 1: "No me convence", 2: "Está bien", 3: "Me encanta" } as Record<number, string>,
     title: "Ayúdanos a mejorar",
     intro: "Si algo falla o se te ocurre algo, cuéntanoslo. Lo leemos todo.",
     report: "Reportar un problema",

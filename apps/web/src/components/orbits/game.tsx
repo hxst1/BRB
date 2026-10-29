@@ -20,12 +20,14 @@ import {
 } from "@repo/games/orbits";
 import { playSound } from "@/lib/sound";
 import { useMessages } from "@/lib/i18n/client";
-import { OrbitsFeedbackPrompt } from "./feedback-prompt";
+import { ORBITS_GAMES_KEY } from "@/components/feedback/game-rating-prompt";
+import { reportGameFinished } from "@/lib/game-rating";
 
 /**
  * Órbitas, en pruebas: se juega en local, sin partida en el servidor ni
- * ranking (eso, si el juego se queda; la lógica ya permite validarlas). Al
- * acabar la primera partida, con sesión, se pide opinión.
+ * ranking (eso, si el juego se queda; la lógica ya permite validarlas). Las
+ * partidas se cuentan en el dispositivo, para preguntar qué le parece (ver
+ * GameRatingPrompt).
  */
 
 const BEST_KEY = "orbits:best";
@@ -135,6 +137,17 @@ export function OrbitsGame({ viewerId }: { viewerId: string | null }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [press]);
 
+  // Partida terminada: se cuenta y se avisa (puede tocar preguntar qué le parece).
+  useEffect(() => {
+    if (!over || !viewerId) return;
+    try {
+      localStorage.setItem(ORBITS_GAMES_KEY, String((Number(localStorage.getItem(ORBITS_GAMES_KEY)) || 0) + 1));
+    } catch {
+      // Sin almacenamiento: no se cuenta, y no se preguntará.
+    }
+    reportGameFinished("orbits");
+  }, [over, viewerId]);
+
   const best = Math.max(storedBest, hud?.score ?? 0);
   useEffect(() => {
     if (best > storedBest) writeBest(best);
@@ -197,8 +210,6 @@ export function OrbitsGame({ viewerId }: { viewerId: string | null }) {
 
       <p className="text-sm text-muted">{t.beta}</p>
       <p className="hidden text-sm text-muted sm:block">{t.controls}</p>
-
-      {viewerId && <OrbitsFeedbackPrompt ready={over} />}
     </section>
   );
 }

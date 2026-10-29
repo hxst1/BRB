@@ -6,6 +6,7 @@ import { FeedbackDialog } from "@/components/feedback/feedback-dialog";
 import { NewGamesPopup } from "@/components/news/new-games-popup";
 import { TintNewsPopup } from "@/components/news/tint-news-popup";
 import { RatingPrompt } from "@/components/feedback/rating-prompt";
+import { GameRatingPrompt } from "@/components/feedback/game-rating-prompt";
 import { GuestBar } from "@/components/guest-bar";
 import { LiveRefresh } from "@/components/live-refresh";
 import { LocaleSync } from "@/components/locale-sync";
@@ -99,6 +100,7 @@ async function Navigation() {
       <NewGamesPopup viewerId={viewer.id} />
       <TintNewsPopup viewerId={viewer.id} />
       <RatingPrompt viewerId={viewer.id} />
+      <GameRatingPrompt viewerId={viewer.id} />
       <AchievementToaster viewerId={viewer.id} avatarSeed={viewer.avatar_seed} avatarParts={viewer.avatar_parts} />
       <div className="flex items-center gap-3">
         <MainNav counts={counts} />

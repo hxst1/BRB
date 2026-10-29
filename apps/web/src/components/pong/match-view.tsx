@@ -220,7 +220,7 @@ function LiveGame({
 
   return (
     <div className="flex flex-col gap-3">
-      <LiveSounds mine={score[me]} theirs={score[rival]} playing={phase === "playing"} done={phase === "done"} />
+      <LiveSounds game="pong" mine={score[me]} theirs={score[rival]} playing={phase === "playing"} done={phase === "done"} />
       <div className="flex items-baseline justify-between">
         <span className="text-sm text-muted">{rivalName}</span>
         <span className="tabular display text-3xl font-bold" style={{ color: MARK_COLOR[rival] }}>

@@ -11,6 +11,7 @@ import { resumeSaved, writeSaved, type SavedRun } from "@/lib/saved-run";
 import { ShareStory } from "@/components/share-story";
 import { useMessages } from "@/lib/i18n/client";
 import { playSound } from "@/lib/sound";
+import { reportGameFinished } from "@/lib/game-rating";
 
 /** Cuánto hay que mantener pulsado para poner una bandera en el móvil. */
 const LONG_PRESS_MS = 380;
@@ -187,6 +188,7 @@ export function MinesweeperGame({
         const body = await response.json().catch(() => ({}));
         if (response.ok) {
           setSave({ status: "saved", time: body.score, runId: id });
+          reportGameFinished("minesweeper");
           onSaved();
         } else if (response.status === 422) {
           setSave({ status: "rejected" });

@@ -18,6 +18,7 @@ import { ChallengeFriends } from "./challenge-friends";
 import type { ActiveChallenge } from "./screen";
 import { GuestNotice } from "@/components/guest-notice";
 import { EmptyBoard2048 } from "@/components/games/skeletons";
+import { reportGameFinished } from "@/lib/game-rating";
 
 const KEYS: Record<string, Direction> = {
   ArrowUp: "up",
@@ -310,6 +311,7 @@ export function Game2048({
         const body = await response.json().catch(() => ({}));
         if (response.ok) {
           setSave({ status: "saved", score: body.score, runId: id });
+          reportGameFinished("2048");
           setSavedRunId(id);
           onSaved();
         } else if (response.status === 422) {
