@@ -54,6 +54,23 @@ export const GAMES_ES = {
       { q: "¿Hay que descargar algo?", a: NO_DOWNLOAD },
     ],
   },
+  orbits: {
+    name: "Órbitas",
+    title: "Órbitas online gratis",
+    description: "Juega a Órbitas gratis: lanza la bola al centro en el momento justo para cruzar cada anillo por su hueco. Un juego de reflejos de un solo toque.",
+    tagline: "Cruza los anillos por su hueco",
+    genre: "Arcade de reflejos",
+    howTo: [
+      "Alrededor del centro giran varios anillos, cada uno con un hueco.",
+      "Toca la pantalla (o pulsa espacio) para lanzar la bola desde abajo hacia el centro.",
+      "La bola tiene que cruzar todos los anillos por su hueco. Si choca con uno, pierdes una vida y repites el nivel.",
+      "Cada nivel añade anillos más rápidos y con huecos más estrechos. Tienes 3 vidas.",
+    ],
+    faq: [
+      { q: "¿Todos los niveles tienen solución?", a: "Sí. En cada nivel hay un momento en que la bola pasa por todos los huecos, y se repite cada pocos segundos." },
+      { q: "¿Hay que descargar algo?", a: NO_DOWNLOAD },
+    ],
+  },
   "lights-out": {
     name: "Lights Out",
     title: "Lights Out online gratis",

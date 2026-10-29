@@ -37,6 +37,23 @@ export const GAMES_EN: Record<keyof typeof GAMES_ES, GameTexts> = {
       { q: "Do I need to download anything?", a: NO_DOWNLOAD },
     ],
   },
+  orbits: {
+    name: "Orbits",
+    title: "Orbits online for free",
+    description: "Play Orbits for free: shoot the ball to the centre at just the right moment to get through each ring's gap. A one-tap reflex game.",
+    tagline: "Get through each ring's gap",
+    genre: "Reflex arcade",
+    howTo: [
+      "Several rings spin around the centre, each with a gap.",
+      "Tap the screen (or press space) to shoot the ball from the bottom towards the centre.",
+      "The ball has to get through every ring's gap. If it hits one, you lose a life and replay the level.",
+      "Each level adds faster rings with narrower gaps. You have 3 lives.",
+    ],
+    faq: [
+      { q: "Can every level be cleared?", a: "Yes. Every level has a moment when the ball fits through all the gaps, and it comes back every few seconds." },
+      { q: "Do I need to download anything?", a: NO_DOWNLOAD },
+    ],
+  },
   "lights-out": {
     name: "Lights Out",
     title: "Lights Out online for free",

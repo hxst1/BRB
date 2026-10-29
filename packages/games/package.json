@@ -15,6 +15,7 @@
     "./snake/verify": "./src/snake/verify.ts",
     "./lightsout": "./src/lightsout/index.ts",
     "./lightsout/verify": "./src/lightsout/verify.ts",
+    "./orbits": "./src/orbits/index.ts",
     "./wordle": "./src/wordle/index.ts",
     "./connect4": "./src/connect4/index.ts",
     "./battleship": "./src/battleship/index.ts",

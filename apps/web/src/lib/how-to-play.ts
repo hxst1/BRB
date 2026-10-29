@@ -54,6 +54,16 @@ const HOW_TO_PLAY_ES: Record<string, HowToPlay> = {
       { icon: "stop", text: "Se acaba cuando el tablero se llena y ya no puedes mover nada." },
     ],
   },
+  orbits: {
+    goal: "Lanza la bola hasta el centro sin chocar con los anillos.",
+    steps: [
+      { icon: "repeat", text: "Los anillos no paran de girar. Cada uno tiene un hueco." },
+      { icon: "tap", text: "Toca la pantalla (o pulsa espacio) para lanzar la bola hacia el centro." },
+      { icon: "target", text: "Espera al momento justo: la bola tiene que pasar por todos los huecos." },
+      { icon: "crash", text: "Si chocas, pierdes una vida. Con 3 choques se acaba la partida." },
+      { icon: "up", text: "Cada nivel tiene más anillos y van más rápido." },
+    ],
+  },
   snake: {
     goal: "Come manzanas para hacer tu serpiente muy larga, ¡sin chocarte!",
     steps: [
@@ -218,6 +228,16 @@ const HOW_TO_PLAY_EN: Record<string, HowToPlay> = {
       { icon: "plus", text: "When two tiles with the same number bump into each other, they merge: 2 and 2 make 4." },
       { icon: "new", text: "Every time you move, a new tile appears." },
       { icon: "stop", text: "It's over when the board is full and nothing can move." },
+    ],
+  },
+  orbits: {
+    goal: "Shoot the ball all the way to the centre without hitting the rings.",
+    steps: [
+      { icon: "repeat", text: "The rings never stop spinning. Each one has a gap." },
+      { icon: "tap", text: "Tap the screen (or press space) to shoot the ball towards the centre." },
+      { icon: "target", text: "Wait for the right moment: the ball has to go through every gap." },
+      { icon: "crash", text: "If you hit a ring, you lose a life. After 3 hits, the game is over." },
+      { icon: "up", text: "Every level has more rings, and they spin faster." },
     ],
   },
   snake: {
@@ -385,6 +405,16 @@ const HOW_TO_PLAY_JA: Record<string, HowToPlay> = {
       { icon: "plus", text: "同じ数字のタイルがぶつかると合体！2と2で4になります。" },
       { icon: "new", text: "動かすたびに、新しいタイルが出てきます。" },
       { icon: "stop", text: "盤面がいっぱいで動かせなくなったら終わりです。" },
+    ],
+  },
+  orbits: {
+    goal: "リングにぶつからずに、ボールを中心まで届けよう。",
+    steps: [
+      { icon: "repeat", text: "リングはずっと回っています。それぞれにすき間があります。" },
+      { icon: "tap", text: "画面をタップ（またはスペースキー）すると、ボールが中心に向かって飛びます。" },
+      { icon: "target", text: "タイミングを待とう：ボールはすべてのすき間を通らなければなりません。" },
+      { icon: "crash", text: "ぶつかるとライフが1つ減ります。3回ぶつかるとゲームオーバー。" },
+      { icon: "up", text: "レベルが上がるとリングが増えて、速く回ります。" },
     ],
   },
   snake: {
