@@ -123,9 +123,13 @@ export function GameRatingPrompt({ viewerId }: { viewerId: string }) {
   }, [viewerId]);
 
   const open = ask !== null;
+  // El foco va a la ✕ solo al abrirse: si se hiciera en cada render, cada tecla
+  // en el comentario se lo quitaría al textarea (y en el móvil cerraría el teclado).
+  useEffect(() => {
+    if (open) closeButton.current?.focus();
+  }, [open]);
   useEffect(() => {
     if (!open) return;
-    closeButton.current?.focus();
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") dismiss();
     };
