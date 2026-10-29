@@ -1,0 +1,60 @@
+# Migraciones de la base de datos de producción.
+#
+# Al mergear en main, aplica las migraciones de supabase/migrations que falten
+# (supabase db push). En los PR solo enseña cuáles se aplicarían (--dry-run).
+# La conexión va en el secreto SUPABASE_DB_URL: la URI del "Session pooler"
+# (puerto 5432) del proyecto, con la contraseña de la base de datos.
+#
+# Vercel despliega a la vez: las migraciones tienen que ser compatibles con el
+# código anterior, o aplicarse antes de mergear (como se hacía a mano).
+name: Migraciones
+
+on:
+  push:
+    branches: [main]
+    paths: ["supabase/migrations/**"]
+  pull_request:
+    paths: ["supabase/migrations/**"]
+  workflow_dispatch:
+
+# Nunca dos a la vez contra producción.
+concurrency:
+  group: migraciones-produccion
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  migrations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+
+      # En main falla sin el secreto; en un PR (p. ej. desde un fork, que no lo
+      # recibe) solo se avisa.
+      - name: Comprobar el secreto
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              echo "::warning::Sin el secreto SUPABASE_DB_URL no se pueden mirar las migraciones pendientes."
+            else
+              echo "::error::Falta el secreto SUPABASE_DB_URL (Settings → Secrets and variables → Actions)."
+              exit 1
+            fi
+          fi
+
+      - name: Migraciones pendientes (solo mirar)
+        if: github.event_name == 'pull_request' && env.SUPABASE_DB_URL != ''
+        run: supabase db push --db-url "$SUPABASE_DB_URL" --dry-run
+
+      - name: Aplicar las migraciones pendientes
+        if: github.event_name != 'pull_request'
+        run: supabase db push --db-url "$SUPABASE_DB_URL" --yes
