@@ -1,6 +1,9 @@
 begin;
 select plan(32);
 
+-- Lo que ya pide atención en la base de datos antes del test (partidas rechazadas de otras pruebas).
+create temp table attention_start as select rejected_runs_24h from public.admin_attention();
+
 insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-ad000000000a', 'a@adm.local', '{"username": "adm_ana"}'),
   ('00000000-0000-0000-0000-ad000000000b', 'b@adm.local', '{"username": "adm_bob"}');
@@ -117,7 +120,7 @@ select public.report_app_error('Fallo al cargar 6', E'    at loadBoard (x.js:1:1
 select is((select status from public.admin_get_error_group((select fingerprint from private.error_groups where message like 'Fallo al cargar%'))),
   'open', 'si vuelve en otra versión, se reabre');
 
-select results_eq($$ select open_errors >= 1, unread_feedback >= 0, rejected_runs_24h from public.admin_attention() $$,
+select results_eq($$ select open_errors >= 1, unread_feedback >= 0, rejected_runs_24h - (select rejected_runs_24h from attention_start) from public.admin_attention() $$,
   $$ values (true, true, 0) $$, 'lo que pide atención no cuenta lo invalidado a mano');
 
 create temp table attention_before as select new_errors_24h from public.admin_attention();
