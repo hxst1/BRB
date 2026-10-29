@@ -1,5 +1,5 @@
 begin;
-select plan(31);
+select plan(32);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-ad000000000a', 'a@adm.local', '{"username": "adm_ana"}'),
@@ -119,6 +119,12 @@ select is((select status from public.admin_get_error_group((select fingerprint f
 
 select results_eq($$ select open_errors >= 1, unread_feedback >= 0, rejected_runs_24h from public.admin_attention() $$,
   $$ values (true, true, 0) $$, 'lo que pide atención no cuenta lo invalidado a mano');
+
+create temp table attention_before as select new_errors_24h from public.admin_attention();
+select public.admin_set_error_status('00000000-0000-0000-0000-ad000000000a',
+  (select fingerprint from private.error_groups where message like 'Fallo al cargar%'), 'resolved');
+select is((select new_errors_24h from public.admin_attention()), (select new_errors_24h - 1 from attention_before),
+  'un error nuevo resuelto deja de contar como nuevo');
 
 select * from finish();
 rollback;
