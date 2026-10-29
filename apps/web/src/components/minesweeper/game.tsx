@@ -7,6 +7,7 @@ import { startRun, type RunNotice } from "@/lib/start-run";
 import { createClient } from "@/lib/supabase/client";
 import { GuestNotice } from "@/components/guest-notice";
 import { NO_PAUSE, PauseButton, PauseCover, endPause, playedMs, reportPause, startPause, useAutoPause, type Pause } from "@/components/pause";
+import { resumeSaved, writeSaved, type SavedRun } from "@/lib/saved-run";
 import { ShareStory } from "@/components/share-story";
 import { useMessages } from "@/lib/i18n/client";
 import { playSound } from "@/lib/sound";
@@ -18,6 +19,17 @@ const NUMBER_COLORS = ["", "var(--mark-o)", "var(--t512)", "var(--mark-x)", "var
 
 /** Hora actual (fuera del componente: solo se llama desde eventos y efectos). */
 const clock = () => Date.now();
+
+/** Lo que se guarda para retomar la partida al volver (el tiempo y las pausas, para quien juega sin sesión). */
+type Saved = SavedRun & { flags: number[]; startedAt: number; pause: Pause };
+
+/** Clave de la partida guardada: una por dificultad, y una por día en el reto diario. */
+const savedKey = (difficulty: Difficulty, daily: string | null) => (daily ? `minesweeper:daily:${daily}` : `minesweeper:${difficulty}`);
+
+/** Repite las casillas abiertas desde la semilla (las minas salen de la primera). */
+function rebuild(difficulty: Difficulty, saved: Saved): MinesweeperState {
+  return saved.moves.split(",").map(Number).reduce(reveal, newGame(difficulty, saved.seed));
+}
 
 type Save = { status: "saving" } | { status: "saved"; time: number; runId: string } | { status: "rejected" } | { status: "error"; message: string };
 
@@ -44,7 +56,8 @@ export function MinesweeperGame({
   const [state, setState] = useState<MinesweeperState | null>(null);
   const [flags, setFlags] = useState<Set<number>>(new Set());
   const [flagMode, setFlagMode] = useState(false);
-  const [starting, setStarting] = useState(false);
+  /** Pidiendo la partida al servidor (o mirando si hay una guardada que seguir). */
+  const [starting, setStarting] = useState(true);
   const [notice, setNotice] = useState<RunNotice | null>(null);
   const [save, setSave] = useState<Save | null>(null);
   const [startedAt, setStartedAt] = useState<number | null>(null);
@@ -57,7 +70,38 @@ export function MinesweeperGame({
   const playing = state !== null && status === "playing";
   const paused = pause.since !== null;
 
+  // Al entrar, la partida guardada, si sigue abierta (en pausa desde que se salió).
+  const key = savedKey(difficulty, daily);
+  useEffect(() => {
+    let cancelled = false;
+    void resumeSaved<Saved>(key, signedIn).then((resumed) => {
+      if (cancelled) return;
+      setStarting(false);
+      if (!resumed || !resumed.saved.moves) return;
+      const restored = rebuild(difficulty, resumed.saved);
+      if (restored.status !== "playing") return writeSaved(key, null);
+      runId.current = resumed.saved.runId;
+      setState(restored);
+      setFlags(new Set(resumed.saved.flags));
+      setStartedAt(resumed.run?.startedAt ?? resumed.saved.startedAt);
+      setPause(resumed.run?.pause ?? resumed.saved.pause);
+      setNow(clock());
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [key, signedIn, difficulty]);
+
+  // La partida en curso se guarda a cada casilla; al terminar, se borra.
+  useEffect(() => {
+    if (!state || startedAt === null) return;
+    const saved: Saved | null =
+      state.status === "playing" ? { runId: runId.current, seed: state.seed, moves: encodeOpened(state.opened), flags: [...flags], startedAt, pause } : null;
+    writeSaved(key, saved);
+  }, [key, state, flags, startedAt, pause]);
+
   function restart() {
+    writeSaved(key, null);
     runId.current = null;
     setState(null);
     setFlags(new Set());
@@ -88,8 +132,8 @@ export function MinesweeperGame({
     reportPause(runId.current, false);
   }
 
-  // Al cambiar de app o de pestaña, en pausa.
-  useAutoPause(pauseGame);
+  // Al cambiar de app o de pestaña, en pausa; y al salir del juego, para seguir al volver.
+  useAutoPause(pauseGame, { onLeave: true });
 
   /** Primera casilla: pide la partida al servidor y coloca las minas. */
   async function firstOpen(cell: number) {

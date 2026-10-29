@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { randomSeed } from "@repo/games";
-import { budgetForLevel, newGame, press, type LightsOutState } from "@repo/games/lightsout";
+import { budgetForLevel, newGame, press, replay, type LightsOutState } from "@repo/games/lightsout";
 import { startRun, type RunNotice } from "@/lib/start-run";
+import { resumeSaved, writeSaved } from "@/lib/saved-run";
+import { reportPause, useBackgroundPause } from "@/components/pause";
 import { GuestNotice } from "@/components/guest-notice";
 import { LightsBoard } from "./board";
 import { LightsOutTutorial, useTutorialDone } from "./tutorial";
@@ -28,9 +30,22 @@ type Prepared = { game: LightsOutState; runId: string | null; notice: RunNotice 
  * Con sesión, el servidor da la semilla y la partida cuenta (también la del
  * reto diario, con `daily`); sin ella (o si falla), se juega en local.
  */
-async function prepareGame(signedIn: boolean, daily: boolean): Promise<Prepared> {
+/** Clave de la partida guardada para retomarla: una normal y una por día en el reto diario. */
+const savedKey = (daily: string | null) => (daily ? `lightsout:daily:${daily}` : "lightsout:game");
+
+/** Con `fresh`, empieza otra aunque haya una guardada (al pulsar «Otra partida»). */
+async function prepareGame(signedIn: boolean, daily: string | null, fresh = false): Promise<Prepared> {
+  if (fresh) writeSaved(savedKey(daily), null);
+  const resumed = fresh ? null : await resumeSaved(savedKey(daily), signedIn);
+  const replayed = resumed ? replay(resumed.saved.seed, resumed.saved.moves) : null;
+  if (resumed && replayed?.valid && !replayed.state.over) {
+    // Se pausó al salir: sigue contando desde ahora.
+    if (resumed.run?.pause.since !== null) reportPause(resumed.saved.runId, false);
+    return { game: replayed.state, runId: resumed.saved.runId, notice: null };
+  }
+
   if (!signedIn) return { game: newGame(randomSeed()), runId: null, notice: null };
-  const { run, notice } = await startRun("lightsout", daily);
+  const { run, notice } = await startRun("lightsout", daily !== null);
   return run ? { game: newGame(run.seed), runId: run.id, notice: null } : { game: newGame(randomSeed()), runId: null, notice };
 }
 
@@ -91,13 +106,13 @@ function Game({ viewerId, onSaved, daily = null, onReviewTutorial }: GameProps &
     setState(next.game);
   }, []);
 
-  const restart = useCallback(async () => apply(await prepareGame(signedIn, daily !== null)), [apply, signedIn, daily]);
+  const restart = useCallback(async () => apply(await prepareGame(signedIn, daily, true)), [apply, signedIn, daily]);
 
   // Como en el 2048: los dos montajes de desarrollo comparten la misma petición.
   const initialGame = useRef<{ key: boolean; promise: Promise<Prepared> } | null>(null);
   useEffect(() => {
     if (initialGame.current?.key !== signedIn) {
-      initialGame.current = { key: signedIn, promise: prepareGame(signedIn, daily !== null) };
+      initialGame.current = { key: signedIn, promise: prepareGame(signedIn, daily) };
     }
     let cancelled = false;
     initialGame.current.promise.then((next) => {
@@ -109,6 +124,14 @@ function Game({ viewerId, onSaved, daily = null, onReviewTutorial }: GameProps &
   }, [apply, signedIn, daily]);
 
   const ended = state !== null && (state.over || stopped);
+
+  // La partida en curso se guarda para retomarla al volver (y se pausa mientras
+  // tanto en el servidor); al terminar o plantarse, se borra.
+  useEffect(() => {
+    if (!state) return;
+    writeSaved(savedKey(daily), ended ? null : { runId: runId.current, seed: state.seed, moves: state.presses });
+  }, [state, ended, daily]);
+  useBackgroundPause(runId);
 
   const tap = useCallback(
     (cell: number) => {

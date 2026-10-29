@@ -1,5 +1,5 @@
 begin;
-select plan(8);
+select plan(10);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-9a000000000a', 'a@pause.local', '{"username": "pz_ana"}'),
@@ -7,7 +7,9 @@ insert into auth.users (id, email, raw_user_meta_data) values
 
 insert into public.game_runs (id, user_id, game, seed) values
   ('00000000-0000-0000-0000-9a00000000f1', '00000000-0000-0000-0000-9a000000000a', 'sudoku-easy', 1),
-  ('00000000-0000-0000-0000-9a00000000f2', '00000000-0000-0000-0000-9a000000000a', '2048', 2);
+  ('00000000-0000-0000-0000-9a00000000f2', '00000000-0000-0000-0000-9a000000000a', '2048', 2),
+  ('00000000-0000-0000-0000-9a00000000f3', '00000000-0000-0000-0000-9a000000000a', 'lightsout', 3),
+  ('00000000-0000-0000-0000-9a00000000f4', '00000000-0000-0000-0000-9a000000000a', 'snake', 4);
 
 create function pg_temp.login(id uuid) returns void language sql as $$
   select set_config('role', 'authenticated', true),
@@ -23,10 +25,15 @@ select public.pause_run('00000000-0000-0000-0000-9a00000000f1');
 reset role;
 select is((pg_temp.run('00000000-0000-0000-0000-9a00000000f1')).paused_at, null, 'no se puede pausar la partida de otro');
 
+-- El 2048 y Lights Out se retoman al volver: se pausan para no caducar. Snake va en tiempo real.
 select pg_temp.login('00000000-0000-0000-0000-9a000000000a');
 select public.pause_run('00000000-0000-0000-0000-9a00000000f2');
+select public.pause_run('00000000-0000-0000-0000-9a00000000f3');
+select public.pause_run('00000000-0000-0000-0000-9a00000000f4');
 reset role;
-select is((pg_temp.run('00000000-0000-0000-0000-9a00000000f2')).paused_at, null, 'el 2048 no va por tiempo: no se pausa');
+select isnt((pg_temp.run('00000000-0000-0000-0000-9a00000000f2')).paused_at, null, 'el 2048 se pausa');
+select isnt((pg_temp.run('00000000-0000-0000-0000-9a00000000f3')).paused_at, null, 'Lights Out se pausa');
+select is((pg_temp.run('00000000-0000-0000-0000-9a00000000f4')).paused_at, null, 'Snake no se pausa');
 
 select pg_temp.login('00000000-0000-0000-0000-9a000000000a');
 select public.pause_run('00000000-0000-0000-0000-9a00000000f1');

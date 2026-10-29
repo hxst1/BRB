@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { randomSeed } from "@repo/games";
-import { maxTile, move, newGame, type Direction, type Game2048State } from "@repo/games/2048";
+import { maxTile, move, newGame, replay, type Direction, type Game2048State } from "@repo/games/2048";
 import { Avatar } from "@repo/ui/avatar";
 import type { Messages } from "@/lib/i18n";
 import { ShareStory } from "@/components/share-story";
@@ -10,6 +10,9 @@ import { useMessages } from "@/lib/i18n/client";
 import { playSound } from "@/lib/sound";
 import type { RunNotice } from "@/lib/start-run";
 import { createClient } from "@/lib/supabase/client";
+import { gameDay } from "@/lib/daily";
+import { readSaved, resumeSaved, writeSaved, type SavedRun } from "@/lib/saved-run";
+import { reportPause, useBackgroundPause } from "@/components/pause";
 import { Board } from "@repo/ui/board-2048";
 import { ChallengeFriends } from "./challenge-friends";
 import type { ActiveChallenge } from "./screen";
@@ -43,7 +46,31 @@ type Save =
  */
 type PreparedGame = { game: Game2048State; runId: string | null; notice: RunNotice | null; special: boolean };
 
-async function prepareGame(signedIn: boolean, challengeId: string | null, daily: boolean): Promise<PreparedGame> {
+/** Clave de la partida guardada para retomarla: una por modo, por día en el reto diario y por reto en el de un amigo. */
+function savedKey(challengeId: string | null, daily: boolean, practice: boolean): string {
+  return practice ? "2048:practice" : challengeId ? `2048:challenge:${challengeId}` : daily ? `2048:daily:${gameDay()}` : "2048:game";
+}
+
+/** La partida guardada, reconstruida con sus movimientos (null si no hay o no cuadra). */
+function replaySaved(saved: SavedRun | null): Game2048State | null {
+  if (!saved) return null;
+  const result = replay(saved.seed, saved.moves);
+  return result.valid && !result.state.over ? result.state : null;
+}
+
+/** Con `fresh`, empieza otra aunque haya una guardada (al pulsar «Nueva partida»). */
+async function prepareGame(signedIn: boolean, challengeId: string | null, daily: boolean, fresh = false): Promise<PreparedGame> {
+  const key = savedKey(challengeId, daily, false);
+  if (fresh) writeSaved(key, null);
+  const resumed = fresh ? null : await resumeSaved(key, signedIn);
+  const game = replaySaved(resumed?.saved ?? null);
+  if (resumed && game) {
+    // Se pausó al salir: sigue contando desde ahora.
+    if (resumed.run?.pause.since !== null) reportPause(resumed.saved.runId, false);
+    const runId = resumed.saved.runId;
+    return { game, runId, notice: null, special: runId !== null && (challengeId !== null || daily) };
+  }
+
   if (!signedIn) return { game: newGame(randomSeed()), runId: null, notice: null, special: false };
 
   const supabase = createClient();
@@ -70,9 +97,10 @@ async function prepareGame(signedIn: boolean, challengeId: string | null, daily:
   };
 }
 
-/** Partida de práctica: en local, sin pedirla al servidor. */
-function localGame(): PreparedGame {
-  return { game: newGame(randomSeed()), runId: null, notice: null, special: false };
+/** Partida de práctica: en local, sin pedirla al servidor (la guardada, si la hay). */
+function localGame(fresh = false): PreparedGame {
+  const saved = fresh ? null : replaySaved(readSaved(savedKey(null, false, true)));
+  return { game: saved ?? newGame(randomSeed()), runId: null, notice: null, special: false };
 }
 
 function readBest(): number {
@@ -136,7 +164,7 @@ export function Game2048({
   }, []);
 
   const start = useCallback(
-    async () => apply(practice ? localGame() : await prepareGame(signedIn, null, false)),
+    async () => apply(practice ? localGame(true) : await prepareGame(signedIn, null, false, true)),
     [apply, signedIn, practice],
   );
 
@@ -164,6 +192,15 @@ export function Game2048({
     if (special) onExit();
     else void start();
   }, [special, onExit, start]);
+
+  // La partida en curso se guarda para retomarla al volver (y se pausa mientras
+  // tanto en el servidor); al terminar, se borra.
+  const key = savedKey(challengeId, daily, practice);
+  useEffect(() => {
+    if (!state) return;
+    writeSaved(key, state.over ? null : { runId: runId.current, seed: state.seed, moves: state.moves });
+  }, [state, key]);
+  useBackgroundPause(runId);
 
   // Sonidos: al juntar fichas (más agudo cuanto más alta), al llegar a 2048 y al acabar.
   const heard = useRef<Game2048State | null>(null);
