@@ -713,6 +713,7 @@ export const en: Messages = {
     actionError: "That didn't work. Reload the page and try again.",
     rematchError: "Couldn't create the rematch.",
     moveError: "Couldn't make the move.",
+    offline: "No connection: please try again.",
     notFound: "We couldn't find this game",
     seeYours: "See your games",
     accept: "Accept the challenge",

@@ -12,7 +12,7 @@ export function ErrorReporter() {
       reportError(event.error ?? event.message);
     };
     const onRejection = (event: PromiseRejectionEvent) => {
-      if (isSkippedTransition(event.reason)) return;
+      if (isSkippedTransition(event.reason) || isNetworkFailure(event.reason)) return;
       reportError(event.reason);
     };
     window.addEventListener("error", onError);
@@ -37,4 +37,15 @@ function isSkippedTransition(reason: unknown) {
     (reason.name === "InvalidStateError" || reason.name === "AbortError") &&
     reason.message.startsWith("Transition was")
   );
+}
+
+/**
+ * Una petición que no llega a salir: sin conexión, o iOS cortándola al cambiar
+ * de app. Cada navegador lo dice a su manera y sin traza, así que no se puede
+ * saber de dónde viene: es la conexión de quien juega, no un fallo de la app.
+ */
+const NETWORK_FAILURES = ["Load failed", "Failed to fetch", "NetworkError when attempting to fetch resource."];
+
+function isNetworkFailure(reason: unknown) {
+  return reason instanceof TypeError && NETWORK_FAILURES.includes(reason.message);
 }

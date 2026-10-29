@@ -720,6 +720,7 @@ export const ja: Messages = {
     actionError: "うまくいきませんでした。ページを再読み込みしてもう一度お試しください。",
     rematchError: "再戦を作れませんでした。",
     moveError: "手を打てませんでした。",
+    offline: "接続がありません。もう一度お試しください。",
     notFound: "この対戦は見つかりませんでした",
     seeYours: "自分の対戦を見る",
     accept: "挑戦を受ける",

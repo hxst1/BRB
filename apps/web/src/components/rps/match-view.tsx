@@ -106,11 +106,11 @@ export function RpsMatchView({ matchId, viewerId }: { matchId: string; viewerId:
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ choice: index }),
-    });
+    }).catch(() => null); // Sin conexión: se avisa y se puede volver a elegir.
     setBusy(false);
-    if (!response.ok) {
-      const body = await response.json().catch(() => ({}));
-      setError(body.error ?? m.rps.chooseError);
+    if (!response?.ok) {
+      const body = response ? await response.json().catch(() => ({})) : {};
+      setError(body.error ?? (response ? m.rps.chooseError : m.match.offline));
     }
     // Si era la segunda elección, la ronda ya está resuelta: recargar por si Realtime tarda.
     const updated = await fetchMatch(matchId);

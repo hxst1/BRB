@@ -204,7 +204,13 @@ function LiveRace({ match, me, rivalName, onReported }: { match: Match; me: Mark
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ action: "finish", typed: value }),
-    });
+    }).catch(() => null);
+    if (!response) {
+      // Sin conexión: queda el error para reintentar, en vez de «comprobando» para siempre.
+      setNotice(m.match.offline);
+      setPhase("error");
+      return;
+    }
     if (response.ok) {
       onReported();
       return;
